@@ -20,6 +20,11 @@
         var container, stats;
         var gui;
 
+        var raycaster;
+        var mouse = new THREE.Vector2(), INTERSECTED, SELECTED;
+
+        var objects = [];
+
         init();
 
         animate();
@@ -27,8 +32,10 @@
         function init() {
             container = document.getElementById('container');
 
+            //SCENE
             scene = new THREE.Scene();
 
+            //RENDERER
             renderer = new THREE.WebGLRenderer({antialias: true, alpha: false});
             renderer.setClearColor(0x777777);
             renderer.setPixelRatio(window.devicePixelRatio);
@@ -37,27 +44,67 @@
 
             container.appendChild(renderer.domElement);
 
+            //CAMERA
+            var aspect = window.innerWidth / window.innerHeight;
+
+            camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 10000);
+            camera.position.set(0, 0, 10);
+            scene.add(camera);
+
+            //CONTROLS
+            controls = new THREE.OrbitControls( camera, renderer.domElement );
+            controls.target = new THREE.Vector3(3,0,0);
+
+            //LIGHTS
+            var amblight = new THREE.AmbientLight( 0x505050 );
+            var light = new THREE.PointLight( 0xffffff, 1);
+            light.position.set( 10, 10, 10 )
+            scene.add( amblight );
+            scene.add( light );
+
+            //GEOMETRY
+            var cubegeometry = new THREE.BoxGeometry(1, 1, 1)
+            var cubematerial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+            var cube = new THREE.Mesh(cubegeometry, cubematerial);
+            cube.scale.set(3,3,3)
+
+            var spheregeometry = new THREE.SphereGeometry(1, 32, 32)
+            var spherematerial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+            var sphere = new THREE.Mesh(spheregeometry, spherematerial);
+            sphere.position.set(5,0,0)
+
+            var planegeometry = new THREE.PlaneGeometry( 50, 50);
+            var planematerial = new THREE.MeshPhongMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+            var floor = new THREE.Mesh( planegeometry, planematerial );
+            floor.position.y = -1.5
+            floor.rotation.x = Math.PI / 2;
+
+            scene.add(floor);
+            scene.add(cube);
+            scene.add(sphere);
+
+            objects.push(cube);
+            objects.push(sphere);
+
+            //RAYCASTING
+            raycaster = new THREE.Raycaster();
+
+            //FPS COUNTER
             stats = new Stats();
             stats.domElement.style.position = 'absolute';
             stats.domElement.style.top = '0px';
             container.appendChild( stats.domElement );
 
-            var aspect = window.innerWidth / window.innerHeight;
+            //GUI
+            setGUI();
 
-            camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 10000);
-            camera.position.set(0, 0, 5);
-
-            controls = new THREE.OrbitControls( camera, renderer.domElement );
-
-            var geometry = new THREE.BoxGeometry(1, 1, 1);
-            var material = new THREE.MeshBasicMaterial({color: 0x00ff00});
-            var cube = new THREE.Mesh(geometry, material);
-            scene.add(cube);
-
-            set_gui();
+            //CALLBACKS
+            window.addEventListener( 'resize', onWindowResize, false );
+            window.addEventListener( 'mousemove', onDocumentMouseMove, false );
+            window.addEventListener( 'mousedown', onDocumentMouseDown, false );
         }
 
-        function set_gui()
+        function setGUI()
         {
             gui = new dat.GUI();
 
@@ -98,6 +145,41 @@
             gui.open();
         }
 
+        function onWindowResize()
+        {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize( window.innerWidth, window.innerHeight );
+        }
+
+        function onDocumentMouseDown( event )
+        {
+            event.preventDefault();
+
+            camera.updateMatrixWorld();
+
+            raycaster.setFromCamera( mouse, camera );
+
+            var intersects = raycaster.intersectObjects( objects );
+
+            if ( intersects.length > 0 ) {
+
+                SELECTED = intersects[ 0 ].object;
+
+                controls.target = SELECTED.position;
+
+            }
+        }
+
+        function onDocumentMouseMove( event )
+        {
+            event.preventDefault();
+
+            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+            mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        }
+
         function animate()
         {
             requestAnimationFrame( animate );
@@ -107,6 +189,36 @@
 
         function render()
         {
+            camera.updateMatrixWorld();
+
+            raycaster.setFromCamera( mouse, camera );
+
+            var intersects = raycaster.intersectObjects( objects );
+
+            if ( intersects.length > 0 ) {
+
+                if ( INTERSECTED != intersects[ 0 ].object ) {
+
+                    if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+                    INTERSECTED = intersects[ 0 ].object;
+                    //alert('x-'+INTERSECTED.position.x+' y-'+INTERSECTED.position.y+' z-'+INTERSECTED.position.z);
+                    INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+                    INTERSECTED.material.emissive.setHex( 0xff0000 );
+
+                }
+
+                container.style.cursor = 'pointer';
+
+            } else {
+
+                if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+                INTERSECTED = null;
+
+                container.style.cursor = 'auto';
+
+            }
             renderer.render(scene, camera);
         }
 
