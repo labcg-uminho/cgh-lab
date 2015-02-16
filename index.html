@@ -16,9 +16,10 @@
     <script>
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-        var scene, camera, controls, renderer;
+        var scene, camera, controls, renderer, cubescene, spherescene;
         var container, stats;
-        var gui;
+        var gui = new dat.GUI();
+        var currentPerspective;
 
         var raycaster;
         var mouse = new THREE.Vector2(), INTERSECTED, SELECTED;
@@ -32,10 +33,12 @@
         function init() {
             container = document.getElementById('container');
 
-            //SCENE
+            ////SCENES
             scene = new THREE.Scene();
+            cubescene = new THREE.Scene();
+            spherescene = new THREE.Scene();
 
-            //RENDERER
+            ////RENDERER
             renderer = new THREE.WebGLRenderer({antialias: true, alpha: false});
             renderer.setClearColor(0x777777);
             renderer.setPixelRatio(window.devicePixelRatio);
@@ -44,39 +47,56 @@
 
             container.appendChild(renderer.domElement);
 
-            //CAMERA
+            ////CAMERA
             var aspect = window.innerWidth / window.innerHeight;
 
             camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 10000);
             camera.position.set(0, 0, 10);
-            scene.add(camera);
 
-            //CONTROLS
+            ////CONTROLS
             controls = new THREE.OrbitControls( camera, renderer.domElement );
             controls.target = new THREE.Vector3(3,0,0);
 
-            //LIGHTS
+            ////LIGHTS
+            //MAIN SCENE
             var amblight = new THREE.AmbientLight( 0x505050 );
             var light = new THREE.PointLight( 0xffffff, 1);
-            light.position.set( 10, 10, 10 )
+            light.position.set( 10, 10, 10 );
             scene.add( amblight );
             scene.add( light );
 
-            //GEOMETRY
-            var cubegeometry = new THREE.BoxGeometry(1, 1, 1)
+            //CUBE SCENE
+            var amblight2 = new THREE.AmbientLight( 0x505050 );
+            var light2 = new THREE.PointLight( 0xffffff, 1);
+            light2.position.set( 10, 10, 10 );
+            cubescene.add( amblight2 );
+            cubescene.add( light2 );
+
+            //SPHERE SCENE
+            var amblight3 = new THREE.AmbientLight( 0x505050 );
+            var light3 = new THREE.PointLight( 0xffffff, 1);
+            light3.position.set( 10, 10, 10 );
+            spherescene.add( amblight3 );
+            spherescene.add( light3 );
+
+            ////GEOMETRY
+            //MAIN SCENE
+            var cubegeometry = new THREE.BoxGeometry(1, 1, 1);
             var cubematerial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
             var cube = new THREE.Mesh(cubegeometry, cubematerial);
-            cube.scale.set(3,3,3)
+            cube.scale.set(3,3,3);
+            cube.name = 'cube';
 
-            var spheregeometry = new THREE.SphereGeometry(1, 32, 32)
+            var spheregeometry = new THREE.SphereGeometry(1, 32, 32);
             var spherematerial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
             var sphere = new THREE.Mesh(spheregeometry, spherematerial);
-            sphere.position.set(5,0,0)
+            sphere.position.set(5,0,0);
+            sphere.name = 'sphere';
 
             var planegeometry = new THREE.PlaneGeometry( 50, 50);
             var planematerial = new THREE.MeshPhongMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
             var floor = new THREE.Mesh( planegeometry, planematerial );
-            floor.position.y = -1.5
+            floor.position.y = -1.5;
             floor.rotation.x = Math.PI / 2;
 
             scene.add(floor);
@@ -86,63 +106,142 @@
             objects.push(cube);
             objects.push(sphere);
 
-            //RAYCASTING
+            //CUBE SCENE
+            var cubegeometry2 = new THREE.BoxGeometry(1, 1, 1);
+            var cubematerial2 = new THREE.MeshPhongMaterial({ color: 0x00ffff });
+            var cube2 = new THREE.Mesh(cubegeometry2, cubematerial2);
+            cube2.scale.set(3,3,3);
+            cubescene.add(cube2);
+
+            //SPHERE SCENE
+            var spheregeometry2 = new THREE.SphereGeometry(1, 32, 32);
+            var spherematerial2 = new THREE.MeshPhongMaterial({ color: 0xffff00 });
+            var sphere2 = new THREE.Mesh(spheregeometry2, spherematerial2);
+            sphere2.position.set(5,0,0);
+            spherescene.add(sphere2);
+
+            ////RAYCASTING
             raycaster = new THREE.Raycaster();
 
-            //FPS COUNTER
+            ////FPS COUNTER
             stats = new Stats();
             stats.domElement.style.position = 'absolute';
             stats.domElement.style.top = '0px';
             container.appendChild( stats.domElement );
 
-            //GUI
-            setGUI();
+            ////GUI
+            setGUI('main');
 
-            //CALLBACKS
+            currentPerspective = 'main';
+
+            ////CALLBACKS
             window.addEventListener( 'resize', onWindowResize, false );
             window.addEventListener( 'mousemove', onDocumentMouseMove, false );
             window.addEventListener( 'mousedown', onDocumentMouseDown, false );
+            window.addEventListener( 'mousewheel', teste , false );
         }
 
-        function setGUI()
+        function teste( event )
         {
-            gui = new dat.GUI();
+            event.preventDefault();
+            alert('ola');
+        }
 
-            var parameters =
+        function setGUI( perspective )
+        {
+            var parameters;
+            gui.destroy();
+            if(perspective == 'main')
             {
-                a: 200, // numeric
-                b: 200, // numeric slider
-                c: "Hello, GUI!", // string
-                d: false, // boolean (checkbox)
-                e: "#ff8800", // color (hex)
-                f: function() { alert("Hello!") },
-                g: function() { alert( parameters.c ) },
-                v : 0,    // dummy value, only type is important
-                w: "...", // dummy value, only type is important
-                x: 0, y: 0, z: 0
-            };
-            // gui.add( parameters )
-            gui.add( parameters, 'a' ).name('Number');
-            gui.add( parameters, 'b' ).min(128).max(256).step(16).name('Slider');
-            gui.add( parameters, 'c' ).name('String');
-            gui.add( parameters, 'd' ).name('Boolean');
+                gui = new dat.GUI();
 
-            gui.addColor( parameters, 'e' ).name('Color');
+                parameters =
+                {
+                    a: 200, // numeric
+                    b: 200, // numeric slider
+                    c: "Hello, GUI!", // string
+                    d: false, // boolean (checkbox)
+                    e: "#ff8800", // color (hex)
+                    f: function() { alert("Hello!") },
+                    g: function() { alert( parameters.c ) },
+                    v : 0,    // dummy value, only type is important
+                    w: "...", // dummy value, only type is important
+                    x: 0, y: 0, z: 0
+                };
+                // gui.add( parameters )
+                gui.add( parameters, 'a' ).name('Number');
+                gui.add( parameters, 'b' ).min(128).max(256).step(16).name('Slider');
+                gui.add( parameters, 'c' ).name('String');
+                gui.add( parameters, 'd' ).name('Boolean');
 
-            var numberList = [1, 2, 3];
-            gui.add( parameters, 'v', numberList ).name('List');
+                gui.addColor( parameters, 'e' ).name('Color');
 
-            var stringList = ["One", "Two", "Three"];
-            gui.add( parameters, 'w', stringList ).name('List');
+                var numberList = [1, 2, 3];
+                gui.add( parameters, 'v', numberList ).name('List');
 
-            gui.add( parameters, 'f' ).name('Say "Hello!"');
-            gui.add( parameters, 'g' ).name("Alert Message");
+                var stringList = ["One", "Two", "Three"];
+                gui.add( parameters, 'w', stringList ).name('List');
 
-            var folder1 = gui.addFolder('Coordinates');
-            folder1.add( parameters, 'x' );
-            folder1.add( parameters, 'y' );
-            folder1.close();
-            gui.open();
+                gui.add( parameters, 'f' ).name('Say "Hello!"');
+                gui.add( parameters, 'g' ).name("Alert Message");
+
+                var folder1 = gui.addFolder('Coordinates');
+                folder1.add( parameters, 'x' );
+                folder1.add( parameters, 'y' );
+                folder1.close();
+                gui.open();
+            }
+            else if(perspective == 'cube')
+            {
+                gui = new dat.GUI();
+
+                parameters =
+                {
+                    a: 200, // numeric
+                    b: 200, // numeric slider
+                    c: "Hello, GUI!", // string
+                    d: false // boolean (checkbox)
+                };
+                // gui.add( parameters )
+                gui.add( parameters, 'a' ).name('Number');
+                gui.add( parameters, 'b' ).min(128).max(256).step(16).name('Slider');
+                gui.add( parameters, 'c' ).name('String');
+                gui.add( parameters, 'd' ).name('Boolean');
+
+                gui.open();
+            }
+            else if(perspective == 'sphere')
+            {
+                gui = new dat.GUI();
+
+                parameters =
+                {
+                    e: "#ff8800", // color (hex)
+                    f: function() { alert("Hello!") },
+                    g: function() { alert( parameters.c ) },
+                    v : 0,    // dummy value, only type is important
+                    w: "...", // dummy value, only type is important
+                    x: 0, y: 0, z: 0
+                };
+                // gui.add( parameters )
+
+                gui.addColor( parameters, 'e' ).name('Color');
+
+                var numberList = [1, 2, 3];
+                gui.add( parameters, 'v', numberList ).name('List');
+
+                var stringList = ["One", "Two", "Three"];
+                gui.add( parameters, 'w', stringList ).name('List');
+
+                gui.add( parameters, 'f' ).name('Say "Hello!"');
+                gui.add( parameters, 'g' ).name("Alert Message");
+
+                var folder1 = gui.addFolder('Coordinates');
+                folder1.add( parameters, 'x' );
+                folder1.add( parameters, 'y' );
+                folder1.close();
+                gui.open();
+            }
         }
 
         function onWindowResize()
@@ -219,7 +318,40 @@
                 container.style.cursor = 'auto';
 
             }
-            renderer.render(scene, camera);
+
+            if(SELECTED)
+            {
+                if(SELECTED.position.distanceTo(camera.position) < 10)
+                {
+                    if(SELECTED.name == 'cube') {
+                        if (currentPerspective != 'cube')
+                        {
+                            currentPerspective = 'cube';
+                            setGUI('cube');
+                        }
+                        renderer.render(cubescene, camera);
+                    }
+                    else if(SELECTED.name == 'sphere')
+                    {
+                        if (currentPerspective != 'sphere')
+                        {
+                            currentPerspective = 'sphere';
+                            setGUI('sphere');
+                        }
+                        renderer.render(spherescene, camera);
+                    }
+                }
+                else
+                {
+                    if(currentPerspective != 'main')
+                    {
+                        currentPerspective = 'main';
+                        setGUI('main');
+                    }
+                    renderer.render(scene, camera);
+                }
+            }
+            else renderer.render(scene, camera);
         }
 
         function update()
