@@ -11,20 +11,20 @@
     <script src="js/three.min.js"></script>
     <script src="js/Detector.js"></script>
     <script src="js/controls/OrbitControls.js"></script>
-    <script src="js/stats.min.js"></script>
-    <script src="js/dat.gui.min.js"></script>
+    <script src="js/gui/stats.min.js"></script>
+    <script src="js/gui/dat.gui.min.js"></script>
+    <script src="js/Mirror.js"></script>
+    <script src="js/scenes/main/mainPerspective.js"></script>
     <script>
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-        var scene, camera, controls, renderer, cubescene, spherescene;
+        var mainPerspective, camera, controls, renderer, cubescene, spherescene;
         var container, stats;
         var gui = new dat.GUI();
         var currentPerspective;
 
-        var raycaster;
+        var rayCaster;
         var mouse = new THREE.Vector2(), INTERSECTED, SELECTED;
-
-        var objects = [];
 
         init();
 
@@ -33,13 +33,8 @@
         function init() {
             container = document.getElementById('container');
 
-            ////SCENES
-            scene = new THREE.Scene();
-            cubescene = new THREE.Scene();
-            spherescene = new THREE.Scene();
-
             ////RENDERER
-            renderer = new THREE.WebGLRenderer({antialias: true, alpha: false});
+            renderer = new THREE.WebGLRenderer({antialias: true});
             renderer.setClearColor(0x777777);
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -53,58 +48,18 @@
             camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 10000);
             camera.position.set(0, 0, 10);
 
+            ////SCENES
+            cubescene = new THREE.Scene();
+            spherescene = new THREE.Scene();
+            mainPerspective = new MainPerspective(renderer, camera);
+
             ////CONTROLS
             controls = new THREE.OrbitControls( camera, renderer.domElement );
             controls.target = new THREE.Vector3(3,0,0);
 
-            ////LIGHTS
-            //MAIN SCENE
-            var amblight = new THREE.AmbientLight( 0x505050 );
-            var light = new THREE.PointLight( 0xffffff, 1);
-            light.position.set( 10, 10, 10 );
-            scene.add( amblight );
-            scene.add( light );
-
-            //CUBE SCENE
-            var amblight2 = new THREE.AmbientLight( 0x505050 );
-            var light2 = new THREE.PointLight( 0xffffff, 1);
-            light2.position.set( 10, 10, 10 );
-            cubescene.add( amblight2 );
-            cubescene.add( light2 );
-
-            //SPHERE SCENE
-            var amblight3 = new THREE.AmbientLight( 0x505050 );
-            var light3 = new THREE.PointLight( 0xffffff, 1);
-            light3.position.set( 10, 10, 10 );
-            spherescene.add( amblight3 );
-            spherescene.add( light3 );
-
+            /*------------------------------------------------------------------------------*/
             ////GEOMETRY
-            //MAIN SCENE
-            var cubegeometry = new THREE.BoxGeometry(1, 1, 1);
-            var cubematerial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
-            var cube = new THREE.Mesh(cubegeometry, cubematerial);
-            cube.scale.set(3,3,3);
-            cube.name = 'cube';
-
-            var spheregeometry = new THREE.SphereGeometry(1, 32, 32);
-            var spherematerial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
-            var sphere = new THREE.Mesh(spheregeometry, spherematerial);
-            sphere.position.set(5,0,0);
-            sphere.name = 'sphere';
-
-            var planegeometry = new THREE.PlaneGeometry( 50, 50);
-            var planematerial = new THREE.MeshPhongMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-            var floor = new THREE.Mesh( planegeometry, planematerial );
-            floor.position.y = -1.5;
-            floor.rotation.x = Math.PI / 2;
-
-            scene.add(floor);
-            scene.add(cube);
-            scene.add(sphere);
-
-            objects.push(cube);
-            objects.push(sphere);
+            mainPerspective.init();
 
             //CUBE SCENE
             var cubegeometry2 = new THREE.BoxGeometry(1, 1, 1);
@@ -120,8 +75,25 @@
             sphere2.position.set(5,0,0);
             spherescene.add(sphere2);
 
+            ////LIGHTS
+            //CUBE SCENE
+            var amblight2 = new THREE.AmbientLight( 0x505050 );
+            var light2 = new THREE.PointLight( 0xffffff, 1);
+            light2.position.set( 10, 10, 10 );
+            cubescene.add( amblight2 );
+            cubescene.add( light2 );
+
+            //SPHERE SCENE
+            var amblight3 = new THREE.AmbientLight( 0x505050 );
+            var light3 = new THREE.PointLight( 0xffffff, 1);
+            light3.position.set( 10, 10, 10 );
+            spherescene.add( amblight3 );
+            spherescene.add( light3 );
+
+            /*---------------------------------------------------------------------------*/
+
             ////RAYCASTING
-            raycaster = new THREE.Raycaster();
+            rayCaster = new THREE.Raycaster();
 
             ////FPS COUNTER
             stats = new Stats();
@@ -184,7 +156,7 @@
                 folder1.close();
                 gui.open();
             }
-            else if(perspective == 'cube')
+            else if(perspective == 'object')
             {
                 gui = new dat.GUI();
 
@@ -203,7 +175,7 @@
 
                 gui.open();
             }
-            else if(perspective == 'sphere')
+            else if(perspective == 'plate')
             {
                 gui = new dat.GUI();
 
@@ -251,9 +223,9 @@
 
             camera.updateMatrixWorld();
 
-            raycaster.setFromCamera( mouse, camera );
+            rayCaster.setFromCamera( mouse, camera );
 
-            var intersects = raycaster.intersectObjects( objects );
+            var intersects = rayCaster.intersectObjects( mainPerspective.objects );
 
             if ( intersects.length > 0 ) {
 
@@ -283,9 +255,9 @@
         {
             camera.updateMatrixWorld();
 
-            raycaster.setFromCamera( mouse, camera );
+            rayCaster.setFromCamera( mouse, camera );
 
-            var intersects = raycaster.intersectObjects( objects );
+            var intersects = rayCaster.intersectObjects( mainPerspective.objects );
 
             if ( intersects.length > 0 ) {
 
@@ -316,20 +288,20 @@
             {
                 if(SELECTED.position.distanceTo(camera.position) < 10)
                 {
-                    if(SELECTED.name == 'cube') {
-                        if (currentPerspective != 'cube')
+                    if(SELECTED.name == 'object') {
+                        if (currentPerspective != 'object')
                         {
-                            currentPerspective = 'cube';
-                            setGUI('cube');
+                            currentPerspective = 'object';
+                            setGUI('object');
                         }
                         renderer.render(cubescene, camera);
                     }
-                    else if(SELECTED.name == 'sphere')
+                    else if(SELECTED.name == 'plate')
                     {
-                        if (currentPerspective != 'sphere')
+                        if (currentPerspective != 'plate')
                         {
-                            currentPerspective = 'sphere';
-                            setGUI('sphere');
+                            currentPerspective = 'plate';
+                            setGUI('plate');
                         }
                         renderer.render(spherescene, camera);
                     }
@@ -341,10 +313,15 @@
                         currentPerspective = 'main';
                         setGUI('main');
                     }
-                    renderer.render(scene, camera);
+                    mainPerspective.mirror.render();
+                    renderer.render(mainPerspective.scene, camera);
                 }
             }
-            else renderer.render(scene, camera);
+            else
+            {
+                mainPerspective.mirror.render();
+                renderer.render(mainPerspective.scene, camera);
+            }
         }
 
         function update()
