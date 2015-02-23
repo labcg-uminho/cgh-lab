@@ -7,49 +7,67 @@ MainPerspective = function( renderer, camera )
     this.scene = new THREE.Scene();
     this.objects = [];
     this.mirror = new THREE.Mirror( renderer, camera, { clipBias: 0.003, textureWidth: window.innerWidth, textureHeight: window.innerHeight, color:0x889999 } );
+    this.objectRotation = 0;
 };
 
 MainPerspective.prototype = {
 
     constructor: MainPerspective,
 
+    /*updateObjectRotation: function( angle )
+    {
+        var o = this.scene.getObjectByName('object');
+        var rads = (angle * Math.PI)/180;
+        this.cubeRotation = angle;
+        o.rotateY(rads);
+    },*/
+    objectRotationPlus: function()
+    {
+        var o = this.scene.getObjectByName('object');
+        var rads = (Math.PI)/180;
+        o.rotateY(rads);
+        if ((this.objectRotation + 1) > 360) this.objectRotation = 0;
+        else this.objectRotation += 1;
+    },
+
     init: function()
     {
         //GEOMETRY
         var mirror = new THREE.Mesh(new THREE.PlaneGeometry( 6, 6 ), this.mirror.material );
         mirror.add(this.mirror);
-        mirror.position.y = 1.5;
-        mirror.position.x = -6;
-        mirror.rotateY(Math.PI / 2);
+        mirror.position.set(15,1.5,10);
+        mirror.rotateY(-3*Math.PI / 4);
         var mirrorBoxGeometry = new THREE.BoxGeometry(1, 1, 1);
         var mirrorBoxMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, ambient: 0xffffff });
         var mirrorBox = new THREE.Mesh(mirrorBoxGeometry, mirrorBoxMaterial);
         mirrorBox.scale.set(0.1,6,6);
-        mirrorBox.position.set(-6.1,1.5,0)
+        mirrorBox.position.set(15.1,1.5,10.1);
+        mirrorBox.rotateY(-Math.PI / 4);
 
         var laserSourceGeometry = new THREE.CylinderGeometry( 1, 1, 3, 32);
         var laserSourceMaterial = new THREE.MeshPhongMaterial( {color: 0x00ffff, ambient: 0x00ffff} );
         var laserSource = new THREE.Mesh(laserSourceGeometry, laserSourceMaterial);
-        laserSource.position.set(0,0,6);
+        laserSource.position.set(-15,0,15);
         laserSource.rotateX(Math.PI / 2);
 
         var beamSplitterGeometry = new THREE.BoxGeometry(1, 1, 1);
         var beamSplitterMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, ambient: 0xffffff });
         var beamSplitter = new THREE.Mesh(beamSplitterGeometry, beamSplitterMaterial);
         beamSplitter.scale.set(3,3,3);
-        beamSplitter.position.set(0,0,-6);
+        beamSplitter.position.set(-15,0,10);
 
         var objectGeometry = new THREE.BoxGeometry(1, 1, 1);
         var objectMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 , ambient: 0x00ff00});
         var object = new THREE.Mesh(objectGeometry, objectMaterial);
         object.scale.set(3,3,3);
+        object.position.set(-15,0,-15)
         object.name = 'object';
 
         var holographicPlateGeometry = new THREE.PlaneGeometry( 6, 6 )
         var holographicPlateMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00, ambient: 0x00ff00, side: THREE.DoubleSide });
         var holographicPlate = new THREE.Mesh(holographicPlateGeometry, holographicPlateMaterial);
-        holographicPlate.position.set(5,1.5,0);
-        holographicPlate.rotateY(-Math.PI / 2);
+        holographicPlate.position.set(15,1.5,-15);
+        holographicPlate.rotateY(-Math.PI / 4);
         holographicPlate.name = 'plate';
 
         var floorGeometry = new THREE.PlaneGeometry( 50, 50);

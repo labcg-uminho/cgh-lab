@@ -12,9 +12,9 @@
     <script src="js/Detector.js"></script>
     <script src="js/controls/OrbitControls.js"></script>
     <script src="js/gui/stats.min.js"></script>
-    <script src="js/gui/dat.gui.min.js"></script>
     <script src="js/Mirror.js"></script>
     <script src="js/scenes/main/mainPerspective.js"></script>
+    <script src="js/gui/dat.gui.js"></script>
     <script>
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
@@ -55,11 +55,12 @@
 
             ////CONTROLS
             controls = new THREE.OrbitControls( camera, renderer.domElement );
-            controls.target = new THREE.Vector3(3,0,0);
+            controls.target = new THREE.Vector3(0,0,0);
 
             /*------------------------------------------------------------------------------*/
             ////GEOMETRY
             mainPerspective.init();
+            //mainPerspective.updateObjectRotation(Math.PI/4)
 
             //CUBE SCENE
             var cubegeometry2 = new THREE.BoxGeometry(1, 1, 1);
@@ -122,38 +123,21 @@
 
                 parameters =
                 {
-                    a: 200, // numeric
-                    b: 200, // numeric slider
-                    c: "Hello, GUI!", // string
-                    d: false, // boolean (checkbox)
-                    e: "#ff8800", // color (hex)
-                    f: function() { alert("Hello!") },
-                    g: function() { alert( parameters.c ) },
-                    v : 0,    // dummy value, only type is important
-                    w: "...", // dummy value, only type is important
-                    x: 0, y: 0, z: 0
+                    rotationDirection: '...',
+                    objectRotationPlus: function(){mainPerspective.objectRotationPlus()}
                 };
-                // gui.add( parameters )
-                gui.add( parameters, 'a' ).name('Number');
-                gui.add( parameters, 'b' ).min(128).max(256).step(16).name('Slider');
-                gui.add( parameters, 'c' ).name('String');
-                gui.add( parameters, 'd' ).name('Boolean');
 
-                gui.addColor( parameters, 'e' ).name('Color');
+                /*var cubeRotation = gui.add(parameters, 'cubeRotation').min(0).listen();
+                cubeRotation.onChange(function(value){
+                    mainPerspective.updateObjectRotation(value)
+                });*/
 
-                var numberList = [1, 2, 3];
-                gui.add( parameters, 'v', numberList ).name('List');
-
-                var stringList = ["One", "Two", "Three"];
-                gui.add( parameters, 'w', stringList ).name('List');
-
-                gui.add( parameters, 'f' ).name('Say "Hello!"');
-                gui.add( parameters, 'g' ).name("Alert Message");
-
-                var folder1 = gui.addFolder('Coordinates');
-                folder1.add( parameters, 'x' );
-                folder1.add( parameters, 'y' );
-                folder1.close();
+                var folder1 = gui.addFolder('Object');
+                var dirList = ['Left', 'Right'];
+                folder1.add( parameters, 'rotationDirection', dirList).name('Rotation Direction');
+                folder1.add( parameters, 'objectRotationPlus').name('Rotate Object');
+                //folder1.add( parameters, 'y' );
+                folder1.open();
                 gui.open();
             }
             else if(perspective == 'object')
@@ -219,7 +203,7 @@
 
         function onDocumentMouseDown( event )
         {
-            event.preventDefault();
+            //event.preventDefault(); //Makes dat.GUI not work properly
 
             camera.updateMatrixWorld();
 
@@ -238,7 +222,7 @@
 
         function onDocumentMouseMove( event )
         {
-            event.preventDefault();
+            //event.preventDefault(); //Makes dat.GUI not work properly
 
             mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
             mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
