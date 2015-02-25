@@ -70,12 +70,18 @@
             cube2.scale.set(3,3,3);
             cubescene.add(cube2);
 
+            var axes = new THREE.AxisHelper(10);
+            cubescene.add( axes );
+
             //SPHERE SCENE
             var spheregeometry2 = new THREE.SphereGeometry(1, 32, 32);
             var spherematerial2 = new THREE.MeshPhongMaterial({ color: 0xffff00 });
             var sphere2 = new THREE.Mesh(spheregeometry2, spherematerial2);
             sphere2.position.set(5,0,0);
             spherescene.add(sphere2);
+
+            var axes = new THREE.AxisHelper(10);
+            spherescene.add( axes );
 
             ////LIGHTS
             //CUBE SCENE

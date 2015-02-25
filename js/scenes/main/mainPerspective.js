@@ -117,8 +117,8 @@ MainPerspective.prototype = {
         var mirrorBoxMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, ambient: 0xffffff });
         var mirrorBox = new THREE.Mesh(mirrorBoxGeometry, mirrorBoxMaterial);
         mirrorBox.scale.set(0.1,6,6);
-        mirrorBox.position.set(15.1,1.5,10.1);
-        mirrorBox.rotateY(-Math.PI / 4);
+        mirrorBox.position.set(0,0,-0.1);
+        mirrorBox.rotateY(-Math.PI / 2);
 
         var laserSourceGeometry = new THREE.CylinderGeometry( 1, 1, 3, 32);
         var laserSourceMaterial = new THREE.MeshPhongMaterial( {color: 0x00ffff, ambient: 0x00ffff} );
@@ -157,7 +157,7 @@ MainPerspective.prototype = {
         this.scene.add( axes );
 
         this.scene.add(mirror);
-        this.scene.add(mirrorBox);
+        mirror.add(mirrorBox);
         this.scene.add(floor);
         this.scene.add(object);
         this.scene.add(holographicPlate);
@@ -176,6 +176,8 @@ MainPerspective.prototype = {
         light.position.set( 0, 50, 0);
         this.scene.add( ambLight );
         this.scene.add( light );
+
+        //this.scene.rotateY(Math.PI/2);
 
 
         /*var spotLight = new THREE.SpotLight( 0xffffff );
