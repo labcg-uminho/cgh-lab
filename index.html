@@ -47,7 +47,7 @@
             var aspect = window.innerWidth / window.innerHeight;
 
             camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 10000);
-            camera.position.set(0, 0, 10);
+            camera.position.set(0, 30, 0);
 
             ////SCENES
             cubescene = new THREE.Scene();
@@ -61,7 +61,8 @@
             /*------------------------------------------------------------------------------*/
             ////GEOMETRY
             mainPerspective.init();
-            controls.target.set(mainPerspective.center.x, mainPerspective.center.y, mainPerspective.center.z);
+            var center = mainPerspective.getCenter();
+            controls.target.set(center.x, center.y, center.z);
 
             //CUBE SCENE
             var cubegeometry2 = new THREE.BoxGeometry(1, 1, 1);
@@ -132,8 +133,7 @@
                 {
                     rotationDirection: '...',
                     objectRotationPlus: function(){mainPerspective.objectRotationPlus()},
-                    laserOn: function(){mainPerspective.laserOn(); laserTurnOn = true;},
-                    muda: function(){mainPerspective.updateLaser()}
+                    laserOn: function(){if (!laserTurnOn) mainPerspective.laserOn(); laserTurnOn = true;}
                 };
 
                 /*var cubeRotation = gui.add(parameters, 'cubeRotation').min(0).listen();
@@ -142,7 +142,6 @@
                 });*/
 
                 gui.add(parameters, 'laserOn').name('Turn On Laser');
-                gui.add(parameters, 'muda');
 
                 var folder1 = gui.addFolder('Object');
                 var dirList = ['Left', 'Right'];
