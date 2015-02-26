@@ -61,7 +61,7 @@
             /*------------------------------------------------------------------------------*/
             ////GEOMETRY
             mainPerspective.init();
-            //mainPerspective.updateObjectRotation(Math.PI/4)
+            controls.target.set(mainPerspective.center.x, mainPerspective.center.y, mainPerspective.center.z);
 
             //CUBE SCENE
             var cubegeometry2 = new THREE.BoxGeometry(1, 1, 1);
