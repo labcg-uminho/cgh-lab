@@ -11,6 +11,15 @@ MainPerspective = function( renderer, camera )
     this.platePosition = new THREE.Vector3(3,3,0);
     this.plateRotation = 0;//-Math.PI/4;
     //var plateNormal = new THREE.Vector3(Math.sin(this.plateRotation), 0, Math.cos(this.plateRotation)).normalize();
+    //The objective is to the normal of the plate make a 45º degree angle with the direction of the mirror and object
+
+    //      Normal
+    // M      /\     Obj
+    //   .    |    .
+    //     .  |  .
+    //   45º .|. 45º
+    //==================
+    //      PLATE
 
     //Direction of mirror in relation to plate
     var dirMirror = new THREE.Vector3(Math.sin(this.plateRotation+Math.PI/4), 0, Math.cos(this.plateRotation+Math.PI/4)).normalize();
@@ -25,8 +34,10 @@ MainPerspective = function( renderer, camera )
     this.objectPosition = new THREE.Vector3();
     this.objectPosition.addVectors(this.platePosition, dirObject.multiplyScalar(unitsObject));
     this.objectRotation = this.plateRotation + Math.PI/4;
+    this.object = new HoloObject(this.objectPosition, this.objectRotation);
 
     //Direction of laser in relation to object
+    //This direction is the same as the mirror direction but the position is calculated in relation to the object and not the plate
     var dirLaser = new THREE.Vector3(Math.sin(this.plateRotation+Math.PI/4), 0, Math.cos(this.plateRotation+Math.PI/4)).normalize();
     var unitsLaser = 30;
     this.laserPosition = new THREE.Vector3();
@@ -34,6 +45,7 @@ MainPerspective = function( renderer, camera )
     this.laserRotation = this.plateRotation + Math.PI/4;
 
     //Direction of beam splitter in relation to mirror
+    //This direction is the same as the object direction but the position is calculated in relation to the mirror and not the plate
     var dirSplitter = new THREE.Vector3(Math.sin(this.plateRotation-Math.PI/4), 0, Math.cos(this.plateRotation-Math.PI/4)).normalize();
     var unitsSplitter = 30;
     this.beamSplitterPosition = new THREE.Vector3();
@@ -108,6 +120,7 @@ MainPerspective.prototype = {
     init: function()
     {
         //GEOMETRY
+        //MIRROR
         var mirror = new THREE.Mesh(new THREE.PlaneGeometry( 6, 6 ), this.mirror.material );
         mirror.add(this.mirror);
         mirror.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
@@ -119,6 +132,7 @@ MainPerspective.prototype = {
         mirrorBox.position.set(0,0,-0.1);
         mirrorBox.rotateY(-Math.PI / 2);
 
+        //LASER
         var laserSourceGeometry = new THREE.CylinderGeometry( 1, 1, 3, 32);
         var laserSourceMaterial = new THREE.MeshPhongMaterial( {color: 0x00ffff, ambient: 0x00ffff} );
         var laserSource = new THREE.Mesh(laserSourceGeometry, laserSourceMaterial);
@@ -127,6 +141,7 @@ MainPerspective.prototype = {
         laserSource.rotateX(Math.PI / 2);
         laserSource.name = 'laser';
 
+        //BEAM SPLITTER
         var beamSplitterGeometry = new THREE.BoxGeometry(1, 1, 1);
         var beamSplitterMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, ambient: 0xffffff });
         var beamSplitter = new THREE.Mesh(beamSplitterGeometry, beamSplitterMaterial);
@@ -134,21 +149,18 @@ MainPerspective.prototype = {
         beamSplitter.position.set(this.beamSplitterPosition.x,this.beamSplitterPosition.y, this.beamSplitterPosition.z);
         beamSplitter.rotateY(this.beamSplitterRotation);
 
-        var objectGeometry = new THREE.BoxGeometry(1, 1, 1);
-        var objectMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 , ambient: 0x00ff00});
-        var object = new THREE.Mesh(objectGeometry, objectMaterial);
-        object.scale.set(3,3,3);
-        object.position.set(this.objectPosition.x, this.objectPosition.y, this.objectPosition.z);
-        object.rotateY(this.objectRotation);
-        object.name = 'object';
+        //OBJECT
+        this.object.setObject('cube');
 
-        var holographicPlateGeometry = new THREE.PlaneGeometry( 6, 6 )
+        //HOLOGRAPHIC PLATE
+        var holographicPlateGeometry = new THREE.PlaneGeometry( 6, 6 );
         var holographicPlateMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00, ambient: 0x00ff00, side: THREE.DoubleSide });
         var holographicPlate = new THREE.Mesh(holographicPlateGeometry, holographicPlateMaterial);
         holographicPlate.position.set(this.platePosition.x, this.platePosition.y, this.platePosition.z);
         holographicPlate.rotateY(this.plateRotation);
         holographicPlate.name = 'plate';
 
+        //FLOOR
         var floorGeometry = new THREE.PlaneGeometry( 50, 50);
         var floorMaterial = new THREE.MeshPhongMaterial( {color: 0xffff00, ambient: 0xffff00, side: THREE.DoubleSide} );
         var floor = new THREE.Mesh( floorGeometry, floorMaterial );
@@ -158,18 +170,21 @@ MainPerspective.prototype = {
         floor.rotation.z = Math.PI / 4;
         floor.rotation.x = Math.PI / 2;
 
+        //AXES HELPER
         var axes = new THREE.AxisHelper(10);
         this.scene.add( axes );
 
+        //ADD STUFF TO SCENE
         this.scene.add(mirror);
         mirror.add(mirrorBox);
         this.scene.add(floor);
-        this.scene.add(object);
+        this.scene.add(this.object.object);
         this.scene.add(holographicPlate);
         this.scene.add(laserSource);
         this.scene.add(beamSplitter);
 
-        this.objects.push(object);
+        //ADD OBJECTS THAT YOU WHAT TO INTERACT INTO THE OBJECTS ARRAY
+        this.objects.push(this.object.object);
         this.objects.push(holographicPlate);
 
         //LIGHT
@@ -199,10 +214,12 @@ MainPerspective.prototype = {
         var distance = this.laserPosition.distanceTo(this.objectPosition);
         var distance2 = this.beamSplitterPosition.distanceTo(this.mirrorPosition);
         var distance3 = this.mirrorPosition.distanceTo(this.platePosition);
+        var distance4 = this.objectPosition.distanceTo(this.platePosition);
 
         var delta = distance/20;
         var delta2 = distance2/20;
         var delta3 = distance3/20;
+        var delta4 = distance4/20;
 
         var lightGeometry = new THREE.CircleGeometry(1,32);
         var lightMaterial = new THREE.MeshPhongMaterial( {color: 0x0000ff, ambient: 0x0000ff, side: THREE.DoubleSide, transparent: true, opacity: 0.5} );
@@ -213,13 +230,18 @@ MainPerspective.prototype = {
         light2.position.set(this.beamSplitterPosition.x,this.beamSplitterPosition.y, this.beamSplitterPosition.z);
         var light3 = light.clone();
         light3.position.set(this.mirrorPosition.x, this.beamSplitterPosition.y, this.mirrorPosition.z);
+        var objWave = this.object.object.clone();
+        objWave.material = new THREE.MeshPhongMaterial({ color: 0x00ff00 , ambient: 0x00ff00, transparent: true, opacity: 0.5});
+
+        //alert('x: '+ this.dirLaser.normalize().x+' y: '+this.dirLaser.normalize().y+' z: '+this.dirLaser.normalize().z);
+        //alert('x: '+ this.dirObject.normalize().x+' y: '+this.dirObject.normalize().y+' z: '+this.dirObject.normalize().z);
+        //alert('x: '+ this.dirSplitter.normalize().x+' y: '+this.dirSplitter.normalize().y+' z: '+this.dirSplitter.normalize().z);
 
         var copies = [];
         var copies2 = [];
         var copies3 = [];
-        //alert('x: '+ this.dirLaser.normalize().x+' y: '+this.dirLaser.normalize().y+' z: '+this.dirLaser.normalize().z);
-        //alert('x: '+ this.dirObject.normalize().x+' y: '+this.dirObject.normalize().y+' z: '+this.dirObject.normalize().z);
-        //alert('x: '+ this.dirSplitter.normalize().x+' y: '+this.dirSplitter.normalize().y+' z: '+this.dirSplitter.normalize().z);
+        var copies4 = [];
+        var scale = 3.1;
         for(i = 0; i < 20; i++){
             var dirLaser = this.getDirLaser();
             copies[i] = light.clone();
@@ -241,6 +263,13 @@ MainPerspective.prototype = {
             copies3[i].rotateY(this.laserRotation);
             this.scene.add(copies3[i]);
             this.addToLaserLight3(copies3[i]);
+
+            var dirObject = this.getDirObject();
+            copies4[i] = objWave.clone();
+            copies4[i].scale.set(scale,scale,scale);
+            copies4[i].position.set(this.objectPosition.x - (dirObject.normalize().x * (i*delta4)), this.objectPosition.y, this.objectPosition.z - (dirObject.normalize().z * (i*delta4)));
+            this.scene.add(copies4[i]);
+            scale += 0.1;
         }
         /*var axes1 = new THREE.AxisHelper(10);
          copies[0].add( axes1 );
