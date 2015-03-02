@@ -16,6 +16,8 @@
     <script src="js/scenes/main/mainPerspective.js"></script>
     <script src="js/gui/dat.gui.js"></script>
     <script src="js/geometry/HoloObject.js"></script>
+    <script src="js/csg.js"></script>
+    <script src="js/ThreeCSG.js"></script>
     <script>
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
@@ -82,8 +84,8 @@
             sphere2.position.set(5,0,0);
             spherescene.add(sphere2);
 
-            var axes = new THREE.AxisHelper(10);
-            spherescene.add( axes );
+            var axes2 = new THREE.AxisHelper(10);
+            spherescene.add( axes2 );
 
             ////LIGHTS
             //CUBE SCENE
