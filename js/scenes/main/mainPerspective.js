@@ -160,6 +160,7 @@ MainPerspective.prototype = {
 
         //OBJECT
         this.object.setObject('cube');
+        this.object.convertToLightPoints();
 
         //HOLOGRAPHIC PLATE
         var holographicPlateGeometry = new THREE.PlaneGeometry( 6, 6 );
@@ -355,6 +356,7 @@ MainPerspective.prototype = {
             var ratio = actualDistance/distance;
             objWaveLight[i].position.z -= dirObject.normalize().z * timer;
             objWaveLight[i].position.x -= dirObject.normalize().x * timer;
+            //The closer to the plate (minor distance) the lower is the ratio and bigger is objWaveLight
             objWaveLight[i].scale.set(initScale+deltaScale*(1-ratio),initScale+deltaScale*(1-ratio),initScale+deltaScale*(1-ratio));
             if (objWaveLight[i].position.z < this.platePosition.z) {
                 objWaveLight[i].position.x = this.objectPosition.x - (dirObject.normalize().x * delta);
