@@ -8,7 +8,7 @@ MainPerspective = function( renderer, camera )
     this.objects = [];
     this.mirror = new THREE.Mirror( renderer, camera, { clipBias: 0.003, textureWidth: window.innerWidth, textureHeight: window.innerHeight, color:0x889999 } );
 
-    this.platePosition = new THREE.Vector3(3,3,0);
+    this.platePosition = new THREE.Vector3(0,4,0);
     this.plateRotation = 0;//-Math.PI/4;
     //var plateNormal = new THREE.Vector3(Math.sin(this.plateRotation), 0, Math.cos(this.plateRotation)).normalize();
     //The objective is to the normal of the plate make a 45º degree angle with the direction of the mirror and object
@@ -163,8 +163,8 @@ MainPerspective.prototype = {
         this.object.convertToLightPoints();
 
         //HOLOGRAPHIC PLATE
-        var holographicPlateGeometry = new THREE.PlaneGeometry( 6, 6 );
-        var holographicPlateMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00, ambient: 0x00ff00, side: THREE.DoubleSide });
+        var holographicPlateGeometry = new THREE.PlaneGeometry( 8, 8 );
+        var holographicPlateMaterial = new THREE.MeshPhongMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
         var holographicPlate = new THREE.Mesh(holographicPlateGeometry, holographicPlateMaterial);
         holographicPlate.position.set(this.platePosition.x, this.platePosition.y, this.platePosition.z);
         holographicPlate.rotateY(this.plateRotation);
@@ -172,7 +172,7 @@ MainPerspective.prototype = {
 
         //FLOOR
         var floorGeometry = new THREE.PlaneGeometry( 50, 50);
-        var floorMaterial = new THREE.MeshPhongMaterial( {color: 0xffff00, ambient: 0xffff00, side: THREE.DoubleSide} );
+        var floorMaterial = new THREE.MeshPhongMaterial( {color: 0x999999, ambient: 0x999999, side: THREE.DoubleSide} );
         var floor = new THREE.Mesh( floorGeometry, floorMaterial );
         floor.position.y = 0;
         floor.position.x = this.getCenter().x;
@@ -226,10 +226,12 @@ MainPerspective.prototype = {
         var distance3 = this.mirrorPosition.distanceTo(this.platePosition);
         var distance4 = this.objectPosition.distanceTo(this.platePosition);
 
-        var delta = distance/20;
-        var delta2 = distance2/20;
-        var delta3 = distance3/20;
-        var delta4 = distance4/10;
+        var wavelength = 1;
+        //Number of waves draw according to the wavelength and distance
+        var delta = distance/wavelength;
+        var delta2 = distance2/wavelength;
+        var delta3 = distance3/wavelength;
+        var delta4 = distance4/wavelength;
 
         var lightGeometry = new THREE.CircleGeometry(1,32);
         var lightMaterial = new THREE.MeshPhongMaterial( {color: 0x0000ff, ambient: 0x0000ff, side: THREE.DoubleSide, transparent: true, opacity: 0.5} );
@@ -241,24 +243,22 @@ MainPerspective.prototype = {
         var light3 = light.clone();
         light3.position.set(this.mirrorPosition.x, this.beamSplitterPosition.y, this.mirrorPosition.z);
 
-        //var objWave = this.object.object.clone();
-        //objWave.material = new THREE.MeshPhongMaterial({ color: 0x00ff00 , ambient: 0x00ff00, transparent: true, opacity: 0.5});
-
         var objWaveGeometry = this.object.object.geometry.clone();
-        var objWaveMesh = new THREE.Mesh(objWaveGeometry);
-        objWaveMesh.rotateY(this.objectRotation-Math.PI/4);
-        var objWaveBSP = new ThreeBSP(objWaveMesh);
+        var objWaveMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff , ambient: 0x0000ff, transparent: true, opacity: 0.5});
+        var objWave = new THREE.Mesh(objWaveGeometry, objWaveMaterial);
+        objWave.rotateY(this.objectRotation);
+        //var objWaveBSP = new ThreeBSP(objWaveMesh);
 
-        var cutterGeometry = new THREE.BoxGeometry(2,2,2);
+        /*var cutterGeometry = new THREE.BoxGeometry(2,2,2);
         var cutterMesh = new THREE.Mesh(cutterGeometry);
         cutterMesh.position.set(objWaveMesh.position.x - 1, objWaveMesh.position.y, objWaveMesh.position.z);
-        var cutterBSP = new ThreeBSP(cutterMesh);
+        var cutterBSP = new ThreeBSP(cutterMesh);*/
 
-        var objWaveMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 , ambient: 0x00ff00, transparent: true, opacity: 0.5});
+        /*var objWaveMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 , ambient: 0x00ff00, transparent: true, opacity: 0.5});
         var newBSP = objWaveBSP.subtract(cutterBSP);
         var newMesh = newBSP.toMesh(objWaveMaterial);
         newMesh.rotateY(Math.PI/4);
-        var objWave = newMesh;
+        var objWave = newMesh;*/
 
         //alert('x: '+ this.dirLaser.normalize().x+' y: '+this.dirLaser.normalize().y+' z: '+this.dirLaser.normalize().z);
         //alert('x: '+ this.dirObject.normalize().x+' y: '+this.dirObject.normalize().y+' z: '+this.dirObject.normalize().z);
@@ -269,34 +269,38 @@ MainPerspective.prototype = {
         var copies3 = [];
         var copies4 = [];
         var scale = 3.0;
-        for(i = 0; i < 20; i++){
+        for(i = 0; i < delta; i++){
             var dirLaser = this.getDirLaser();
             copies[i] = light.clone();
-            copies[i].position.set(this.laserPosition.x - (dirLaser.normalize().x * (i*delta)), this.laserPosition.y, this.laserPosition.z - (dirLaser.normalize().z * (i*delta)));
+            copies[i].position.set(this.laserPosition.x - (dirLaser.normalize().x * (i*wavelength)), this.laserPosition.y, this.laserPosition.z - (dirLaser.normalize().z * (i*wavelength)));
             copies[i].rotateY(this.laserRotation);
             this.scene.add(copies[i]);
             this.addToLaserLight1(copies[i]);
+        }
 
+        for(i = 0; i < delta2; i++){
             var dirSplitter = this.getDirSplitter();
             copies2[i] = light2.clone();
-            copies2[i].position.set(this.beamSplitterPosition.x - (dirSplitter.normalize().x * (i*delta2)), this.beamSplitterPosition.y, this.beamSplitterPosition.z - (dirSplitter.normalize().z * (i*delta2)));
+            copies2[i].position.set(this.beamSplitterPosition.x - (dirSplitter.normalize().x * (i*wavelength)), this.beamSplitterPosition.y, this.beamSplitterPosition.z - (dirSplitter.normalize().z * (i*wavelength)));
             copies2[i].rotateY(this.beamSplitterRotation);
             this.scene.add(copies2[i]);
             this.addToLaserLight2(copies2[i]);
+        }
 
+        for(i = 0; i < delta3; i++){
             var dirMirror = this.getDirMirror();
             copies3[i] = light3.clone();
-            copies3[i].position.set(this.mirrorPosition.x - (dirMirror.normalize().x * (i*delta3)), this.mirrorPosition.y, this.mirrorPosition.z - (dirMirror.normalize().z * (i*delta3)));
+            copies3[i].position.set(this.mirrorPosition.x - (dirMirror.normalize().x * (i*wavelength)), this.mirrorPosition.y, this.mirrorPosition.z - (dirMirror.normalize().z * (i*wavelength)));
             copies3[i].rotateY(this.laserRotation);
             this.scene.add(copies3[i]);
             this.addToLaserLight3(copies3[i]);
         }
 
-        for(i = 1; i < 10; i++){
+        for(i = 0; i < delta4; i++){
             var dirObject = this.getDirObject();
             copies4[i] = objWave.clone();
             copies4[i].scale.set(scale,scale,scale);
-            copies4[i].position.set(this.objectPosition.x - (dirObject.normalize().x * (i*delta4)), this.objectPosition.y, this.objectPosition.z - (dirObject.normalize().z * (i*delta4)));
+            copies4[i].position.set(this.objectPosition.x - (dirObject.normalize().x * (i*wavelength)), this.objectPosition.y, this.objectPosition.z - (dirObject.normalize().z * (i*wavelength)));
             this.addToObjWaveLight(copies4[i]);
             this.scene.add(copies4[i]);
             //scale += 0.1;
@@ -308,6 +312,26 @@ MainPerspective.prototype = {
          var axes3 = new THREE.AxisHelper(10);
          copies3[0].add( axes3 );*/
 
+    },
+
+    laserOff: function(){
+        var i;
+        var laserLight1 = this.getLaserLight1();
+        var laserLight2 = this.getLaserLight2();
+        var laserLight3 = this.getLaserLight3();
+        var objWaveLight = this.getObjWaveLight();
+        for(i = 0; i < laserLight1.length; i++){
+            this.scene.remove(laserLight1[i]);
+        }
+        for(i = 0; i < laserLight2.length; i++){
+            this.scene.remove(laserLight2[i]);
+        }
+        for(i = 0; i < laserLight3.length; i++){
+            this.scene.remove(laserLight3[i]);
+        }
+        for(i = 0; i < objWaveLight.length; i++){
+            this.scene.remove(objWaveLight[i]);
+        }
     },
 
     updateLaser: function(){
@@ -348,7 +372,7 @@ MainPerspective.prototype = {
 
         //Here the wave start to rendered only at objectPosition + delta in order to avoid have wave objects inside the real object.
         var distance = this.objectPosition.distanceTo(this.platePosition);
-        var delta = distance/10;
+        //var delta = distance/5;
         var initScale = 3.0;
         var deltaScale = 1.5;
         for(i = 0; i < objWaveLight.length; i++){
@@ -359,8 +383,8 @@ MainPerspective.prototype = {
             //The closer to the plate (minor distance) the lower is the ratio and bigger is objWaveLight
             objWaveLight[i].scale.set(initScale+deltaScale*(1-ratio),initScale+deltaScale*(1-ratio),initScale+deltaScale*(1-ratio));
             if (objWaveLight[i].position.z < this.platePosition.z) {
-                objWaveLight[i].position.x = this.objectPosition.x - (dirObject.normalize().x * delta);
-                objWaveLight[i].position.z = this.objectPosition.z - (dirObject.normalize().z * delta);
+                objWaveLight[i].position.x = this.objectPosition.x;
+                objWaveLight[i].position.z = this.objectPosition.z;
                 objWaveLight[i].scale.set(initScale,initScale,initScale);
             }
         }
