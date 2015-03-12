@@ -2,7 +2,7 @@
  * Created by TiagoLuís on 27/02/2015.
  */
 
-HoloObject = function ( position, rotation )
+CGHLab.HoloObject = function ( position, rotation )
 {
     this.position = position;
     this.rotation = rotation;
@@ -10,9 +10,9 @@ HoloObject = function ( position, rotation )
     this.object = new THREE.Mesh;
 };
 
-HoloObject.prototype = {
+CGHLab.HoloObject.prototype = {
 
-    constructor: HoloObject,
+    constructor: CGHLab.HoloObject,
 
     //Setup of the an arbitrary object
     setObject: function( geometry )
@@ -42,7 +42,7 @@ HoloObject.prototype = {
         for(var i = 0; i < vertices.length; i++){
             vertices[i].applyMatrix4(clone.matrixWorld);
             //alert('x: '+vertices[i].x+' y: '+vertices[i].y+' z: '+vertices[i].z);
-            var lp = new LightPoint(vertices[i].x,vertices[i].y,vertices[i].z);
+            var lp = new CGHLab.LightPoint(vertices[i].x,vertices[i].y,vertices[i].z);
             lightPoints.push(lp);
         }
         //alert('x: '+vector.x+' y: '+vector.y+' z: '+vector.z);
@@ -52,7 +52,7 @@ HoloObject.prototype = {
 
     clone: function()
     {
-        var clone = new HoloObject(this.position, this.rotation);
+        var clone = new CGHLab.HoloObject(this.position, this.rotation);
         clone.object.copy(this.object);
     }
 

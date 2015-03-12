@@ -2,7 +2,7 @@
  * Created by TiagoLuís on 02/03/2015.
  */
 
-LightPoint = function( x, y, z)
+CGHLab.LightPoint = function( x, y, z)
 {
     this.x = x;
     this.y = y;
@@ -10,7 +10,7 @@ LightPoint = function( x, y, z)
     this.wave = new Wave();
 };
 
-LightPoint.prototype = {
+CGHLab.LightPoint.prototype = {
 
-    constructor: LightPoint
+    constructor: CGHLab.LightPoint
 };

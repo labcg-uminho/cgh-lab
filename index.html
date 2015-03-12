@@ -13,13 +13,15 @@
     <script src="js/controls/OrbitControls.js"></script>
     <script src="js/gui/stats.min.js"></script>
     <script src="js/Mirror.js"></script>
-    <script src="js/scenes/main/mainPerspective.js"></script>
     <script src="js/gui/dat.gui.js"></script>
-    <script src="js/geometry/HoloObject.js"></script>
     <script src="js/csg.js"></script>
     <script src="js/ThreeCSG.js"></script>
+    <script src="js/CGHLab.js"></script>
+    <script src="js/scenes/main/mainPerspective.js"></script>
+    <script src="js/geometry/HoloObject.js"></script>
     <script src="js/holography/LightPoint.js"></script>
     <script src="js/holography/Wave.js"></script>
+    <script src="js/holography/HologramShaderLib.js"></script>
     <script>
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
@@ -57,7 +59,7 @@
             ////SCENES
             cubescene = new THREE.Scene();
             spherescene = new THREE.Scene();
-            mainPerspective = new MainPerspective(renderer, camera);
+            mainPerspective = new CGHLab.MainPerspective(renderer, camera);
 
             ////CONTROLS
             controls = new THREE.OrbitControls( camera, renderer.domElement );
@@ -263,24 +265,24 @@
 
             if ( intersects.length > 0 ) {
 
-                if ( INTERSECTED != intersects[ 0 ].object ) {
+                /*if ( INTERSECTED != intersects[ 0 ].object ) {
 
-                    if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+                    if ( INTERSECTED ) INTERSECTED.material.uniforms.emissive.value.setHex( INTERSECTED.currentHex );
 
                     INTERSECTED = intersects[ 0 ].object;
                     //alert('x-'+INTERSECTED.position.x+' y-'+INTERSECTED.position.y+' z-'+INTERSECTED.position.z);
-                    INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-                    INTERSECTED.material.emissive.setHex( 0xff0000 );
+                    INTERSECTED.currentHex = INTERSECTED.material.uniforms.emissive.value.getHex();
+                    INTERSECTED.material.uniforms.emissive.value.setHex(0xff0000);
 
-                }
+                }*/
 
                 container.style.cursor = 'pointer';
 
             } else {
 
-                if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+                /*if ( INTERSECTED ) alert(INTERSECTED.name);//INTERSECTED.material.uniforms.emissive.value.setHex( INTERSECTED.currentHex );
 
-                INTERSECTED = null;
+                INTERSECTED = null;*/
 
                 container.style.cursor = 'auto';
 

@@ -2,7 +2,7 @@
  * Created by TiagoLuís on 18/02/2015.
  */
 
-MainPerspective = function( renderer, camera )
+CGHLab.MainPerspective = function( renderer, camera )
 {
     this.scene = new THREE.Scene();
     this.objects = [];
@@ -34,7 +34,7 @@ MainPerspective = function( renderer, camera )
     this.objectPosition = new THREE.Vector3();
     this.objectPosition.addVectors(this.platePosition, dirObject.multiplyScalar(unitsObject));
     this.objectRotation = this.plateRotation + Math.PI/4;
-    this.object = new HoloObject(this.objectPosition, this.objectRotation);
+    this.object = new CGHLab.HoloObject(this.objectPosition, this.objectRotation);
     this.objectRotationScene = 0;
 
     //Direction of laser in relation to object
@@ -58,7 +58,7 @@ MainPerspective = function( renderer, camera )
     center.addVectors(this.platePosition,this.laserPosition).divideScalar(2);
 
     //Reference wave initialization
-    this.referenceWave = new Wave(0,1,2);
+    this.referenceWave = new CGHLab.Wave(0,1,2);
 
     //Variables to store reference wave and object wave geometry
     var laserLight1 = {
@@ -178,9 +178,9 @@ MainPerspective = function( renderer, camera )
     };
 };
 
-MainPerspective.prototype = {
+CGHLab.MainPerspective.prototype = {
 
-    constructor: MainPerspective,
+    constructor: CGHLab.MainPerspective,
 
     rotateObject: function(value)
     {
@@ -230,7 +230,14 @@ MainPerspective.prototype = {
 
         //HOLOGRAPHIC PLATE
         var holographicPlateGeometry = new THREE.PlaneGeometry( 8, 8 );
-        var holographicPlateMaterial = new THREE.MeshPhongMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
+        //var holographicPlateMaterial = new THREE.MeshPhongMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
+        var shader = CGHLab.HologramShaderLib.bipolar;
+        var holographicPlateMaterial = new THREE.ShaderMaterial({
+            uniforms: shader.uniforms,
+            vertexShader: shader.vertexShader,
+            fragmentShader: shader.fragmentShader,
+            side: THREE.DoubleSide
+        });
         var holographicPlate = new THREE.Mesh(holographicPlateGeometry, holographicPlateMaterial);
         holographicPlate.position.set(this.platePosition.x, this.platePosition.y, this.platePosition.z);
         holographicPlate.rotateY(this.plateRotation);
