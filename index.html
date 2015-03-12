@@ -19,8 +19,6 @@
     <script src="js/csg.js"></script>
     <script src="js/ThreeCSG.js"></script>
     <script src="js/holography/LightPoint.js"></script>
-    <script src="js/holography/Hololine.js"></script>
-    <script src="js/holography/Hologram.js"></script>
     <script src="js/holography/Wave.js"></script>
     <script>
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -68,8 +66,7 @@
             /*------------------------------------------------------------------------------*/
             ////GEOMETRY
             mainPerspective.init();
-            var center = mainPerspective.getCenter();
-            controls.target.set(center.x, center.y, center.z);
+            controls.target = mainPerspective.getCenter();
 
             //CUBE SCENE
             var cubegeometry2 = new THREE.BoxGeometry(1, 1, 1);
@@ -138,10 +135,10 @@
 
                 parameters =
                 {
-                    rotationDirection: '...',
-                    objectRotationPlus: function(){mainPerspective.objectRotationPlus()},
                     laserOn: function(){if (!laserTurnOn) mainPerspective.laserOn(); laserTurnOn = true;},
-                    laserOff: function(){if (laserTurnOn) mainPerspective.laserOff(); laserTurnOn = false;}
+                    laserOff: function(){if (laserTurnOn) mainPerspective.laserOff(); laserTurnOn = false;},
+                    objectRotationSlider: 0,
+                    focusCenter: function(){controls.target = mainPerspective.getCenter()}
                 };
 
                 /*var cubeRotation = gui.add(parameters, 'cubeRotation').min(0).listen();
@@ -151,12 +148,13 @@
 
                 gui.add(parameters, 'laserOn').name('Turn On Laser');
                 gui.add(parameters, 'laserOff').name('Turn Off Laser');
+                gui.add(parameters, 'focusCenter').name('Focus Center');
 
                 var folder1 = gui.addFolder('Object');
-                var dirList = ['Left', 'Right'];
-                folder1.add( parameters, 'rotationDirection', dirList).name('Rotation Direction');
-                folder1.add( parameters, 'objectRotationPlus').name('Rotate Object');
-                //folder1.add( parameters, 'y' );
+                var r = folder1.add( parameters, 'objectRotationSlider').min(0).max(360).name('Rotation');
+                r.onChange(function(value){
+                    mainPerspective.rotateObject(value);
+                });
                 folder1.open();
                 gui.open();
             }
@@ -205,10 +203,10 @@
                 gui.add( parameters, 'f' ).name('Say "Hello!"');
                 gui.add( parameters, 'g' ).name("Alert Message");
 
-                var folder1 = gui.addFolder('Coordinates');
-                folder1.add( parameters, 'x' );
-                folder1.add( parameters, 'y' );
-                folder1.close();
+                var folder2 = gui.addFolder('Coordinates');
+                folder2.add( parameters, 'x' );
+                folder2.add( parameters, 'y' );
+                folder2.close();
                 gui.open();
             }
         }

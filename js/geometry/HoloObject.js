@@ -48,6 +48,12 @@ HoloObject.prototype = {
         //alert('x: '+vector.x+' y: '+vector.y+' z: '+vector.z);
         //alert('x: '+vertices[0].x+' y: '+vertices[0].y+' z: '+vertices[0].z);
         return lightPoints;
+    },
+
+    clone: function()
+    {
+        var clone = new HoloObject(this.position, this.rotation);
+        clone.object.copy(this.object);
     }
 
 };

@@ -6,7 +6,7 @@ Wave = function(phase, amplitude, waveLength)
 {
     this.phase = phase || 0;
     this.amplitude = amplitude || 1;
-    this.waveLengt = waveLength || 1;
+    this.waveLength = waveLength || 1;
 };
 
 Wave.prototype = {
