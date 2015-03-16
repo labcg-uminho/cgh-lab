@@ -2,12 +2,10 @@
  * Created by TiagoLuís on 02/03/2015.
  */
 
-CGHLab.LightPoint = function( x, y, z)
+CGHLab.LightPoint = function( x, y, z, phase)
 {
-    this.x = x;
-    this.y = y;
-    this.z = z;
-    this.wave = new Wave();
+    this.position = new THREE.Vector4(x, y, z, phase);
+    this.wave = new CGHLab.Wave();
 };
 
 CGHLab.LightPoint.prototype = {

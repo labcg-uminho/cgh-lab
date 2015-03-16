@@ -226,7 +226,7 @@ CGHLab.MainPerspective.prototype = {
 
         //OBJECT
         this.object.setObject('cube');
-        //this.object.convertToLightPoints();
+        this.object.convertToLightPoints();
 
         //HOLOGRAPHIC PLATE
         var holographicPlateGeometry = new THREE.PlaneGeometry( 8, 8 );
@@ -238,6 +238,11 @@ CGHLab.MainPerspective.prototype = {
             fragmentShader: shader.fragmentShader,
             side: THREE.DoubleSide
         });
+        holographicPlateMaterial.uniforms.lightPoints.value = this.object.getLightPointsPositions();
+        holographicPlateMaterial.uniforms.n_lightPoints.value = this.object.lightPoints.length;
+        holographicPlateMaterial.uniforms.refAngle.value = Math.PI/4;
+        holographicPlateMaterial.uniforms.horizCycleLength.value = this.referenceWave.waveLength / Math.sin(Math.PI/4);
+        holographicPlateMaterial.uniforms.waveLength.value = this.referenceWave.waveLength;
         var holographicPlate = new THREE.Mesh(holographicPlateGeometry, holographicPlateMaterial);
         holographicPlate.position.set(this.platePosition.x, this.platePosition.y, this.platePosition.z);
         holographicPlate.rotateY(this.plateRotation);
