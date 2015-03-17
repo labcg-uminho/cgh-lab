@@ -231,6 +231,7 @@ CGHLab.MainPerspective.prototype = {
         //HOLOGRAPHIC PLATE
         var holographicPlateGeometry = new THREE.PlaneGeometry( 8, 8 );
         //var holographicPlateMaterial = new THREE.MeshPhongMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
+
         var shader = CGHLab.HologramShaderLib.bipolar;
         var holographicPlateMaterial = new THREE.ShaderMaterial({
             uniforms: shader.uniforms,
@@ -240,9 +241,9 @@ CGHLab.MainPerspective.prototype = {
         });
         holographicPlateMaterial.uniforms.lightPoints.value = this.object.getLightPointsPositions();
         holographicPlateMaterial.uniforms.n_lightPoints.value = this.object.lightPoints.length;
-        holographicPlateMaterial.uniforms.refAngle.value = Math.PI/4;
         holographicPlateMaterial.uniforms.horizCycleLength.value = this.referenceWave.waveLength / Math.sin(Math.PI/4);
         holographicPlateMaterial.uniforms.waveLength.value = this.referenceWave.waveLength;
+
         var holographicPlate = new THREE.Mesh(holographicPlateGeometry, holographicPlateMaterial);
         holographicPlate.position.set(this.platePosition.x, this.platePosition.y, this.platePosition.z);
         holographicPlate.rotateY(this.plateRotation);

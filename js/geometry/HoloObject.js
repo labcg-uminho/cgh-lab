@@ -14,7 +14,7 @@ CGHLab.HoloObject = function ( position, rotation )
     this.getLightPointsPositions = function(){
         var positions = [];
         for (var i = 0; i < this.lightPoints.length; i++){
-            positions[i] = this.lightPoints.position;
+            positions[i] = this.lightPoints[i].position;
         }
         return positions;
     }
