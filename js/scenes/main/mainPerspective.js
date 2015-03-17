@@ -8,7 +8,7 @@ CGHLab.MainPerspective = function( renderer, camera )
     this.objects = [];
     this.mirror = new THREE.Mirror( renderer, camera, { clipBias: 0.003, textureWidth: window.innerWidth, textureHeight: window.innerHeight, color:0x889999 } );
 
-    this.platePosition = new THREE.Vector3(0,40,0);
+    this.platePosition = new THREE.Vector3(0,80,0);
     this.plateRotation = 0;//-Math.PI/4;
     //var plateNormal = new THREE.Vector3(Math.sin(this.plateRotation), 0, Math.cos(this.plateRotation)).normalize();
     //The objective is to the normal of the plate make a 45º degree angle with the direction of the mirror and object
@@ -225,14 +225,14 @@ CGHLab.MainPerspective.prototype = {
         beamSplitter.rotateY(this.beamSplitterRotation);
 
         //OBJECT
-        this.object.setObject('tetrahedron'); //OPTIONS: cube, sphere, octahedron, tetrahedron
+        this.object.setObject('cube'); //OPTIONS: cube, sphere, octahedron, tetrahedron
         this.object.convertToLightPoints();
 
         //HOLOGRAPHIC PLATE
         var holographicPlateGeometry = new THREE.PlaneGeometry( 160, 160 );
-        //var holographicPlateMaterial = new THREE.MeshPhongMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
+        var holographicPlateMaterial = new THREE.MeshPhongMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
 
-        var shader = CGHLab.HologramShaderLib.bipolar;
+        /*var shader = CGHLab.HologramShaderLib.bipolar;
         var holographicPlateMaterial = new THREE.ShaderMaterial({
             uniforms: shader.uniforms,
             vertexShader: shader.vertexShader,
@@ -242,7 +242,7 @@ CGHLab.MainPerspective.prototype = {
         holographicPlateMaterial.uniforms.lightPoints.value = this.object.getLightPointsPositions();
         holographicPlateMaterial.uniforms.n_lightPoints.value = this.object.lightPoints.length;
         holographicPlateMaterial.uniforms.horizCycleLength.value = this.referenceWave.waveLength / Math.sin(Math.PI/4);
-        holographicPlateMaterial.uniforms.waveLength.value = this.referenceWave.waveLength;
+        holographicPlateMaterial.uniforms.waveLength.value = this.referenceWave.waveLength;*/
 
         var holographicPlate = new THREE.Mesh(holographicPlateGeometry, holographicPlateMaterial);
         holographicPlate.position.set(this.platePosition.x, this.platePosition.y, this.platePosition.z);
@@ -296,6 +296,25 @@ CGHLab.MainPerspective.prototype = {
          this.scene.add( spotLight );*/
     },
 
+    seeInterferencePattern: function()
+    {
+        var plate = this.scene.getObjectByName('plate');
+        plate.material = new THREE.MeshPhongMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
+        var shader = CGHLab.HologramShaderLib.bipolar;
+        var holographicPlateMaterial = new THREE.ShaderMaterial({
+            uniforms: shader.uniforms,
+            vertexShader: shader.vertexShader,
+            fragmentShader: shader.fragmentShader,
+            side: THREE.DoubleSide
+        });
+        holographicPlateMaterial.uniforms.lightPoints.value = this.object.getLightPointsPositions();
+        holographicPlateMaterial.uniforms.n_lightPoints.value = this.object.lightPoints.length;
+        holographicPlateMaterial.uniforms.horizCycleLength.value = this.referenceWave.waveLength / Math.sin(Math.PI/4);
+        holographicPlateMaterial.uniforms.waveLength.value = this.referenceWave.waveLength;
+
+        plate.material = holographicPlateMaterial;
+    },
+
     convertObjectToLightPoints: function()
     {
         this.object.convertToLightPoints();
@@ -303,7 +322,7 @@ CGHLab.MainPerspective.prototype = {
 
     laserOn: function()
     {
-        var lightGeometry = new THREE.CircleGeometry(1,32);
+        var lightGeometry = new THREE.CircleGeometry(10,32);
         var lightMaterial = new THREE.MeshPhongMaterial( {color: 0x0000ff, ambient: 0x0000ff, side: THREE.DoubleSide, transparent: true, opacity: 0.5} );
         var light = new THREE.Mesh(lightGeometry, lightMaterial);
         light.position.set(this.laserPosition.x, this.laserPosition.y, this.laserPosition.z);
@@ -354,7 +373,7 @@ CGHLab.MainPerspective.prototype = {
     },
 
     updateLaser: function(){
-        var timer = 0.1;
+        var timer = 0.5;
         var i;
         var laserLight1 = this.getLaserLight1();
         var laserLight2 = this.getLaserLight2();
@@ -372,7 +391,7 @@ CGHLab.MainPerspective.prototype = {
             laserLight1.list[i].position.z -= dirLaser.normalize().z * timer;
             laserLight1.list[i].position.x -= dirLaser.normalize().x * timer;
             //Create next wave starting on the laser
-            if((laserLight1.list[i].position.distanceTo(this.laserPosition) > this.referenceWave.waveLength) && !laserLight1.next[i]){
+            if((laserLight1.list[i].position.distanceTo(this.laserPosition) > this.referenceWave.waveLength * 10) && !laserLight1.next[i]){
                 var newWave = laserLight1.list[i].clone();
                 newWave.position.set(this.laserPosition.x, this.laserPosition.y, this.laserPosition.z);
                 this.addToLaserLight1(newWave);
@@ -438,8 +457,8 @@ CGHLab.MainPerspective.prototype = {
 
         var distance = this.objectPosition.distanceTo(this.platePosition);
         //var delta = distance/5;
-        var initScale = 3.0;
-        var deltaScale = 2;
+        var initScale = 30.0;
+        var deltaScale = 40;
         for(i = 0; i < objWaveLight.length; i++){
             var actualDistance = objWaveLight[i].position.distanceTo(this.platePosition);
             var ratio = actualDistance/distance;

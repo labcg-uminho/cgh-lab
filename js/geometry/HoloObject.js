@@ -65,6 +65,18 @@ CGHLab.HoloObject.prototype = {
         //alert(lightPoints.length);
     },
 
+    changeObject: function( geometry )
+    {
+        var objectGeometry;
+        var o = this.object;//this.scene.getObjectByName('object');
+        if (geometry == 'cube') objectGeometry = new THREE.BoxGeometry(1, 1, 1);
+        else if (geometry == 'sphere') objectGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        else if (geometry == 'octahedron') objectGeometry = new THREE.OctahedronGeometry(0.5,0);
+        else if (geometry == 'tetrahedron') objectGeometry = new THREE.TetrahedronGeometry(0.5,0);
+        o.geometry = objectGeometry;
+        this.convertToLightPoints();
+    },
+
     clone: function()
     {
         var clone = new CGHLab.HoloObject(this.position, this.rotation);
