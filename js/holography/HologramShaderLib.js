@@ -30,27 +30,26 @@ CGHLab.HologramShaderLib = {
             "void main(){",
             "   const float tau = 6.283185307179586476925286766559;",
             "   float refArrivalPhase = 0.0;",
-            "   float perWaveAmplitude[128];",
+            "   float perWaveAmplitude[512];",
             "   float totalAmplitude = 0.0;",
             "   float totalIntensity = 0.0;",
             "   float normalizedIntensity = 0.0;",
+            "   float n = float(n_lightPoints);",
 
             "   refArrivalPhase = tau * ( worldPosition.x / horizCycleLength );",
             "   float refAmplitude = cos(refArrivalPhase);",
             "   float k = tau / waveLength;",
 
             "   for(int i = 0; i < 1024; i++){",
-            "       vec3 wP = vec3(worldPosition.x, worldPosition.y, worldPosition.z);",
-            //"       vec3 lP = vec3(lightPoints[0].x, lightPoints[0].y, lightPoints[0].z);",
-            "       float d = distance(lightPoints[i].xyz, wP);",
+            "       float d = distance(lightPoints[i].xyz, worldPosition.xyz);",
             "       float objArrivalPhase = (d - lightPoints[i].w) * k;",
             //"       perWaveAmplitude[i] = cos(objArrivalPhase);",
             //"       totalAmplitude += perWaveAmplitude[i];",
             "       totalIntensity += cos(objArrivalPhase - refArrivalPhase);",
-            "       normalizedIntensity = totalIntensity / (n_lightPoints*2.0) + 0.5;",
+            "       normalizedIntensity = totalIntensity / (n*2.0) + 0.5;",
             "       if (i == n_lightPoints) break;",
             "   }",
-            "   gl_FragColor = vec4( color, 1.0 );",
+            "   gl_FragColor = vec4( vec3(normalizedIntensity), 1.0 );",
             "}"
         ].join('\n')
     }

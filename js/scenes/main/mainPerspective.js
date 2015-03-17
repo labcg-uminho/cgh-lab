@@ -8,7 +8,7 @@ CGHLab.MainPerspective = function( renderer, camera )
     this.objects = [];
     this.mirror = new THREE.Mirror( renderer, camera, { clipBias: 0.003, textureWidth: window.innerWidth, textureHeight: window.innerHeight, color:0x889999 } );
 
-    this.platePosition = new THREE.Vector3(0,4,0);
+    this.platePosition = new THREE.Vector3(0,40,0);
     this.plateRotation = 0;//-Math.PI/4;
     //var plateNormal = new THREE.Vector3(Math.sin(this.plateRotation), 0, Math.cos(this.plateRotation)).normalize();
     //The objective is to the normal of the plate make a 45º degree angle with the direction of the mirror and object
@@ -23,14 +23,14 @@ CGHLab.MainPerspective = function( renderer, camera )
 
     //Direction of mirror in relation to plate
     var dirMirror = new THREE.Vector3(Math.sin(this.plateRotation+Math.PI/4), 0, Math.cos(this.plateRotation+Math.PI/4)).normalize();
-    var unitsMirror = 25;
+    var unitsMirror = 250;
     this.mirrorPosition = new THREE.Vector3();
     this.mirrorPosition.addVectors(this.platePosition, dirMirror.multiplyScalar(unitsMirror));
     this.mirrorRotation = -Math.PI/2 + this.plateRotation;
 
     //Direction of object in relation to plate
     var dirObject = new THREE.Vector3(Math.sin(this.plateRotation-Math.PI/4), 0, Math.cos(this.plateRotation-Math.PI/4)).normalize();
-    var unitsObject = 30;
+    var unitsObject = 300;
     this.objectPosition = new THREE.Vector3();
     this.objectPosition.addVectors(this.platePosition, dirObject.multiplyScalar(unitsObject));
     this.objectRotation = this.plateRotation + Math.PI/4;
@@ -40,7 +40,7 @@ CGHLab.MainPerspective = function( renderer, camera )
     //Direction of laser in relation to object
     //This direction is the same as the mirror direction but the position is calculated in relation to the object and not the plate
     var dirLaser = new THREE.Vector3(Math.sin(this.plateRotation+Math.PI/4), 0, Math.cos(this.plateRotation+Math.PI/4)).normalize();
-    var unitsLaser = 30;
+    var unitsLaser = 300;
     this.laserPosition = new THREE.Vector3();
     this.laserPosition.addVectors(this.objectPosition, dirLaser.multiplyScalar(unitsLaser));
     this.laserRotation = this.plateRotation + Math.PI/4;
@@ -48,7 +48,7 @@ CGHLab.MainPerspective = function( renderer, camera )
     //Direction of beam splitter in relation to mirror
     //This direction is the same as the object direction but the position is calculated in relation to the mirror and not the plate
     var dirSplitter = new THREE.Vector3(Math.sin(this.plateRotation-Math.PI/4), 0, Math.cos(this.plateRotation-Math.PI/4)).normalize();
-    var unitsSplitter = 30;
+    var unitsSplitter = 300;
     this.beamSplitterPosition = new THREE.Vector3();
     this.beamSplitterPosition.addVectors(this.mirrorPosition, dirSplitter.multiplyScalar(unitsSplitter));
     this.beamSplitterRotation = this.plateRotation + Math.PI/4;
@@ -58,7 +58,7 @@ CGHLab.MainPerspective = function( renderer, camera )
     center.addVectors(this.platePosition,this.laserPosition).divideScalar(2);
 
     //Reference wave initialization
-    this.referenceWave = new CGHLab.Wave(0,1,2);
+    this.referenceWave = new CGHLab.Wave(0,1,1);
 
     //Variables to store reference wave and object wave geometry
     var laserLight1 = {
@@ -196,19 +196,19 @@ CGHLab.MainPerspective.prototype = {
     {
         //GEOMETRY
         //MIRROR
-        var mirror = new THREE.Mesh(new THREE.PlaneGeometry( 6, 6 ), this.mirror.material );
+        var mirror = new THREE.Mesh(new THREE.PlaneGeometry( 60, 60 ), this.mirror.material );
         mirror.add(this.mirror);
         mirror.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
         mirror.rotateY(this.mirrorRotation);
         var mirrorBoxGeometry = new THREE.BoxGeometry(1, 1, 1);
         var mirrorBoxMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, ambient: 0xffffff });
         var mirrorBox = new THREE.Mesh(mirrorBoxGeometry, mirrorBoxMaterial);
-        mirrorBox.scale.set(0.1,6,6);
+        mirrorBox.scale.set(0.1,60,60);
         mirrorBox.position.set(0,0,-0.1);
         mirrorBox.rotateY(-Math.PI / 2);
 
         //LASER
-        var laserSourceGeometry = new THREE.CylinderGeometry( 1, 1, 3, 32);
+        var laserSourceGeometry = new THREE.CylinderGeometry( 10, 10, 30, 32);
         var laserSourceMaterial = new THREE.MeshPhongMaterial( {color: 0x00ffff, ambient: 0x00ffff} );
         var laserSource = new THREE.Mesh(laserSourceGeometry, laserSourceMaterial);
         laserSource.position.set(this.laserPosition.x, this.laserPosition.y, this.laserPosition.z);
@@ -220,16 +220,16 @@ CGHLab.MainPerspective.prototype = {
         var beamSplitterGeometry = new THREE.BoxGeometry(1, 1, 1);
         var beamSplitterMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, ambient: 0xffffff });
         var beamSplitter = new THREE.Mesh(beamSplitterGeometry, beamSplitterMaterial);
-        beamSplitter.scale.set(3,3,3);
+        beamSplitter.scale.set(30,30,30);
         beamSplitter.position.set(this.beamSplitterPosition.x,this.beamSplitterPosition.y, this.beamSplitterPosition.z);
         beamSplitter.rotateY(this.beamSplitterRotation);
 
         //OBJECT
-        this.object.setObject('cube');
+        this.object.setObject('tetrahedron'); //OPTIONS: cube, sphere, octahedron, tetrahedron
         this.object.convertToLightPoints();
 
         //HOLOGRAPHIC PLATE
-        var holographicPlateGeometry = new THREE.PlaneGeometry( 8, 8 );
+        var holographicPlateGeometry = new THREE.PlaneGeometry( 160, 160 );
         //var holographicPlateMaterial = new THREE.MeshPhongMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
 
         var shader = CGHLab.HologramShaderLib.bipolar;
@@ -250,7 +250,7 @@ CGHLab.MainPerspective.prototype = {
         holographicPlate.name = 'plate';
 
         //FLOOR
-        var floorGeometry = new THREE.PlaneGeometry( 50, 50);
+        var floorGeometry = new THREE.PlaneGeometry( 500, 500);
         var floorMaterial = new THREE.MeshPhongMaterial( {color: 0x999999, ambient: 0x999999, side: THREE.DoubleSide} );
         var floor = new THREE.Mesh( floorGeometry, floorMaterial );
         floor.position.y = 0;
@@ -260,7 +260,7 @@ CGHLab.MainPerspective.prototype = {
         floor.rotation.x = Math.PI / 2;
 
         //AXES HELPER
-        var axes = new THREE.AxisHelper(10);
+        var axes = new THREE.AxisHelper(100);
         this.scene.add( axes );
 
         //ADD STUFF TO SCENE
@@ -281,7 +281,7 @@ CGHLab.MainPerspective.prototype = {
         //var light = new THREE.PointLight( 0xffffff, 1);
         var light = new THREE.PointLight(0xffffff, 1);
         var center = this.getCenter();
-        light.position.set( center.x, 50, center.z);
+        light.position.set( center.x, 500, center.z);
         this.scene.add( ambLight );
         this.scene.add( light );
 

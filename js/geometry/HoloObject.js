@@ -29,10 +29,12 @@ CGHLab.HoloObject.prototype = {
     {
         var objectGeometry;
         if (geometry == 'cube') objectGeometry = new THREE.BoxGeometry(1, 1, 1);
-        else if (geometry == 'sphere') objectGeometry = new THREE.SphereGeometry(0.5, 24, 24);
+        else if (geometry == 'sphere') objectGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        else if (geometry == 'octahedron') objectGeometry = new THREE.OctahedronGeometry(0.5,0);
+        else if (geometry == 'tetrahedron') objectGeometry = new THREE.TetrahedronGeometry(0.5,0);
         var objectMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 , ambient: 0x00ff00});
         this.object = new THREE.Mesh(objectGeometry, objectMaterial);
-        this.object.scale.set(3,3,3);
+        this.object.scale.set(30,30,30);
         this.object.position.set(this.position.x, this.position.y, this.position.z);
         this.object.rotateY(this.rotation);
         this.object.name = 'object';
