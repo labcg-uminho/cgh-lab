@@ -16,17 +16,20 @@ CGHLab.MainPerspective = function( renderer, camera )
     //      Normal
     // M      /\     Obj
     //   .    |    .
-    //     .  |  .
-    //   45º .|. 45º
+    //     .45|45.
+    //       .|.
     //==================
     //      PLATE
 
+    //The angle that the reference wave makes with the plate
+    this.referenceWaveAngle = Math.PI/4;
+
     //Direction of mirror in relation to plate
-    var dirMirror = new THREE.Vector3(Math.sin(this.plateRotation+Math.PI/4), 0, Math.cos(this.plateRotation+Math.PI/4)).normalize();
-    var unitsMirror = 250;
+    var dirMirror = new THREE.Vector3(Math.sin(this.plateRotation+this.referenceWaveAngle), 0, Math.cos(this.plateRotation+this.referenceWaveAngle)).normalize();
+    var unitsMirror = (1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 250;
     this.mirrorPosition = new THREE.Vector3();
     this.mirrorPosition.addVectors(this.platePosition, dirMirror.multiplyScalar(unitsMirror));
-    this.mirrorRotation = -Math.PI/2 + this.plateRotation;
+    this.mirrorRotation = -Math.PI/2 + this.plateRotation - (Math.PI/4 - this.referenceWaveAngle);
 
     //Direction of object in relation to plate
     var dirObject = new THREE.Vector3(Math.sin(this.plateRotation-Math.PI/4), 0, Math.cos(this.plateRotation-Math.PI/4)).normalize();
@@ -48,7 +51,7 @@ CGHLab.MainPerspective = function( renderer, camera )
     //Direction of beam splitter in relation to mirror
     //This direction is the same as the object direction but the position is calculated in relation to the mirror and not the plate
     var dirSplitter = new THREE.Vector3(Math.sin(this.plateRotation-Math.PI/4), 0, Math.cos(this.plateRotation-Math.PI/4)).normalize();
-    var unitsSplitter = 300;
+    var unitsSplitter = 300 - (250 * Math.tan(Math.PI/4 - this.referenceWaveAngle));
     this.beamSplitterPosition = new THREE.Vector3();
     this.beamSplitterPosition.addVectors(this.mirrorPosition, dirSplitter.multiplyScalar(unitsSplitter));
     this.beamSplitterRotation = this.plateRotation + Math.PI/4;
@@ -73,18 +76,6 @@ CGHLab.MainPerspective = function( renderer, camera )
     };
     var laserLight3 = [];
     var objWaveLight = [];
-
-    //If i want to create the object only one time. however, when the object is rotated the obj does not change
-    /*var objWave = new THREE.Mesh();
-
-    this.getObjWave = function(){
-        return objWave;
-    };
-
-    this.setObjWave = function(obj){
-        objWave = obj;
-    };*/
-    //------------------------------------------------------
 
     this.getCenter = function(){
         return center;
@@ -184,12 +175,17 @@ CGHLab.MainPerspective.prototype = {
 
     rotateObject: function(value)
     {
-        var o = this.scene.getObjectByName('object');
         var rad = value*(Math.PI)/180;
         var r = rad - this.objectRotationScene;
         this.objectRotationScene += r;
         if ((this.objectRotationScene) > 2*Math.PI) this.objectRotationScene = this.objectRotationScene - 2*Math.PI;
-        o.rotateY(r);
+        this.object.object.rotateY(r);
+        this.object.convertToLightPoints();
+    },
+
+    updateParameters: function()
+    {
+        this.referenceWave.waveLength = 2;
     },
 
     init: function()
@@ -285,15 +281,6 @@ CGHLab.MainPerspective.prototype = {
         this.scene.add( ambLight );
         this.scene.add( light );
 
-        /*var spotLight = new THREE.SpotLight( 0xffffff );
-         spotLight.position.set( 100, 1000, 100 );
-         spotLight.castShadow = true;
-         spotLight.shadowMapWidth = 1024;
-         spotLight.shadowMapHeight = 1024;
-         spotLight.shadowCameraNear = 500;
-         spotLight.shadowCameraFar = 4000;
-         spotLight.shadowCameraFov = 30;
-         this.scene.add( spotLight );*/
     },
 
     seeInterferencePattern: function()
@@ -307,9 +294,20 @@ CGHLab.MainPerspective.prototype = {
             fragmentShader: shader.fragmentShader,
             side: THREE.DoubleSide
         });
+
+        //   |<-- horizCycleLength -->|
+        // ============================= hologram
+        //   `-. ) referenceWave     /   plane
+        //      `-.     Angle       /
+        //         `-.             /
+        // wavefront  `-.         / waveLength
+        // of reference  `-.     /
+        //           wave   `-. /
+        //                     `
+
         holographicPlateMaterial.uniforms.lightPoints.value = this.object.getLightPointsPositions();
         holographicPlateMaterial.uniforms.n_lightPoints.value = this.object.lightPoints.length;
-        holographicPlateMaterial.uniforms.horizCycleLength.value = this.referenceWave.waveLength / Math.sin(Math.PI/4);
+        holographicPlateMaterial.uniforms.horizCycleLength.value = this.referenceWave.waveLength / Math.sin(this.referenceWaveAngle);
         holographicPlateMaterial.uniforms.waveLength.value = this.referenceWave.waveLength;
 
         plate.material = holographicPlateMaterial;
@@ -327,29 +325,12 @@ CGHLab.MainPerspective.prototype = {
         var light = new THREE.Mesh(lightGeometry, lightMaterial);
         light.position.set(this.laserPosition.x, this.laserPosition.y, this.laserPosition.z);
 
-        //If i want to create the object only one time. however, when the object is rotated the obj does not change
-        /*var objWaveGeometry = this.object.object.geometry.clone();
-        var objWaveMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff , ambient: 0x0000ff, transparent: true, opacity: 0.5});
-        var objWave = new THREE.Mesh(objWaveGeometry, objWaveMaterial);
-        objWave.rotateY(this.objectRotation);
-        this.setObjWave(objWave);*/
-        //--------------------------------------------------------------------------
-
         var copy = light.clone();
         copy.position.set(this.laserPosition.x, this.laserPosition.y, this.laserPosition.z);
         copy.rotateY(this.laserRotation);
         this.scene.add(copy);
         this.addToLaserLight1(copy);
     },
-
-    //If i want the wave updated when i rotate the object. however the object is created every frame
-    /*setObjWave: function(){
-        var objWaveGeometry = this.object.object.geometry.clone();
-        var objWaveMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff , ambient: 0x0000ff, transparent: true, opacity: 0.5});
-        var objWave = new THREE.Mesh(objWaveGeometry, objWaveMaterial);
-        objWave.rotateY(this.objectRotation);
-        return objWave;
-    },*/
 
     laserOff: function(){
         var i;
@@ -383,8 +364,6 @@ CGHLab.MainPerspective.prototype = {
         var dirSplitter = this.getDirSplitter();
         var dirMirror = this.getDirMirror();
         var dirObject = this.getDirObject();
-        //var objWave = this.setObjWave(); //Use the commented setObjWave function
-        //var objWave = this.getObjWave();
 
         //LASER
         for(i = 0; i < laserLight1.list.length; i++){
@@ -434,7 +413,7 @@ CGHLab.MainPerspective.prototype = {
             if((laserLight2.list[i].position.z < this.mirrorPosition.z) && !laserLight2.mirror[i]){
                 var newReflect = laserLight2.list[i].clone();
                 newReflect.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
-                newReflect.rotateY(Math.PI/2);
+                newReflect.rotateY(2 * this.referenceWaveAngle);
                 this.addToLaserLight3(newReflect);
                 this.scene.add(newReflect);
                 laserLight2.mirror[i] = true;

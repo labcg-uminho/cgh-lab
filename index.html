@@ -18,6 +18,7 @@
     <script src="js/ThreeCSG.js"></script>
     <script src="js/CGHLab.js"></script>
     <script src="js/scenes/main/mainPerspective.js"></script>
+    <script src="js/scenes/main/objectPerspective.js"></script>
     <script src="js/geometry/HoloObject.js"></script>
     <script src="js/holography/LightPoint.js"></script>
     <script src="js/holography/Wave.js"></script>
@@ -25,14 +26,18 @@
     <script>
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-        var mainPerspective, camera, controls, renderer, cubescene, spherescene;
+        var mainPerspective, camera, controls, renderer, objectPerspective, spherescene;
         var container, stats;
         var gui = new dat.GUI();
         var currentPerspective;
+        var currentScene;
         var laserTurnOn = false;
 
         var rayCaster;
         var mouse = new THREE.Vector2(), INTERSECTED, SELECTED;
+
+        var object, objectPosition, objectRotation, center;
+        var referenceWave;
 
         init();
 
@@ -57,9 +62,8 @@
             camera.position.set(0, 30, 0);
 
             ////SCENES
-            cubescene = new THREE.Scene();
             spherescene = new THREE.Scene();
-            mainPerspective = new CGHLab.MainPerspective(renderer, camera);
+            //mainPerspective = new CGHLab.MainPerspective(renderer, camera);
 
             ////CONTROLS
             controls = new THREE.OrbitControls( camera, renderer.domElement );
@@ -67,18 +71,22 @@
 
             /*------------------------------------------------------------------------------*/
             ////GEOMETRY
+            mainPerspective = new CGHLab.MainPerspective(renderer, camera);
             mainPerspective.init();
             controls.target = mainPerspective.getCenter();
 
-            //CUBE SCENE
-            var cubegeometry2 = new THREE.BoxGeometry(1, 1, 1);
-            var cubematerial2 = new THREE.MeshPhongMaterial({ color: 0x00ffff });
-            var cube2 = new THREE.Mesh(cubegeometry2, cubematerial2);
-            cube2.scale.set(3,3,3);
-            cubescene.add(cube2);
+            currentScene = mainPerspective;
 
-            var axes = new THREE.AxisHelper(10);
-            cubescene.add( axes );
+            object = mainPerspective.object.clone();
+            objectPosition = mainPerspective.objectPosition;
+            objectRotation = mainPerspective.objectRotation;
+            center = mainPerspective.getCenter();
+
+            referenceWave = mainPerspective.referenceWave;
+
+            objectPerspective = new CGHLab.ObjectPerspective(objectPosition, objectRotation, object, center, referenceWave);
+            objectPerspective.init();
+
 
             //SPHERE SCENE
             var spheregeometry2 = new THREE.SphereGeometry(1, 32, 32);
@@ -91,12 +99,12 @@
             spherescene.add( axes2 );
 
             ////LIGHTS
-            //CUBE SCENE
+            /*//CUBE SCENE
             var amblight2 = new THREE.AmbientLight( 0x505050 );
             var light2 = new THREE.PointLight( 0xffffff, 1);
             light2.position.set( 10, 10, 10 );
             cubescene.add( amblight2 );
-            cubescene.add( light2 );
+            cubescene.add( light2 );*/
 
             //SPHERE SCENE
             var amblight3 = new THREE.AmbientLight( 0x505050 );
@@ -139,10 +147,18 @@
                 {
                     laserOn: function(){if (!laserTurnOn) mainPerspective.laserOn(); laserTurnOn = true;},
                     laserOff: function(){if (laserTurnOn) mainPerspective.laserOff(); laserTurnOn = false;},
-                    objectRotationSlider: 0,
+                    objectRotationSlider: mainPerspective.objectRotationScene,
                     focusCenter: function(){controls.target = mainPerspective.getCenter()},
                     geometry: 'cube',
-                    interferencePattern: function(){ mainPerspective.seeInterferencePattern(); }
+                    interferencePattern: function(){ mainPerspective.seeInterferencePattern(); },
+                    teste: function(){ mainPerspective.updateParameters()},
+                    objectPerspectiveChange: function(){
+                        object = mainPerspective.object.clone();
+                        referenceWave = mainPerspective.referenceWave;
+                        objectPerspective.updateParameters(object, referenceWave);
+                        currentScene = objectPerspective;
+                        setGUI('object');
+                    }
                 };
 
                 /*var cubeRotation = gui.add(parameters, 'cubeRotation').min(0).listen();
@@ -154,6 +170,8 @@
                 gui.add(parameters, 'laserOff').name('Turn Off Laser');
                 gui.add(parameters, 'focusCenter').name('Focus Center');
                 gui.add(parameters, 'interferencePattern').name('See Interference Pattern');
+                gui.add(parameters, 'teste').name('Teste');
+                gui.add(parameters, 'objectPerspectiveChange').name('Object Perspective');
 
                 var folder1 = gui.addFolder('Object');
                 var r = folder1.add( parameters, 'objectRotationSlider').min(0).max(360).name('Rotation');
@@ -298,7 +316,7 @@
 
             if(SELECTED)
             {
-                if(SELECTED.position.distanceTo(camera.position) < 10)
+                if(SELECTED.position.distanceTo(camera.position) < 100)
                 {
                     if(SELECTED.name == 'object') {
                         if (currentPerspective != 'object')
@@ -306,7 +324,7 @@
                             currentPerspective = 'object';
                             setGUI('object');
                         }
-                        renderer.render(cubescene, camera);
+                        renderer.render(objectPerspective.scene, camera);
                     }
                     else if(SELECTED.name == 'plate')
                     {
@@ -326,13 +344,13 @@
                         setGUI('main');
                     }
                     mainPerspective.mirror.render();
-                    renderer.render(mainPerspective.scene, camera);
+                    renderer.render(currentScene.scene, camera);
                 }
             }
             else
             {
                 mainPerspective.mirror.render();
-                renderer.render(mainPerspective.scene, camera);
+                renderer.render(currentScene.scene, camera);
             }
         }
 

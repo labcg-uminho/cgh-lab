@@ -48,21 +48,14 @@ CGHLab.HoloObject.prototype = {
         var geometry = clone.geometry.clone();
         var vertices = geometry.vertices;
         var lightPoints = [];
-        //alert(vertices.length);
         clone.updateMatrixWorld();
-        //var vector = new THREE.Vector3();
-        //vector.setFromMatrixPosition( clone.matrixWorld );
         for(var i = 0; i < vertices.length; i++){
             vertices[i].applyMatrix4(clone.matrixWorld);
-            //alert('x: '+vertices[i].x+' y: '+vertices[i].y+' z: '+vertices[i].z);
             var lp = new CGHLab.LightPoint(vertices[i].x,vertices[i].y,vertices[i].z, 0);
             lightPoints.push(lp);
         }
-        //alert('x: '+vector.x+' y: '+vector.y+' z: '+vector.z);
-        //alert('x: '+vertices[0].x+' y: '+vertices[0].y+' z: '+vertices[0].z);
-        //return lightPoints;
+        this.lightPoints = [];
         this.lightPoints = lightPoints;
-        //alert(lightPoints.length);
     },
 
     changeObject: function( geometry )
@@ -80,7 +73,9 @@ CGHLab.HoloObject.prototype = {
     clone: function()
     {
         var clone = new CGHLab.HoloObject(this.position, this.rotation);
-        clone.object.copy(this.object);
+        clone.object = this.object.clone();
+        clone.convertToLightPoints();
+        return clone;
     }
 
 };
