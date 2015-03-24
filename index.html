@@ -172,7 +172,6 @@
                 gui.add(parameters, 'laserOff').name('Turn Off Laser');
                 gui.add(parameters, 'focusCenter').name('Focus Center');
                 gui.add(parameters, 'interferencePattern').name('See Interference Pattern');
-                gui.add(parameters, 'objectPerspectiveChange').name('Object Perspective');
 
                 var folder1 = gui.addFolder('Object');
                 var r = folder1.add( parameters, 'objectRotationSlider').min(0).max(360).name('Rotation');
@@ -182,7 +181,7 @@
                 var geometry = folder1.add( parameters, 'geometry', [ 'cube', 'sphere', 'octahedron', 'tetrahedron' ] ).name('Geometry').listen();
                 geometry.onChange(function(value)
                 {
-                    mainPerspective.object.changeObject(value);
+                    mainPerspective.changeObject(value);
                 });
                 folder1.open();
                 var folder2 = gui.addFolder('Reference Wave');
@@ -191,11 +190,14 @@
                     mainPerspective.referenceWave.waveLength = value;
                     mainPerspective.updateShaderUniforms();
                 });
-                var wa = folder2.add(parameters, 'refWaveAngle').name('Wave Angle');
+                var wa = folder2.add(parameters, 'refWaveAngle').min(0).max(90).name('Wave Angle');
                 wa.onChange(function(value){
                    mainPerspective.updateMirror(value);
                 });
                 folder2.open();
+                var folder3 = gui.addFolder('Perspectives');
+                folder3.add(parameters, 'objectPerspectiveChange').name('Object Perspective');
+                folder3.open();
                 gui.open();
             }
 

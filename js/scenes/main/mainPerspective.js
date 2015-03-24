@@ -193,7 +193,7 @@ CGHLab.MainPerspective.prototype = {
         var mirrorBoxMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, ambient: 0xffffff });
         var mirrorBox = new THREE.Mesh(mirrorBoxGeometry, mirrorBoxMaterial);
         mirrorBox.scale.set(0.1,60,60);
-        mirrorBox.position.set(0,0,-0.1);
+        mirrorBox.position.set(0,0,-2);
         mirrorBox.rotateY(-Math.PI / 2);
 
         //LASER
@@ -220,18 +220,6 @@ CGHLab.MainPerspective.prototype = {
         //HOLOGRAPHIC PLATE
         var holographicPlateGeometry = new THREE.PlaneGeometry( 160, 160 );
         var holographicPlateMaterial = new THREE.MeshPhongMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
-
-        /*var shader = CGHLab.HologramShaderLib.bipolar;
-        var holographicPlateMaterial = new THREE.ShaderMaterial({
-            uniforms: shader.uniforms,
-            vertexShader: shader.vertexShader,
-            fragmentShader: shader.fragmentShader,
-            side: THREE.DoubleSide
-        });
-        holographicPlateMaterial.uniforms.lightPoints.value = this.object.getLightPointsPositions();
-        holographicPlateMaterial.uniforms.n_lightPoints.value = this.object.lightPoints.length;
-        holographicPlateMaterial.uniforms.horizCycleLength.value = this.referenceWave.waveLength / Math.sin(Math.PI/4);
-        holographicPlateMaterial.uniforms.waveLength.value = this.referenceWave.waveLength;*/
 
         var holographicPlate = new THREE.Mesh(holographicPlateGeometry, holographicPlateMaterial);
         holographicPlate.position.set(this.platePosition.x, this.platePosition.y, this.platePosition.z);
@@ -286,6 +274,13 @@ CGHLab.MainPerspective.prototype = {
         if ((this.objectRotationScene) > 2*Math.PI) this.objectRotationScene = this.objectRotationScene - 2*Math.PI;
         this.object.object.rotateY(r);
         this.object.convertToLightPoints();
+        this.updateShaderUniforms();
+    },
+
+    changeObject: function(value)
+    {
+        this.object.changeObject(value);
+        this.updateShaderUniforms();
     },
 
     updateMirror: function(value)
@@ -316,10 +311,10 @@ CGHLab.MainPerspective.prototype = {
         var dot2 = CGHLab.Helpers.rad2deg(Math.acos(mN.dot(ndm.normalize())));
         var dot3 = CGHLab.Helpers.rad2deg(Math.acos(db.dot(ndm.normalize())));
         var dot4 = CGHLab.Helpers.rad2deg(Math.acos(dm.dot(pN.normalize())));
-        alert('mN db: ' + dot1);
-        alert('mN ndm: ' +dot2);
-        alert('db ndm: ' + dot3);
-        alert('dm pN: ' + dot4);
+        //alert('mN db: ' + dot1);
+        //alert('mN ndm: ' +dot2);
+        //alert('db ndm: ' + dot3);
+        //alert('dm pN: ' + dot4);
 
         mirror.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
         mirror.rotateY(this.mirrorRotation);

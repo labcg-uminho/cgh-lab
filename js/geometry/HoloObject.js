@@ -29,7 +29,8 @@ CGHLab.HoloObject.prototype = {
     {
         var objectGeometry;
         if (geometry == 'cube') objectGeometry = new THREE.BoxGeometry(1, 1, 1);
-        else if (geometry == 'sphere') objectGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        //else if (geometry == 'sphere') objectGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        else if (geometry == 'sphere') objectGeometry = new THREE.IcosahedronGeometry(0.5,2);
         else if (geometry == 'octahedron') objectGeometry = new THREE.OctahedronGeometry(0.5,0);
         else if (geometry == 'tetrahedron') objectGeometry = new THREE.TetrahedronGeometry(0.5,0);
         var objectMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 , ambient: 0x00ff00});
@@ -63,7 +64,8 @@ CGHLab.HoloObject.prototype = {
         var objectGeometry;
         var o = this.object;//this.scene.getObjectByName('object');
         if (geometry == 'cube') objectGeometry = new THREE.BoxGeometry(1, 1, 1);
-        else if (geometry == 'sphere') objectGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        //else if (geometry == 'sphere') objectGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        else if (geometry == 'sphere') objectGeometry = new THREE.IcosahedronGeometry(0.5,2);
         else if (geometry == 'octahedron') objectGeometry = new THREE.OctahedronGeometry(0.5,0);
         else if (geometry == 'tetrahedron') objectGeometry = new THREE.TetrahedronGeometry(0.5,0);
         o.geometry = objectGeometry;
