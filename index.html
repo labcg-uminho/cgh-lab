@@ -23,6 +23,7 @@
     <script src="js/holography/LightPoint.js"></script>
     <script src="js/holography/Wave.js"></script>
     <script src="js/holography/HologramShaderLib.js"></script>
+    <script src="js/Helpers.js"></script>
     <script>
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
@@ -151,14 +152,15 @@
                     focusCenter: function(){controls.target = mainPerspective.getCenter()},
                     geometry: 'cube',
                     interferencePattern: function(){ mainPerspective.seeInterferencePattern(); },
-                    teste: function(){ mainPerspective.updateParameters()},
                     objectPerspectiveChange: function(){
                         object = mainPerspective.object.clone();
                         referenceWave = mainPerspective.referenceWave;
                         objectPerspective.updateParameters(object, referenceWave);
                         currentScene = objectPerspective;
                         setGUI('object');
-                    }
+                    },
+                    refWaveLength: mainPerspective.referenceWave.waveLength,
+                    refWaveAngle: CGHLab.Helpers.rad2deg(mainPerspective.referenceWaveAngle)
                 };
 
                 /*var cubeRotation = gui.add(parameters, 'cubeRotation').min(0).listen();
@@ -170,7 +172,6 @@
                 gui.add(parameters, 'laserOff').name('Turn Off Laser');
                 gui.add(parameters, 'focusCenter').name('Focus Center');
                 gui.add(parameters, 'interferencePattern').name('See Interference Pattern');
-                gui.add(parameters, 'teste').name('Teste');
                 gui.add(parameters, 'objectPerspectiveChange').name('Object Perspective');
 
                 var folder1 = gui.addFolder('Object');
@@ -184,8 +185,20 @@
                     mainPerspective.object.changeObject(value);
                 });
                 folder1.open();
+                var folder2 = gui.addFolder('Reference Wave');
+                var wl = folder2.add(parameters, 'refWaveLength').name('WaveLength');
+                wl.onChange(function(value){
+                    mainPerspective.referenceWave.waveLength = value;
+                    mainPerspective.updateShaderUniforms();
+                });
+                var wa = folder2.add(parameters, 'refWaveAngle').name('Wave Angle');
+                wa.onChange(function(value){
+                   mainPerspective.updateMirror(value);
+                });
+                folder2.open();
                 gui.open();
             }
+
             else if(perspective == 'object')
             {
                 gui = new dat.GUI();
@@ -231,10 +244,10 @@
                 gui.add( parameters, 'f' ).name('Say "Hello!"');
                 gui.add( parameters, 'g' ).name("Alert Message");
 
-                var folder2 = gui.addFolder('Coordinates');
-                folder2.add( parameters, 'x' );
-                folder2.add( parameters, 'y' );
-                folder2.close();
+                var folder = gui.addFolder('Coordinates');
+                folder.add( parameters, 'x' );
+                folder.add( parameters, 'y' );
+                folder.close();
                 gui.open();
             }
         }

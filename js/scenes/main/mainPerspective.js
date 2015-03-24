@@ -63,6 +63,8 @@ CGHLab.MainPerspective = function( renderer, camera )
     //Reference wave initialization
     this.referenceWave = new CGHLab.Wave(0,1,1);
 
+    this.interferencePatternShader = new THREE.Material;
+
     //Variables to store reference wave and object wave geometry
     var laserLight1 = {
         list: [],
@@ -83,6 +85,11 @@ CGHLab.MainPerspective = function( renderer, camera )
 
     this.getDirMirror = function(){
         return dirMirror;
+    };
+
+    this.setMirrorDirAndUnits = function(newDir, newUnits){
+        dirMirror = newDir;
+        unitsMirror = newUnits;
     };
 
     this.getDirObject = function(){
@@ -173,21 +180,6 @@ CGHLab.MainPerspective.prototype = {
 
     constructor: CGHLab.MainPerspective,
 
-    rotateObject: function(value)
-    {
-        var rad = value*(Math.PI)/180;
-        var r = rad - this.objectRotationScene;
-        this.objectRotationScene += r;
-        if ((this.objectRotationScene) > 2*Math.PI) this.objectRotationScene = this.objectRotationScene - 2*Math.PI;
-        this.object.object.rotateY(r);
-        this.object.convertToLightPoints();
-    },
-
-    updateParameters: function()
-    {
-        this.referenceWave.waveLength = 2;
-    },
-
     init: function()
     {
         //GEOMETRY
@@ -196,6 +188,7 @@ CGHLab.MainPerspective.prototype = {
         mirror.add(this.mirror);
         mirror.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
         mirror.rotateY(this.mirrorRotation);
+        mirror.name = 'mirror';
         var mirrorBoxGeometry = new THREE.BoxGeometry(1, 1, 1);
         var mirrorBoxMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, ambient: 0xffffff });
         var mirrorBox = new THREE.Mesh(mirrorBoxGeometry, mirrorBoxMaterial);
@@ -281,12 +274,60 @@ CGHLab.MainPerspective.prototype = {
         this.scene.add( ambLight );
         this.scene.add( light );
 
+        this.setHologramShader();
+
     },
 
-    seeInterferencePattern: function()
+    rotateObject: function(value)
     {
-        var plate = this.scene.getObjectByName('plate');
-        plate.material = new THREE.MeshPhongMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
+        var rad = CGHLab.Helpers.deg2rad(value);
+        var r = rad - this.objectRotationScene;
+        this.objectRotationScene += r;
+        if ((this.objectRotationScene) > 2*Math.PI) this.objectRotationScene = this.objectRotationScene - 2*Math.PI;
+        this.object.object.rotateY(r);
+        this.object.convertToLightPoints();
+    },
+
+    updateMirror: function(value)
+    {
+        var mirror = this.scene.getObjectByName('mirror');
+        var d = this.getDirMirror().clone().normalize();
+        //alert('x: '+ d.x + " y: "+ d.y + " z: "+ d.z);
+        this.referenceWaveAngle = CGHLab.Helpers.deg2rad(value);
+        var dirMirror = new THREE.Vector3(Math.sin(this.plateRotation+this.referenceWaveAngle), 0, Math.cos(this.plateRotation+this.referenceWaveAngle)).normalize();
+        var unitsMirror = (1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 250;
+        this.setMirrorDirAndUnits(dirMirror, unitsMirror);
+        var d2 = this.getDirMirror();
+        //alert('x: '+ d2.x + " y: "+ d2.y + " z: "+ d2.z);
+        this.mirrorPosition = new THREE.Vector3();
+        this.mirrorPosition.addVectors(this.platePosition, this.getDirMirror().normalize().multiplyScalar(unitsMirror));
+        mirror.rotateY(-this.mirrorRotation);
+        //TO_DO: tentar perceber o porque disto... xD
+        this.mirrorRotation = -Math.PI/2 + this.plateRotation - ((Math.PI/4 - this.referenceWaveAngle)/2);
+
+        var db = this.getDirSplitter().clone().normalize();
+        var dm = dirMirror.clone().normalize();
+        var ndm = dm.clone().negate().normalize();
+        //alert('x: '+ ndm.x + " y: "+ ndm.y + " z: "+ ndm.z);
+        var mN = new THREE.Vector3(Math.sin(this.mirrorRotation), 0, Math.cos(this.mirrorRotation)).normalize();
+        var pN = new THREE.Vector3(Math.sin(this.plateRotation), 0, Math.cos(this.plateRotation)).normalize();
+        //alert('x: '+ mN.x + " y: "+ mN.y + " z: "+ mN.z);
+        var dot1 = CGHLab.Helpers.rad2deg(Math.acos(mN.dot(db.normalize())));
+        var dot2 = CGHLab.Helpers.rad2deg(Math.acos(mN.dot(ndm.normalize())));
+        var dot3 = CGHLab.Helpers.rad2deg(Math.acos(db.dot(ndm.normalize())));
+        var dot4 = CGHLab.Helpers.rad2deg(Math.acos(dm.dot(pN.normalize())));
+        alert('mN db: ' + dot1);
+        alert('mN ndm: ' +dot2);
+        alert('db ndm: ' + dot3);
+        alert('dm pN: ' + dot4);
+
+        mirror.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
+        mirror.rotateY(this.mirrorRotation);
+        this.updateShaderUniforms();
+    },
+
+    setHologramShader: function()
+    {
         var shader = CGHLab.HologramShaderLib.bipolar;
         var holographicPlateMaterial = new THREE.ShaderMaterial({
             uniforms: shader.uniforms,
@@ -310,12 +351,23 @@ CGHLab.MainPerspective.prototype = {
         holographicPlateMaterial.uniforms.horizCycleLength.value = this.referenceWave.waveLength / Math.sin(this.referenceWaveAngle);
         holographicPlateMaterial.uniforms.waveLength.value = this.referenceWave.waveLength;
 
-        plate.material = holographicPlateMaterial;
+        this.interferencePatternShader = holographicPlateMaterial;
     },
 
-    convertObjectToLightPoints: function()
+    updateShaderUniforms: function()
     {
-        this.object.convertToLightPoints();
+        this.interferencePatternShader.uniforms.lightPoints.value = this.object.getLightPointsPositions();
+        this.interferencePatternShader.uniforms.n_lightPoints.value = this.object.lightPoints.length;
+        this.interferencePatternShader.uniforms.horizCycleLength.value = this.referenceWave.waveLength / Math.sin(this.referenceWaveAngle);
+        this.interferencePatternShader.uniforms.waveLength.value = this.referenceWave.waveLength;
+    },
+
+    seeInterferencePattern: function()
+    {
+        var plate = this.scene.getObjectByName('plate');
+        plate.material = new THREE.MeshPhongMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
+
+        plate.material = this.interferencePatternShader;
     },
 
     laserOn: function()
@@ -354,7 +406,7 @@ CGHLab.MainPerspective.prototype = {
     },
 
     updateLaser: function(){
-        var timer = 0.5;
+        var timer = 1;
         var i;
         var laserLight1 = this.getLaserLight1();
         var laserLight2 = this.getLaserLight2();
@@ -364,6 +416,8 @@ CGHLab.MainPerspective.prototype = {
         var dirSplitter = this.getDirSplitter();
         var dirMirror = this.getDirMirror();
         var dirObject = this.getDirObject();
+
+        var negDirMirror = dirMirror.clone().negate();
 
         //LASER
         for(i = 0; i < laserLight1.list.length; i++){
@@ -413,7 +467,11 @@ CGHLab.MainPerspective.prototype = {
             if((laserLight2.list[i].position.z < this.mirrorPosition.z) && !laserLight2.mirror[i]){
                 var newReflect = laserLight2.list[i].clone();
                 newReflect.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
-                newReflect.rotateY(2 * this.referenceWaveAngle);
+                //The wave is perpendicular to the direction and the angle made by the 2 directions is arccos(dot(dirMirror, dirBeam))
+                //So the angle os rotation is 360 - 90 - 90 - arccos(dot(dirMirror, dirBeam))
+                var dot = dirSplitter.dot(negDirMirror);
+                var rotationAngle = Math.PI - Math.acos(dot);
+                newReflect.rotateY(rotationAngle);
                 this.addToLaserLight3(newReflect);
                 this.scene.add(newReflect);
                 laserLight2.mirror[i] = true;
