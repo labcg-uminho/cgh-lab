@@ -33,7 +33,7 @@ CGHLab.MainPerspective = function( renderer, camera )
 
     //Direction of object in relation to plate
     var dirObject = new THREE.Vector3(Math.sin(this.plateRotation-Math.PI/4), 0, Math.cos(this.plateRotation-Math.PI/4)).normalize();
-    var unitsObject = 300;
+    var unitsObject = 350;
     this.objectPosition = new THREE.Vector3();
     this.objectPosition.addVectors(this.platePosition, dirObject.multiplyScalar(unitsObject));
     this.objectRotation = this.plateRotation + Math.PI/4;
@@ -43,15 +43,23 @@ CGHLab.MainPerspective = function( renderer, camera )
     //Direction of laser in relation to object
     //This direction is the same as the mirror direction but the position is calculated in relation to the object and not the plate
     var dirLaser = new THREE.Vector3(Math.sin(this.plateRotation+Math.PI/4), 0, Math.cos(this.plateRotation+Math.PI/4)).normalize();
-    var unitsLaser = 300;
+    var unitsLaser = 400;
     this.laserPosition = new THREE.Vector3();
     this.laserPosition.addVectors(this.objectPosition, dirLaser.multiplyScalar(unitsLaser));
     this.laserRotation = this.plateRotation + Math.PI/4;
 
+    //Direction of light amplifier in relation to object
+    //This direction is the same as the mirror direction but the position is calculated in relation to the object and not the plate
+    var dirAmplifier = new THREE.Vector3(Math.sin(this.plateRotation+Math.PI/4), 0, Math.cos(this.plateRotation+Math.PI/4)).normalize();
+    var unitsAmplifier = 350;
+    this.amplifierPosition = new THREE.Vector3();
+    this.amplifierPosition.addVectors(this.objectPosition, dirAmplifier.multiplyScalar(unitsAmplifier));
+    this.amplifierRotation = this.plateRotation + Math.PI/4;
+
     //Direction of beam splitter in relation to mirror
     //This direction is the same as the object direction but the position is calculated in relation to the mirror and not the plate
     var dirSplitter = new THREE.Vector3(Math.sin(this.plateRotation-Math.PI/4), 0, Math.cos(this.plateRotation-Math.PI/4)).normalize();
-    var unitsSplitter = 300 - (250 * Math.tan(Math.PI/4 - this.referenceWaveAngle));
+    var unitsSplitter = 350 - (250 * Math.tan(Math.PI/4 - this.referenceWaveAngle));
     this.beamSplitterPosition = new THREE.Vector3();
     this.beamSplitterPosition.addVectors(this.mirrorPosition, dirSplitter.multiplyScalar(unitsSplitter));
     this.beamSplitterRotation = this.plateRotation + Math.PI/4;
@@ -102,6 +110,10 @@ CGHLab.MainPerspective = function( renderer, camera )
 
     this.getDirSplitter = function(){
         return dirSplitter;
+    };
+
+    this.getDirAmplifier = function(){
+        return dirAmplifier;
     };
 
     this.getLaserLight1 = function(){
@@ -174,6 +186,10 @@ CGHLab.MainPerspective = function( renderer, camera )
         laserLight3 = [];
         objWaveLight = [];
     };
+
+    this.eraseLight3Array = function(){
+        laserLight3 = [];
+    };
 };
 
 CGHLab.MainPerspective.prototype = {
@@ -184,7 +200,7 @@ CGHLab.MainPerspective.prototype = {
     {
         //GEOMETRY
         //MIRROR
-        var mirror = new THREE.Mesh(new THREE.PlaneGeometry( 60, 60 ), this.mirror.material );
+        var mirror = new THREE.Mesh(new THREE.PlaneGeometry( 100, 100 ), this.mirror.material );
         mirror.add(this.mirror);
         mirror.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
         mirror.rotateY(this.mirrorRotation);
@@ -192,9 +208,15 @@ CGHLab.MainPerspective.prototype = {
         var mirrorBoxGeometry = new THREE.BoxGeometry(1, 1, 1);
         var mirrorBoxMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, ambient: 0xffffff });
         var mirrorBox = new THREE.Mesh(mirrorBoxGeometry, mirrorBoxMaterial);
-        mirrorBox.scale.set(0.1,60,60);
+        mirrorBox.scale.set(0.1,100,100);
         mirrorBox.position.set(0,0,-2);
         mirrorBox.rotateY(-Math.PI / 2);
+        /*var standGeometry = new THREE.CylinderGeometry( 1, 1, 15, 32);
+        var standMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, ambient: 0xffffff });
+        var stand = new THREE.Mesh(standGeometry, standMaterial);
+        stand.scale.set(2,2,2);
+        stand.position.set(0,-60, 0);*/
+
 
         //LASER
         var laserSourceGeometry = new THREE.CylinderGeometry( 10, 10, 30, 32);
@@ -205,11 +227,19 @@ CGHLab.MainPerspective.prototype = {
         laserSource.rotateX(Math.PI / 2);
         laserSource.name = 'laser';
 
+        //AMPLIFIER
+        var amplifierGeometry = new THREE.CircleGeometry(30, 32);
+        var amplifierMaterial = new THREE.MeshPhongMaterial( {color: 0x00ffff, ambient: 0x00ffff, side: THREE.DoubleSide} );
+        var amplifier = new THREE.Mesh(amplifierGeometry, amplifierMaterial);
+        amplifier.position.set(this.amplifierPosition.x, this.amplifierPosition.y, this.amplifierPosition.z);
+        amplifier.rotateY(this.amplifierRotation);
+        amplifier.name = 'amplifier';
+
         //BEAM SPLITTER
         var beamSplitterGeometry = new THREE.BoxGeometry(1, 1, 1);
         var beamSplitterMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, ambient: 0xffffff });
         var beamSplitter = new THREE.Mesh(beamSplitterGeometry, beamSplitterMaterial);
-        beamSplitter.scale.set(30,30,30);
+        beamSplitter.scale.set(60,60,60);
         beamSplitter.position.set(this.beamSplitterPosition.x,this.beamSplitterPosition.y, this.beamSplitterPosition.z);
         beamSplitter.rotateY(this.beamSplitterRotation);
 
@@ -227,7 +257,7 @@ CGHLab.MainPerspective.prototype = {
         holographicPlate.name = 'plate';
 
         //FLOOR
-        var floorGeometry = new THREE.PlaneGeometry( 500, 500);
+        var floorGeometry = new THREE.PlaneGeometry( 1000, 1000);
         var floorMaterial = new THREE.MeshPhongMaterial( {color: 0x999999, ambient: 0x999999, side: THREE.DoubleSide} );
         var floor = new THREE.Mesh( floorGeometry, floorMaterial );
         floor.position.y = 0;
@@ -243,11 +273,13 @@ CGHLab.MainPerspective.prototype = {
         //ADD STUFF TO SCENE
         this.scene.add(mirror);
         mirror.add(mirrorBox);
+        //mirror.add(stand);
         this.scene.add(floor);
         this.scene.add(this.object.object);
         this.scene.add(holographicPlate);
         this.scene.add(laserSource);
         this.scene.add(beamSplitter);
+        this.scene.add(amplifier);
 
         //ADD OBJECTS THAT YOU WHAT TO INTERACT INTO THE OBJECTS ARRAY
         this.objects.push(this.object.object);
@@ -319,6 +351,13 @@ CGHLab.MainPerspective.prototype = {
         mirror.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
         mirror.rotateY(this.mirrorRotation);
         this.updateShaderUniforms();
+
+        var laserLight3 = this.getLaserLight3();
+        var i;
+        for(i = 0; i < laserLight3.length; i++){
+            this.scene.remove(laserLight3[i]);
+        }
+        this.eraseLight3Array();
     },
 
     setHologramShader: function()
@@ -425,6 +464,10 @@ CGHLab.MainPerspective.prototype = {
                 this.addToLaserLight1(newWave);
                 this.scene.add(newWave);
                 laserLight1.next[i] = true;
+            }
+            //Cross the amplifier
+            if(laserLight1.list[i].position.z < this.amplifierPosition.z){
+                laserLight1.list[i].scale.set(3,3,3);
             }
             //Every time a wavefront cross the beam splitter a new wave starting on the beam with the direction
             //of the mirror is created

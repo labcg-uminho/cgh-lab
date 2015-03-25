@@ -60,7 +60,7 @@
             var aspect = window.innerWidth / window.innerHeight;
 
             camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 10000);
-            camera.position.set(0, 30, 0);
+            camera.position.set(0, 500, 0);
 
             ////SCENES
             spherescene = new THREE.Scene();
@@ -100,13 +100,6 @@
             spherescene.add( axes2 );
 
             ////LIGHTS
-            /*//CUBE SCENE
-            var amblight2 = new THREE.AmbientLight( 0x505050 );
-            var light2 = new THREE.PointLight( 0xffffff, 1);
-            light2.position.set( 10, 10, 10 );
-            cubescene.add( amblight2 );
-            cubescene.add( light2 );*/
-
             //SPHERE SCENE
             var amblight3 = new THREE.AmbientLight( 0x505050 );
             var light3 = new THREE.PointLight( 0xffffff, 1);
