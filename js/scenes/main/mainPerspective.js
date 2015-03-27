@@ -29,7 +29,7 @@ CGHLab.MainPerspective = function( renderer, camera )
     var unitsMirror = (1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 250;
     this.mirrorPosition = new THREE.Vector3();
     this.mirrorPosition.addVectors(this.platePosition, dirMirror.multiplyScalar(unitsMirror));
-    this.mirrorRotation = -Math.PI/2 + this.plateRotation - (Math.PI/4 - this.referenceWaveAngle);
+    this.mirrorRotation = -Math.PI/2 + this.plateRotation - ((Math.PI/4 - this.referenceWaveAngle)/2);
 
     //Direction of object in relation to plate
     var dirObject = new THREE.Vector3(Math.sin(this.plateRotation-Math.PI/4), 0, Math.cos(this.plateRotation-Math.PI/4)).normalize();
@@ -43,18 +43,10 @@ CGHLab.MainPerspective = function( renderer, camera )
     //Direction of laser in relation to object
     //This direction is the same as the mirror direction but the position is calculated in relation to the object and not the plate
     var dirLaser = new THREE.Vector3(Math.sin(this.plateRotation+Math.PI/4), 0, Math.cos(this.plateRotation+Math.PI/4)).normalize();
-    var unitsLaser = 400;
+    var unitsLaser = 350;
     this.laserPosition = new THREE.Vector3();
     this.laserPosition.addVectors(this.objectPosition, dirLaser.multiplyScalar(unitsLaser));
     this.laserRotation = this.plateRotation + Math.PI/4;
-
-    //Direction of light amplifier in relation to object
-    //This direction is the same as the mirror direction but the position is calculated in relation to the object and not the plate
-    var dirAmplifier = new THREE.Vector3(Math.sin(this.plateRotation+Math.PI/4), 0, Math.cos(this.plateRotation+Math.PI/4)).normalize();
-    var unitsAmplifier = 350;
-    this.amplifierPosition = new THREE.Vector3();
-    this.amplifierPosition.addVectors(this.objectPosition, dirAmplifier.multiplyScalar(unitsAmplifier));
-    this.amplifierRotation = this.plateRotation + Math.PI/4;
 
     //Direction of beam splitter in relation to mirror
     //This direction is the same as the object direction but the position is calculated in relation to the mirror and not the plate
@@ -63,6 +55,21 @@ CGHLab.MainPerspective = function( renderer, camera )
     this.beamSplitterPosition = new THREE.Vector3();
     this.beamSplitterPosition.addVectors(this.mirrorPosition, dirSplitter.multiplyScalar(unitsSplitter));
     this.beamSplitterRotation = this.plateRotation + Math.PI/4;
+
+    //Direction of light amplifiers in relation to object and plate
+    //This direction is the same as the mirror direction but the position is calculated in relation to the object and not the plate
+    var dirAmplifier = new THREE.Vector3(Math.sin(this.plateRotation+Math.PI/4), 0, Math.cos(this.plateRotation+Math.PI/4)).normalize();
+    var unitsAmplifier = 200;
+    this.amplifierPosition = new THREE.Vector3();
+    this.amplifierPosition.addVectors(this.objectPosition, dirAmplifier.multiplyScalar(unitsAmplifier));
+    this.amplifierRotation = this.plateRotation + Math.PI/4;
+
+    //This direction is the same as the mirror direction
+    var unitsAmplifier2 = 200;//(1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 200;
+    this.amplifierPosition2 = new THREE.Vector3();
+    this.amplifierPosition2.addVectors(this.platePosition, dirMirror.normalize().multiplyScalar(unitsAmplifier2));
+    var dot = dirSplitter.dot(dirMirror.clone().negate().normalize());
+    this.amplifierRotation2 = Math.PI - Math.acos(dot) - Math.PI/4;
 
     //Discovers the center of the scene
     var center = new THREE.Vector3();
@@ -95,9 +102,10 @@ CGHLab.MainPerspective = function( renderer, camera )
         return dirMirror;
     };
 
-    this.setMirrorDirAndUnits = function(newDir, newUnits){
+    this.setMirrorDirAndUnits = function(newDir, newUnits, newAmplifierUnits){
         dirMirror = newDir;
         unitsMirror = newUnits;
+        unitsAmplifier2 = newAmplifierUnits;
     };
 
     this.getDirObject = function(){
@@ -190,6 +198,10 @@ CGHLab.MainPerspective = function( renderer, camera )
     this.eraseLight3Array = function(){
         laserLight3 = [];
     };
+
+    this.eraseObjLight = function(){
+        objWaveLight = [];
+    };
 };
 
 CGHLab.MainPerspective.prototype = {
@@ -228,18 +240,35 @@ CGHLab.MainPerspective.prototype = {
         laserSource.name = 'laser';
 
         //AMPLIFIER
-        var amplifierGeometry = new THREE.CircleGeometry(30, 32);
-        var amplifierMaterial = new THREE.MeshPhongMaterial( {color: 0x00ffff, ambient: 0x00ffff, side: THREE.DoubleSide} );
-        var amplifier = new THREE.Mesh(amplifierGeometry, amplifierMaterial);
+        //ThreeCSG stuff
+        var cube_geometry = new THREE.CubeGeometry( 30, 30, 30 );
+        var cube_mesh = new THREE.Mesh( cube_geometry );
+        cube_mesh.position.z = 15;
+        var cube_bsp = new ThreeBSP( cube_mesh );
+        var sphere_geometry = new THREE.SphereGeometry( 1, 32, 32 );
+        var sphere_mesh = new THREE.Mesh( sphere_geometry );
+        var sphere_bsp = new ThreeBSP( sphere_mesh );
+        var subtract_bsp = sphere_bsp.subtract( cube_bsp );
+
+        var amplifierMaterial = new THREE.MeshPhongMaterial( {color: 0x00ffff, ambient: 0x00ffff} );
+
+        var amplifier = subtract_bsp.toMesh(amplifierMaterial);
+        amplifier.scale.set(10,10,5);
         amplifier.position.set(this.amplifierPosition.x, this.amplifierPosition.y, this.amplifierPosition.z);
         amplifier.rotateY(this.amplifierRotation);
-        amplifier.name = 'amplifier';
+        amplifier.name = 'amplifier1';
+
+        var amplifier2 = subtract_bsp.toMesh(amplifierMaterial);
+        amplifier2.position.set(this.amplifierPosition2.x, this.amplifierPosition2.y, this.amplifierPosition2.z);
+        amplifier2.scale.set(10,10,5);
+        amplifier2.rotateY(this.amplifierRotation2);
+        amplifier2.name = 'amplifier2';
 
         //BEAM SPLITTER
         var beamSplitterGeometry = new THREE.BoxGeometry(1, 1, 1);
         var beamSplitterMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, ambient: 0xffffff });
         var beamSplitter = new THREE.Mesh(beamSplitterGeometry, beamSplitterMaterial);
-        beamSplitter.scale.set(60,60,60);
+        beamSplitter.scale.set(40,40,40);
         beamSplitter.position.set(this.beamSplitterPosition.x,this.beamSplitterPosition.y, this.beamSplitterPosition.z);
         beamSplitter.rotateY(this.beamSplitterRotation);
 
@@ -280,6 +309,7 @@ CGHLab.MainPerspective.prototype = {
         this.scene.add(laserSource);
         this.scene.add(beamSplitter);
         this.scene.add(amplifier);
+        this.scene.add(amplifier2);
 
         //ADD OBJECTS THAT YOU WHAT TO INTERACT INTO THE OBJECTS ARRAY
         this.objects.push(this.object.object);
@@ -298,6 +328,8 @@ CGHLab.MainPerspective.prototype = {
 
     },
 
+    //Transforms a degrees in radians and rotate the object. This function calculates the difference between the actual rotation and the new value
+    //of rotation and rotate that value. For example, if the object has a 90º rotation and you want rotate it to 100º, the rotation will be of 10º
     rotateObject: function(value)
     {
         var rad = CGHLab.Helpers.deg2rad(value);
@@ -309,49 +341,65 @@ CGHLab.MainPerspective.prototype = {
         this.updateShaderUniforms();
     },
 
+    //Change the object
     changeObject: function(value)
     {
         this.object.changeObject(value);
         this.updateShaderUniforms();
+
+        var objWaveLight = this.getObjWaveLight();
+        var i;
+        for(i = 0; i < objWaveLight.length; i++){
+            this.scene.remove(objWaveLight[i]);
+        }
+        this.eraseObjLight();
     },
 
+    //Handles the update of the reference wave angle. The position of the mirror and amplifier are updated to match the parameters
     updateMirror: function(value)
     {
         var mirror = this.scene.getObjectByName('mirror');
-        var d = this.getDirMirror().clone().normalize();
-        //alert('x: '+ d.x + " y: "+ d.y + " z: "+ d.z);
+        var amplifier2 = this.scene.getObjectByName('amplifier2');
+
+        //Updates the mirror direction and units
         this.referenceWaveAngle = CGHLab.Helpers.deg2rad(value);
-        var dirMirror = new THREE.Vector3(Math.sin(this.plateRotation+this.referenceWaveAngle), 0, Math.cos(this.plateRotation+this.referenceWaveAngle)).normalize();
+        var newDirMirror = new THREE.Vector3(Math.sin(this.plateRotation+this.referenceWaveAngle), 0, Math.cos(this.plateRotation+this.referenceWaveAngle)).normalize();
         var unitsMirror = (1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 250;
-        this.setMirrorDirAndUnits(dirMirror, unitsMirror);
-        var d2 = this.getDirMirror();
-        //alert('x: '+ d2.x + " y: "+ d2.y + " z: "+ d2.z);
+
+        //Update the amplifier units
+        var unitsAmplifier2 = 200;//(1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 200;
+
+        //Make the changes permanent
+        this.setMirrorDirAndUnits(newDirMirror, unitsMirror, unitsAmplifier2);
+
+        //Updates mirror position with the new mirror direction and units
         this.mirrorPosition = new THREE.Vector3();
-        this.mirrorPosition.addVectors(this.platePosition, this.getDirMirror().normalize().multiplyScalar(unitsMirror));
+        this.mirrorPosition.addVectors(this.platePosition, newDirMirror.normalize().multiplyScalar(unitsMirror));
         mirror.rotateY(-this.mirrorRotation);
         //TO_DO: tentar perceber o porque disto... xD
         this.mirrorRotation = -Math.PI/2 + this.plateRotation - ((Math.PI/4 - this.referenceWaveAngle)/2);
 
-        var db = this.getDirSplitter().clone().normalize();
-        var dm = dirMirror.clone().normalize();
-        var ndm = dm.clone().negate().normalize();
-        //alert('x: '+ ndm.x + " y: "+ ndm.y + " z: "+ ndm.z);
-        var mN = new THREE.Vector3(Math.sin(this.mirrorRotation), 0, Math.cos(this.mirrorRotation)).normalize();
-        var pN = new THREE.Vector3(Math.sin(this.plateRotation), 0, Math.cos(this.plateRotation)).normalize();
-        //alert('x: '+ mN.x + " y: "+ mN.y + " z: "+ mN.z);
-        var dot1 = CGHLab.Helpers.rad2deg(Math.acos(mN.dot(db.normalize())));
-        var dot2 = CGHLab.Helpers.rad2deg(Math.acos(mN.dot(ndm.normalize())));
-        var dot3 = CGHLab.Helpers.rad2deg(Math.acos(db.dot(ndm.normalize())));
-        var dot4 = CGHLab.Helpers.rad2deg(Math.acos(dm.dot(pN.normalize())));
-        //alert('mN db: ' + dot1);
-        //alert('mN ndm: ' +dot2);
-        //alert('db ndm: ' + dot3);
-        //alert('dm pN: ' + dot4);
-
+        //Update the rotation of the mirror to match parameters
         mirror.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
         mirror.rotateY(this.mirrorRotation);
         this.updateShaderUniforms();
 
+        //Calculate amplifier position with new mirror direction
+        this.amplifierPosition2 = new THREE.Vector3();
+        this.amplifierPosition2.addVectors(this.platePosition, newDirMirror.normalize().multiplyScalar(unitsAmplifier2));
+        amplifier2.rotateY(-this.amplifierRotation2);
+
+        //Calculate amplifier rotation to match rotation of reference wave
+        var negDirMirror = newDirMirror.clone().negate().normalize();
+        var dirSplitter = this.getDirSplitter().clone().normalize();
+        var dot = dirSplitter.dot(negDirMirror);
+        this.amplifierRotation2 = Math.PI - Math.acos(dot) - Math.PI/4;
+
+        //Update position and rotation
+        amplifier2.position.set(this.amplifierPosition2.x, this.amplifierPosition2.y, this.amplifierPosition2.z);
+        amplifier2.rotateY(this.amplifierRotation2);
+
+        //Reset reflect geometry
         var laserLight3 = this.getLaserLight3();
         var i;
         for(i = 0; i < laserLight3.length; i++){
@@ -465,10 +513,6 @@ CGHLab.MainPerspective.prototype = {
                 this.scene.add(newWave);
                 laserLight1.next[i] = true;
             }
-            //Cross the amplifier
-            if(laserLight1.list[i].position.z < this.amplifierPosition.z){
-                laserLight1.list[i].scale.set(3,3,3);
-            }
             //Every time a wavefront cross the beam splitter a new wave starting on the beam with the direction
             //of the mirror is created
             if((laserLight1.list[i].position.z < this.beamSplitterPosition.z) && !laserLight1.beam[i]){
@@ -520,6 +564,19 @@ CGHLab.MainPerspective.prototype = {
             }
         }
 
+        //AMPLIFIER1
+        var distance_AO = this.amplifierPosition.distanceTo(this.objectPosition);
+        var initScale_A1 = 1;
+        var deltaScale_A1 = 2;
+        for(i = 0; i < laserLight1.list.length; i++){
+            //Cross the amplifier
+            if(laserLight1.list[i].position.z < this.amplifierPosition.z){
+                var actualDistance_A1 = laserLight1.list[i].position.distanceTo(this.objectPosition);
+                var ratio_A1 = actualDistance_A1/distance_AO;
+                laserLight1.list[i].scale.set(initScale_A1+deltaScale_A1*(1-ratio_A1),initScale_A1+deltaScale_A1*(1-ratio_A1),initScale_A1+deltaScale_A1*(1-ratio_A1));
+            }
+        }
+
         //MIRROR
         for(i = 0; i < laserLight3.length; i++){
             laserLight3[i].position.z -= dirMirror.normalize().z * timer;
@@ -530,8 +587,20 @@ CGHLab.MainPerspective.prototype = {
             }
         }
 
+        //AMPLIFIER2
+        var distance_AP = this.amplifierPosition2.distanceTo(this.platePosition);
+        var initScale_A2 = 1;
+        var deltaScale_A2 = 2;
+        for(i = 0; i < laserLight3.length; i++){
+            //Cross the amplifier
+            if(laserLight3[i].position.z < this.amplifierPosition2.z){
+                var actualDistance_A2 = laserLight3[i].position.distanceTo(this.platePosition);
+                var ratio_A2 = actualDistance_A2/distance_AP;
+                laserLight3[i].scale.set(initScale_A2+deltaScale_A2*(1-ratio_A2),initScale_A2+deltaScale_A2*(1-ratio_A2),initScale_A2+deltaScale_A2*(1-ratio_A2));
+            }
+        }
+
         var distance = this.objectPosition.distanceTo(this.platePosition);
-        //var delta = distance/5;
         var initScale = 30.0;
         var deltaScale = 40;
         for(i = 0; i < objWaveLight.length; i++){
