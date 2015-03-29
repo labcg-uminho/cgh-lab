@@ -2,7 +2,7 @@
  * Created by TiagoLuís on 18/02/2015.
  */
 
-CGHLab.MainPerspective = function( renderer, camera )
+CGHLab.MainScene = function( renderer, camera )
 {
     this.scene = new THREE.Scene();
     this.objects = [];
@@ -204,9 +204,9 @@ CGHLab.MainPerspective = function( renderer, camera )
     };
 };
 
-CGHLab.MainPerspective.prototype = {
+CGHLab.MainScene.prototype = {
 
-    constructor: CGHLab.MainPerspective,
+    constructor: CGHLab.MainScene,
 
     init: function()
     {

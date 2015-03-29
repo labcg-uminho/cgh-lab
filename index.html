@@ -17,7 +17,7 @@
     <script src="js/csg.js"></script>
     <script src="js/ThreeCSG.js"></script>
     <script src="js/CGHLab.js"></script>
-    <script src="js/scenes/main/mainPerspective.js"></script>
+    <script src="js/scenes/main/mainScene.js"></script>
     <script src="js/scenes/main/objectPerspective.js"></script>
     <script src="js/geometry/HoloObject.js"></script>
     <script src="js/holography/LightPoint.js"></script>
@@ -64,7 +64,7 @@
 
             ////SCENES
             spherescene = new THREE.Scene();
-            //mainPerspective = new CGHLab.MainPerspective(renderer, camera);
+            //mainPerspective = new CGHLab.MainScene(renderer, camera);
 
             ////CONTROLS
             controls = new THREE.OrbitControls( camera, renderer.domElement );
@@ -72,7 +72,7 @@
 
             /*------------------------------------------------------------------------------*/
             ////GEOMETRY
-            mainPerspective = new CGHLab.MainPerspective(renderer, camera);
+            mainPerspective = new CGHLab.MainScene(renderer, camera);
             mainPerspective.init();
             controls.target = mainPerspective.getCenter();
 
