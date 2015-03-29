@@ -5,7 +5,10 @@
 CGHLab.MainScene = function( renderer, camera )
 {
     this.scene = new THREE.Scene();
-    this.objects = [];
+    this.mainPerspective = true;
+    this.objectPerspective = false;
+    this.platePerspective = false;
+    //this.objects = [];
     this.mirror = new THREE.Mirror( renderer, camera, { clipBias: 0.003, textureWidth: window.innerWidth, textureHeight: window.innerHeight, color:0x889999 } );
 
     this.platePosition = new THREE.Vector3(0,80,0);
@@ -312,8 +315,8 @@ CGHLab.MainScene.prototype = {
         this.scene.add(amplifier2);
 
         //ADD OBJECTS THAT YOU WHAT TO INTERACT INTO THE OBJECTS ARRAY
-        this.objects.push(this.object.object);
-        this.objects.push(holographicPlate);
+        //this.objects.push(this.object.object);
+        //this.objects.push(holographicPlate);
 
         //LIGHT
         var ambLight = new THREE.AmbientLight( 0x505050 );

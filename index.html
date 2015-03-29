@@ -27,18 +27,19 @@
     <script>
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-        var mainPerspective, camera, controls, renderer, objectPerspective, spherescene;
+        var mainScene, camera, controls, renderer, objectPerspective, platePerspective;
         var container, stats;
         var gui = new dat.GUI();
+        var gui2 = new dat.GUI();
         var currentPerspective;
-        var currentScene;
+        //var currentScene;
         var laserTurnOn = false;
 
         var rayCaster;
         var mouse = new THREE.Vector2(), INTERSECTED, SELECTED;
 
-        var object, objectPosition, objectRotation, center;
-        var referenceWave;
+        //var object, objectPosition, objectRotation, center;
+        //var referenceWave;
 
         init();
 
@@ -63,8 +64,8 @@
             camera.position.set(0, 500, 0);
 
             ////SCENES
-            spherescene = new THREE.Scene();
-            //mainPerspective = new CGHLab.MainScene(renderer, camera);
+            //spherescene = new THREE.Scene();
+            //mainScene = new CGHLab.MainScene(renderer, camera);
 
             ////CONTROLS
             controls = new THREE.OrbitControls( camera, renderer.domElement );
@@ -72,40 +73,40 @@
 
             /*------------------------------------------------------------------------------*/
             ////GEOMETRY
-            mainPerspective = new CGHLab.MainScene(renderer, camera);
-            mainPerspective.init();
-            controls.target = mainPerspective.getCenter();
+            mainScene = new CGHLab.MainScene(renderer, camera);
+            mainScene.init();
+            controls.target = mainScene.getCenter();
 
-            currentScene = mainPerspective;
+            /*currentScene = mainScene;
 
-            object = mainPerspective.object.clone();
-            objectPosition = mainPerspective.objectPosition;
-            objectRotation = mainPerspective.objectRotation;
-            center = mainPerspective.getCenter();
+            object = mainScene.object.clone();
+            objectPosition = mainScene.objectPosition;
+            objectRotation = mainScene.objectRotation;
+            center = mainScene.getCenter();
 
-            referenceWave = mainPerspective.referenceWave;
+            referenceWave = mainScene.referenceWave;
 
             objectPerspective = new CGHLab.ObjectPerspective(objectPosition, objectRotation, object, center, referenceWave);
-            objectPerspective.init();
+            objectPerspective.init();*/
 
 
             //SPHERE SCENE
-            var spheregeometry2 = new THREE.SphereGeometry(1, 32, 32);
+            /*var spheregeometry2 = new THREE.SphereGeometry(1, 32, 32);
             var spherematerial2 = new THREE.MeshPhongMaterial({ color: 0xffff00 });
             var sphere2 = new THREE.Mesh(spheregeometry2, spherematerial2);
             sphere2.position.set(5,0,0);
             spherescene.add(sphere2);
 
             var axes2 = new THREE.AxisHelper(10);
-            spherescene.add( axes2 );
+            spherescene.add( axes2 );*/
 
             ////LIGHTS
             //SPHERE SCENE
-            var amblight3 = new THREE.AmbientLight( 0x505050 );
+            /*var amblight3 = new THREE.AmbientLight( 0x505050 );
             var light3 = new THREE.PointLight( 0xffffff, 1);
             light3.position.set( 10, 10, 10 );
             spherescene.add( amblight3 );
-            spherescene.add( light3 );
+            spherescene.add( light3 );*/
 
             /*---------------------------------------------------------------------------*/
 
@@ -126,39 +127,63 @@
             ////CALLBACKS
             window.addEventListener( 'resize', onWindowResize, false );
             window.addEventListener( 'mousemove', onDocumentMouseMove, false );
-            window.addEventListener( 'mousedown', onDocumentMouseDown, false );
+            //window.addEventListener( 'mousedown', onDocumentMouseDown, false );
         }
 
         function setGUI( perspective )
         {
             var parameters;
             gui.destroy();
+            gui2.destroy();
+            gui2 = new dat.GUI();
+            parameters =
+            {
+                mainPerspectiveChange: function(){
+                    mainScene.objectPerspective = false;
+                    mainScene.mainPerspective = true;
+                    mainScene.platePerspective = false;
+                    setGUI('main');
+                },
+                objectPerspectiveChange: function(){
+                    mainScene.objectPerspective = true;
+                    mainScene.mainPerspective = false;
+                    mainScene.platePerspective = false;
+                    setGUI('object');
+                },
+                platePerspectiveChange: function(){
+                    mainScene.objectPerspective = false;
+                    mainScene.mainPerspective = false;
+                    mainScene.platePerspective = true;
+                    setGUI('plate');
+                }
+            };
+
+            var folder3 = gui2.addFolder('Perspectives');
+            folder3.add(parameters, 'mainPerspectiveChange').name('Main Perspective');
+            folder3.add(parameters, 'objectPerspectiveChange').name('Object Perspective');
+            folder3.add(parameters, 'platePerspectiveChange').name('Plate Perspective');
+            folder3.open();
+            gui2.open();
+
             if(perspective == 'main')
             {
                 gui = new dat.GUI();
 
                 parameters =
                 {
-                    laserOn: function(){if (!laserTurnOn) mainPerspective.laserOn(); laserTurnOn = true;},
-                    laserOff: function(){if (laserTurnOn) mainPerspective.laserOff(); laserTurnOn = false;},
-                    objectRotationSlider: mainPerspective.objectRotationScene,
-                    focusCenter: function(){controls.target = mainPerspective.getCenter()},
+                    laserOn: function(){if (!laserTurnOn) mainScene.laserOn(); laserTurnOn = true;},
+                    laserOff: function(){if (laserTurnOn) mainScene.laserOff(); laserTurnOn = false;},
+                    objectRotationSlider: mainScene.objectRotationScene,
+                    focusCenter: function(){controls.target = mainScene.getCenter()},
                     geometry: 'cube',
-                    interferencePattern: function(){ mainPerspective.seeInterferencePattern(); },
-                    objectPerspectiveChange: function(){
-                        object = mainPerspective.object.clone();
-                        referenceWave = mainPerspective.referenceWave;
-                        objectPerspective.updateParameters(object, referenceWave);
-                        currentScene = objectPerspective;
-                        setGUI('object');
-                    },
-                    refWaveLength: mainPerspective.referenceWave.waveLength,
-                    refWaveAngle: CGHLab.Helpers.rad2deg(mainPerspective.referenceWaveAngle)
+                    interferencePattern: function(){ mainScene.seeInterferencePattern(); },
+                    refWaveLength: mainScene.referenceWave.waveLength,
+                    refWaveAngle: CGHLab.Helpers.rad2deg(mainScene.referenceWaveAngle)
                 };
 
                 /*var cubeRotation = gui.add(parameters, 'cubeRotation').min(0).listen();
                 cubeRotation.onChange(function(value){
-                    mainPerspective.updateObjectRotation(value)
+                    mainScene.updateObjectRotation(value)
                 });*/
 
                 gui.add(parameters, 'laserOn').name('Turn On Laser');
@@ -169,28 +194,25 @@
                 var folder1 = gui.addFolder('Object');
                 var r = folder1.add( parameters, 'objectRotationSlider').min(0).max(360).name('Rotation');
                 r.onChange(function(value){
-                    mainPerspective.rotateObject(value);
+                    mainScene.rotateObject(value);
                 });
                 var geometry = folder1.add( parameters, 'geometry', [ 'cube', 'sphere', 'octahedron', 'tetrahedron' ] ).name('Geometry').listen();
                 geometry.onChange(function(value)
                 {
-                    mainPerspective.changeObject(value);
+                    mainScene.changeObject(value);
                 });
                 folder1.open();
                 var folder2 = gui.addFolder('Reference Wave');
                 var wl = folder2.add(parameters, 'refWaveLength').name('WaveLength');
                 wl.onChange(function(value){
-                    mainPerspective.referenceWave.waveLength = value;
-                    mainPerspective.updateShaderUniforms();
+                    mainScene.referenceWave.waveLength = value;
+                    mainScene.updateShaderUniforms();
                 });
                 var wa = folder2.add(parameters, 'refWaveAngle').min(0).max(90).name('Wave Angle');
                 wa.onChange(function(value){
-                   mainPerspective.updateMirror(value);
+                   mainScene.updateMirror(value);
                 });
                 folder2.open();
-                var folder3 = gui.addFolder('Perspectives');
-                folder3.add(parameters, 'objectPerspectiveChange').name('Object Perspective');
-                folder3.open();
                 gui.open();
             }
 
@@ -255,7 +277,7 @@
             renderer.setSize( window.innerWidth, window.innerHeight );
         }
 
-        function onDocumentMouseDown( event )
+        /*function onDocumentMouseDown( event )
         {
             //event.preventDefault(); //Makes dat.GUI not work properly
 
@@ -263,7 +285,7 @@
 
             rayCaster.setFromCamera( mouse, camera );
 
-            var intersects = rayCaster.intersectObjects( mainPerspective.objects );
+            var intersects = rayCaster.intersectObjects( mainScene.objects );
 
             if ( intersects.length > 0 ) {
 
@@ -272,7 +294,7 @@
                 controls.target = SELECTED.position;
 
             }
-        }
+        }*/
 
         function onDocumentMouseMove( event )
         {
@@ -293,80 +315,36 @@
         {
             camera.updateMatrixWorld();
 
-            rayCaster.setFromCamera( mouse, camera );
-
-            var intersects = rayCaster.intersectObjects( mainPerspective.objects );
-
-            if ( intersects.length > 0 ) {
-
-                /*if ( INTERSECTED != intersects[ 0 ].object ) {
-
-                    if ( INTERSECTED ) INTERSECTED.material.uniforms.emissive.value.setHex( INTERSECTED.currentHex );
-
-                    INTERSECTED = intersects[ 0 ].object;
-                    //alert('x-'+INTERSECTED.position.x+' y-'+INTERSECTED.position.y+' z-'+INTERSECTED.position.z);
-                    INTERSECTED.currentHex = INTERSECTED.material.uniforms.emissive.value.getHex();
-                    INTERSECTED.material.uniforms.emissive.value.setHex(0xff0000);
-
-                }*/
-
-                container.style.cursor = 'pointer';
-
-            } else {
-
-                /*if ( INTERSECTED ) alert(INTERSECTED.name);//INTERSECTED.material.uniforms.emissive.value.setHex( INTERSECTED.currentHex );
-
-                INTERSECTED = null;*/
-
-                container.style.cursor = 'auto';
-
-            }
-
-            if(SELECTED)
-            {
-                if(SELECTED.position.distanceTo(camera.position) < 100)
-                {
-                    if(SELECTED.name == 'object') {
-                        if (currentPerspective != 'object')
-                        {
-                            currentPerspective = 'object';
-                            setGUI('object');
-                        }
-                        renderer.render(objectPerspective.scene, camera);
-                    }
-                    else if(SELECTED.name == 'plate')
-                    {
-                        if (currentPerspective != 'plate')
-                        {
-                            currentPerspective = 'plate';
-                            setGUI('plate');
-                        }
-                        renderer.render(spherescene, camera);
-                    }
-                }
-                else
-                {
-                    if(currentPerspective != 'main')
-                    {
-                        currentPerspective = 'main';
-                        setGUI('main');
-                    }
-                    mainPerspective.mirror.render();
-                    renderer.render(currentScene.scene, camera);
+            if(mainScene.objectPerspective){
+                if(currentPerspective != 'object'){
+                    controls.target = mainScene.objectPosition;
+                    setGUI('object');
+                    currentPerspective = 'object';
                 }
             }
-            else
-            {
-                mainPerspective.mirror.render();
-                renderer.render(currentScene.scene, camera);
+            else if(mainScene.platePerspective){
+                if(currentPerspective != 'plate'){
+                    controls.target = mainScene.platePosition;
+                    setGUI('plate');
+                    currentPerspective = 'plate';
+                }
             }
+            else if(mainScene.mainPerspective){
+                if(currentPerspective != 'main'){
+                    controls.target = mainScene.getCenter();
+                    setGUI('main');
+                    currentPerspective = 'main';
+                }
+            }
+            mainScene.mirror.render();
+            renderer.render(mainScene.scene, camera);
         }
 
         function update()
         {
             controls.update();
             stats.update();
-            if (laserTurnOn) mainPerspective.updateLaser();
+            if (laserTurnOn) mainScene.updateLaser();
         }
     </script>
 </body>
