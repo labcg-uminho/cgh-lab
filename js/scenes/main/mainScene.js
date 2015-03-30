@@ -79,9 +79,11 @@ CGHLab.MainScene = function( renderer, camera )
     center.addVectors(this.platePosition,this.laserPosition).divideScalar(2);
 
     //Reference wave initialization
-    this.referenceWave = new CGHLab.Wave(0,1,1);
+    this.referenceWave = new CGHLab.Wave(0,1,10);
 
     this.interferencePatternShader = new THREE.Material;
+
+    this.platePoints = [];
 
     //Variables to store reference wave and object wave geometry
     var laserLight1 = {
@@ -95,7 +97,15 @@ CGHLab.MainScene = function( renderer, camera )
         mirror: []
     };
     var laserLight3 = [];
+
+    //List of object waves from main perspective
     var objWaveLight = [];
+
+    //List of light point waves from object perspective
+    var lightPointWaves = {
+        list: [],
+        scales: []
+    };
 
     this.getCenter = function(){
         return center;
@@ -121,10 +131,6 @@ CGHLab.MainScene = function( renderer, camera )
 
     this.getDirSplitter = function(){
         return dirSplitter;
-    };
-
-    this.getDirAmplifier = function(){
-        return dirAmplifier;
     };
 
     this.getLaserLight1 = function(){
@@ -205,6 +211,27 @@ CGHLab.MainScene = function( renderer, camera )
     this.eraseObjLight = function(){
         objWaveLight = [];
     };
+
+    //Object perspective stuff
+    this.getLightPointWaves = function(){
+        return lightPointWaves;
+    };
+
+    this.addToLightPointWaves = function(obj){
+        lightPointWaves.list.push(obj);
+        lightPointWaves.scales.push(1.0);
+    };
+
+    this.removeFromLightPointWaves = function(obj){
+        var i = lightPointWaves.list.indexOf(obj);
+        lightPointWaves.list.slice(i, 1);
+        lightPointWaves.scales.slice(i, 1);
+    };
+
+    this.eraseLightPointWaves = function(){
+        lightPointWaves.list = [];
+        lightPointWaves.scales = [];
+    }
 };
 
 CGHLab.MainScene.prototype = {
@@ -497,6 +524,7 @@ CGHLab.MainScene.prototype = {
         var laserLight2 = this.getLaserLight2();
         var laserLight3 = this.getLaserLight3();
         var objWaveLight = this.getObjWaveLight();
+        var lightPointsWaves = this.getLightPointWaves();
         var dirLaser = this.getDirLaser();
         var dirSplitter = this.getDirSplitter();
         var dirMirror = this.getDirMirror();
@@ -528,18 +556,36 @@ CGHLab.MainScene.prototype = {
             }
             //Every time a wavefront cross the object a new object wavefront is created
             //and the ref wave disappears
-            if (laserLight1.list[i].position.z < this.objectPosition.z) {
-                this.scene.remove(laserLight1.list[i]);
-                this.removeFromLaserLight1(laserLight1.list[i]);
+            if(this.mainPerspective) {
+                if (laserLight1.list[i].position.z < this.objectPosition.z) {
+                    this.scene.remove(laserLight1.list[i]);
+                    this.removeFromLaserLight1(laserLight1.list[i]);
 
-                if(!laserLight1.object[i]) {
-                    //var newObjWave = objWave.clone();
-                    var newObjWave = this.object.object.clone();
-                    newObjWave.material = new THREE.MeshPhongMaterial({ color: 0x0000ff , ambient: 0x0000ff, transparent: true, opacity: 0.5});
-                    newObjWave.position.set(this.objectPosition.x, this.objectPosition.y, this.objectPosition.z);
-                    this.scene.add(newObjWave);
-                    this.addToObjWaveLight(newObjWave);
-                    laserLight1.object[i] = true;
+                    if (!laserLight1.object[i]) {
+                        //var newObjWave = objWave.clone();
+                        var newObjWave = this.object.object.clone();
+                        newObjWave.material = new THREE.MeshPhongMaterial({
+                            color: 0x0000ff,
+                            ambient: 0x0000ff,
+                            transparent: true,
+                            opacity: 0.5
+                        });
+                        newObjWave.position.set(this.objectPosition.x, this.objectPosition.y, this.objectPosition.z);
+                        this.scene.add(newObjWave);
+                        this.addToObjWaveLight(newObjWave);
+                        laserLight1.object[i] = true;
+                    }
+                }
+            }
+            else if(this.objectPerspective){
+                if (laserLight1.list[i].position.z < this.objectPosition.z) {
+                    this.scene.remove(laserLight1.list[i]);
+                    this.removeFromLaserLight1(laserLight1.list[i]);
+
+                    if (!laserLight1.object[i]) {
+                        CGHLab.ObjectPerspective.sendLightPointWave(this.scene, this.object.lightPoints, this);
+                        laserLight1.object[i] = true;
+                    }
                 }
             }
         }
@@ -603,20 +649,81 @@ CGHLab.MainScene.prototype = {
             }
         }
 
-        var distance = this.objectPosition.distanceTo(this.platePosition);
-        var initScale = 30.0;
-        var deltaScale = 40;
-        for(i = 0; i < objWaveLight.length; i++){
-            var actualDistance = objWaveLight[i].position.distanceTo(this.platePosition);
-            var ratio = actualDistance/distance;
-            objWaveLight[i].position.z -= dirObject.normalize().z * timer;
-            objWaveLight[i].position.x -= dirObject.normalize().x * timer;
-            //The closer to the plate (minor distance) the lower is the ratio and bigger is objWaveLight
-            objWaveLight[i].scale.set(initScale+deltaScale*(1-ratio),initScale+deltaScale*(1-ratio),initScale+deltaScale*(1-ratio));
-            if (objWaveLight[i].position.z < this.platePosition.z) {
-                this.scene.remove(objWaveLight[i]);
-                this.removeFromObjWaveLight(objWaveLight[i]);
+        //OBJECT
+        if(this.mainPerspective) {
+            var distance = this.objectPosition.distanceTo(this.platePosition);
+            var initScale = 30.0;
+            var deltaScale = 40;
+            for (i = 0; i < objWaveLight.length; i++) {
+                var actualDistance = objWaveLight[i].position.distanceTo(this.platePosition);
+                var ratio = actualDistance / distance;
+                objWaveLight[i].position.z -= dirObject.normalize().z * timer;
+                objWaveLight[i].position.x -= dirObject.normalize().x * timer;
+                //The closer to the plate (minor distance) the lower is the ratio and bigger is objWaveLight
+                objWaveLight[i].scale.set(initScale + deltaScale * (1 - ratio), initScale + deltaScale * (1 - ratio), initScale + deltaScale * (1 - ratio));
+                if (objWaveLight[i].position.z < this.platePosition.z) {
+                    this.scene.remove(objWaveLight[i]);
+                    this.removeFromObjWaveLight(objWaveLight[i]);
+                }
             }
         }
+        else if(this.objectPerspective){
+            for (i = 0; i < lightPointsWaves.list.length; i++) {
+                lightPointsWaves.list[i].scale.set(lightPointsWaves.scales[i], lightPointsWaves.scales[i], lightPointsWaves.scales[i]);
+                lightPointsWaves.scales[i] += 3.0;
+
+                if (lightPointsWaves.scales[i] > 800) {
+                    this.scene.remove(lightPointsWaves.list[i]);
+                    this.removeFromLightPointWaves(lightPointsWaves.list[i]);
+                }
+            }
+        }
+    },
+
+    changeToObjectPerspective: function()
+    {
+        var object = this.scene.getObjectByName('object');
+        this.scene.remove(object);
+
+        CGHLab.ObjectPerspective.setLightPoints(this.scene, this.object.lightPoints);
+
+        var objWaveLight = this.getObjWaveLight();
+        var i;
+        for(i = 0; i < objWaveLight.length; i++){
+            this.scene.remove(objWaveLight[i]);
+        }
+        this.eraseObjLight();
+        this.getPlatePoints();
+    },
+
+    changeToMainPerspective: function()
+    {
+        var i;
+        for (i = 0; i < this.object.lightPoints.length; i++){
+            var object = this.scene.getObjectByName('lightPoint'+i);
+            this.scene.remove(object);
+        }
+
+        var lightPointsWave = this.getLightPointWaves();
+        for(i = 0; i < lightPointsWave.list.length; i++){
+            this.scene.remove(lightPointsWave.list[i]);
+        }
+        this.eraseLightPointWaves();
+        this.scene.add(this.object.object);
+    },
+
+    getPlatePoints: function()
+    {
+        var clone = this.scene.getObjectByName('plate').clone();
+        var geometry = clone.geometry.clone();
+        var vertices = geometry.vertices;
+        var points = [];
+        clone.updateMatrixWorld();
+        for(var i = 0; i < vertices.length/2; i++){
+            vertices[i].applyMatrix4(clone.matrixWorld);
+            //alert('x: '+ vertices[i].x + ' z: '+vertices[i].z);
+            points.push(vertices[i]);
+        }
+        this.platePoints = points;
     }
 };

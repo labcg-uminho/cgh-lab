@@ -24,6 +24,7 @@
     <script src="js/holography/Wave.js"></script>
     <script src="js/holography/HologramShaderLib.js"></script>
     <script src="js/Helpers.js"></script>
+    <script src="js/geometry/GeometryShaderLib.js"></script>
     <script>
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
@@ -320,6 +321,7 @@
                     controls.target = mainScene.objectPosition;
                     setGUI('object');
                     currentPerspective = 'object';
+                    mainScene.changeToObjectPerspective();
                 }
             }
             else if(mainScene.platePerspective){
@@ -334,6 +336,7 @@
                     controls.target = mainScene.getCenter();
                     setGUI('main');
                     currentPerspective = 'main';
+                    mainScene.changeToMainPerspective();
                 }
             }
             mainScene.mirror.render();

@@ -2,45 +2,46 @@
  * Created by tiago on 3/21/15.
  */
 
-CGHLab.ObjectPerspective = function( position, rotation, object, center, referenceWave ){
-    this.scene = new THREE.Scene();
+CGHLab.ObjectPerspective = {
 
-    this.position = position;
-    this.rotation = rotation;
-
-    this.object = object;
-
-    this.center = center;
-
-    this.referenceWave = referenceWave;
-};
-
-CGHLab.ObjectPerspective.prototype = {
-
-    constructor: CGHLab.ObjectPerspective,
-
-    updateParameters: function( object, referenceWave )
+    setLightPoints: function( scene, lightPoints )
     {
-        this.referenceWave = referenceWave;
-        this.object = object;
-
-        this.scene = new THREE.Scene();
-
-        this.init();
+        var i;
+        var lightPointGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        var lightPointMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 , ambient: 0x00ff00});
+        for(i = 0; i < lightPoints.length; i++ ){
+            var lightPointMesh = new THREE.Mesh(lightPointGeometry, lightPointMaterial);
+            lightPointMesh.position.set(lightPoints[i].position.x, lightPoints[i].position.y, lightPoints[i].position.z);
+            lightPointMesh.name = 'lightPoint'+i;
+            scene.add(lightPointMesh);
+        }
     },
 
-    init: function()
-    {
-        var axes = new THREE.AxisHelper(100);
-        this.scene.add( axes );
-        this.scene.add(this.object.object);
+    sendLightPointWave: function( scene, lightPoints, mainScene ){
+        var i;
+        var lightPointGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        var shader = CGHLab.GeometryShaderLib.sphereShader;
+        var lightPointMaterial = new THREE.ShaderMaterial({
+            uniforms: shader.uniforms,
+            vertexShader: shader.vertexShader,
+            fragmentShader: shader.fragmentShader,
+            side: THREE.DoubleSide,
+            transparent: true
+        });
+        var lightPointMesh = new THREE.Mesh(lightPointGeometry, lightPointMaterial);
 
-        var ambLight = new THREE.AmbientLight( 0x505050 );
-        //var light = new THREE.PointLight( 0xffffff, 1);
-        var light = new THREE.PointLight(0xffffff, 1);
-        light.position.set( this.center.x, 500, this.center.z);
-        this.scene.add( ambLight );
-        this.scene.add( light );
+        var platePoints = mainScene.platePoints;
+
+        for(i = 0; i < 1; i++ ){
+            var clone = lightPointMesh.clone();
+            var materialClone  = lightPointMaterial.clone();
+            clone.position.set(lightPoints[i].position.x, lightPoints[i].position.y, lightPoints[i].position.z);
+            materialClone.uniforms.origin.value = new THREE.Vector3(lightPoints[i].position.x, lightPoints[i].position.y, lightPoints[i].position.z);
+            materialClone.uniforms.plate.value = platePoints;
+            clone.material = materialClone;
+            scene.add(clone);
+            mainScene.addToLightPointWaves(clone);
+        }
     }
 
 };
