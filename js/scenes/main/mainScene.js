@@ -82,6 +82,7 @@ CGHLab.MainScene = function( renderer, camera )
     this.referenceWave = new CGHLab.Wave(0,1,10);
 
     this.interferencePatternShader = new THREE.Material;
+    this.lightPointWaveShader = new THREE.Material;
 
     this.platePoints = [];
 
@@ -354,7 +355,11 @@ CGHLab.MainScene.prototype = {
         this.scene.add( ambLight );
         this.scene.add( light );
 
+        //Initialize hologram shader (link)
         this.setHologramShader();
+
+        //Initialize shader used on the object perspective to paint the light point waves
+        CGHLab.ObjectPerspective.setLightPointWaveMaterial(this);
 
     },
 
@@ -583,7 +588,7 @@ CGHLab.MainScene.prototype = {
                     this.removeFromLaserLight1(laserLight1.list[i]);
 
                     if (!laserLight1.object[i]) {
-                        CGHLab.ObjectPerspective.sendLightPointWave(this.scene, this.object.lightPoints, this);
+                        CGHLab.ObjectPerspective.sendLightPointWave(this.scene, this.object.lightPoints, this, this.lightPointWaveShader);
                         laserLight1.object[i] = true;
                     }
                 }

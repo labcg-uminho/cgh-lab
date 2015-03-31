@@ -17,9 +17,7 @@ CGHLab.ObjectPerspective = {
         }
     },
 
-    sendLightPointWave: function( scene, lightPoints, mainScene ){
-        var i;
-        var lightPointGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+    setLightPointWaveMaterial: function(mainScene){
         var shader = CGHLab.GeometryShaderLib.sphereShader;
         var lightPointMaterial = new THREE.ShaderMaterial({
             uniforms: shader.uniforms,
@@ -28,6 +26,21 @@ CGHLab.ObjectPerspective = {
             side: THREE.DoubleSide,
             transparent: true
         });
+
+        mainScene.lightPointWaveShader = lightPointMaterial;
+    },
+
+    sendLightPointWave: function( scene, lightPoints, mainScene, lightPointMaterial ){
+        var i;
+        var lightPointGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        /*var shader = CGHLab.GeometryShaderLib.sphereShader;
+        var lightPointMaterial = new THREE.ShaderMaterial({
+            uniforms: shader.uniforms,
+            vertexShader: shader.vertexShader,
+            fragmentShader: shader.fragmentShader,
+            side: THREE.DoubleSide,
+            transparent: true
+        });*/
         var lightPointMesh = new THREE.Mesh(lightPointGeometry, lightPointMaterial);
 
         var platePoints = mainScene.platePoints;
