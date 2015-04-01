@@ -724,9 +724,9 @@ CGHLab.MainScene.prototype = {
         var vertices = geometry.vertices;
         var points = [];
         clone.updateMatrixWorld();
-        for(var i = 0; i < vertices.length/2; i++){
+        for(var i = 0; i < vertices.length; i++){
             vertices[i].applyMatrix4(clone.matrixWorld);
-            //alert('x: '+ vertices[i].x + ' z: '+vertices[i].z);
+            //alert('x: '+ vertices[i].x + ' y: '+vertices[i].y + ' z: '+vertices[i].z);
             points.push(vertices[i]);
         }
         this.platePoints = points;

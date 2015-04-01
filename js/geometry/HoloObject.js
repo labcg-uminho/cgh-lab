@@ -52,6 +52,7 @@ CGHLab.HoloObject.prototype = {
         clone.updateMatrixWorld();
         for(var i = 0; i < vertices.length; i++){
             vertices[i].applyMatrix4(clone.matrixWorld);
+            //alert('y '+ vertices[i].y);
             var lp = new CGHLab.LightPoint(vertices[i].x,vertices[i].y,vertices[i].z, 0);
             lightPoints.push(lp);
         }

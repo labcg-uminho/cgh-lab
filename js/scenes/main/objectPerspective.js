@@ -45,7 +45,7 @@ CGHLab.ObjectPerspective = {
 
         var platePoints = mainScene.platePoints;
 
-        for(i = 0; i < lightPoints.length; i++ ){
+        for(i = 0; i < 1; i++ ){
             var clone = lightPointMesh.clone();
             var materialClone  = lightPointMaterial.clone();
             clone.position.set(lightPoints[i].position.x, lightPoints[i].position.y, lightPoints[i].position.z);
