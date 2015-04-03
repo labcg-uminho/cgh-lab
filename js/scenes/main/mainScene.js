@@ -91,7 +91,8 @@ CGHLab.MainScene = function( renderer, camera )
         list: [],
         next: [],
         beam: [],
-        object: []
+        object: [],
+        lightPoints: []
     };
     var laserLight2 = {
         list: [],
@@ -151,14 +152,25 @@ CGHLab.MainScene = function( renderer, camera )
         laserLight1.next.push(false);
         laserLight1.beam.push(false);
         laserLight1.object.push(false);
+        var l = [];
+        var i;
+        for (i = 0; i < this.object.lightPoints.length; i++){
+            l[i] = false;
+        }
+        laserLight1.lightPoints.push(l);
+        //console.log('l: '+l.length);
+        //console.log('lL1: '+laserLight1.list.length);
     };
 
     this.removeFromLaserLight1 = function( obj ){
         var i = laserLight1.list.indexOf(obj);
-        laserLight1.list.slice(i, 1);
-        laserLight1.next.slice(i, 1);
-        laserLight1.beam.slice(i, 1);
-        laserLight1.object.slice(i, 1);
+        if (i > -1) {
+            laserLight1.list.splice(i, 1);
+            laserLight1.next.splice(i, 1);
+            laserLight1.beam.splice(i, 1);
+            laserLight1.object.splice(i, 1);
+            laserLight1.lightPoints.splice(i, 1);
+        }
     };
 
     this.addToLaserLight2 = function( obj ){
@@ -168,8 +180,10 @@ CGHLab.MainScene = function( renderer, camera )
 
     this.removeFromLaserLight2 = function( obj ){
         var i = laserLight2.list.indexOf(obj);
-        laserLight2.list.slice(i, 1);
-        laserLight2.mirror.slice(i, 1);
+        if (i > -1) {
+            laserLight2.list.splice(i, 1);
+            laserLight2.mirror.splice(i, 1);
+        }
     };
 
     this.addToLaserLight3 = function( obj ){
@@ -178,7 +192,9 @@ CGHLab.MainScene = function( renderer, camera )
 
     this.removeFromLaserLight3 = function( obj ){
         var i = laserLight3.indexOf(obj);
-        laserLight3.slice(i, 1);
+        if(i > -1) {
+            laserLight3.splice(i, 1);
+        }
     };
 
     this.getObjWaveLight = function(){
@@ -187,11 +203,14 @@ CGHLab.MainScene = function( renderer, camera )
 
     this.addToObjWaveLight = function( obj ){
         objWaveLight.push(obj);
+        //console.log(objWaveLight.length);
     };
 
     this.removeFromObjWaveLight = function(obj){
         var i = objWaveLight.indexOf(obj);
-        objWaveLight.slice(i, 1);
+        if (i > -1) {
+            objWaveLight.splice(i, 1);
+        }
     };
 
     this.eraseWaveArrays = function(){
@@ -199,6 +218,7 @@ CGHLab.MainScene = function( renderer, camera )
         laserLight1.next = [];
         laserLight1.beam = [];
         laserLight1.object = [];
+        laserLight1.lightPoints = [];
         laserLight2.list = [];
         laserLight2.mirror = [];
         laserLight3 = [];
@@ -225,8 +245,10 @@ CGHLab.MainScene = function( renderer, camera )
 
     this.removeFromLightPointWaves = function(obj){
         var i = lightPointWaves.list.indexOf(obj);
-        lightPointWaves.list.slice(i, 1);
-        lightPointWaves.scales.slice(i, 1);
+        if (i > -1) {
+            lightPointWaves.list.splice(i, 1);
+            lightPointWaves.scales.splice(i, 1);
+        }
     };
 
     this.eraseLightPointWaves = function(){
@@ -305,7 +327,7 @@ CGHLab.MainScene.prototype = {
 
         //OBJECT
         this.object.setObject('cube'); //OPTIONS: cube, sphere, octahedron, tetrahedron
-        this.object.convertToLightPoints();
+        //this.object.convertToLightPoints();
 
         //HOLOGRAPHIC PLATE
         var holographicPlateGeometry = new THREE.PlaneGeometry( 160, 160 );
@@ -577,20 +599,34 @@ CGHLab.MainScene.prototype = {
                         });
                         newObjWave.position.set(this.objectPosition.x, this.objectPosition.y, this.objectPosition.z);
                         this.scene.add(newObjWave);
+                        //console.log('ola');
                         this.addToObjWaveLight(newObjWave);
                         laserLight1.object[i] = true;
                     }
                 }
             }
             else if(this.objectPerspective){
+                var j;
+                for (j = 0; j < this.object.lightPoints.length; j++){
+                    if (laserLight1.list[i].position.z < this.object.lightPoints[j].position.z && laserLight1.list[i].position.x < this.object.lightPoints[j].position.x){
+                        if(!laserLight1.lightPoints[i][j]){
+                            //console.log(laserLight1.list[i].position.z);
+                            //console.log(this.object.lightPoints[j].position.z);
+                            CGHLab.ObjectPerspective.sendLightPointWave2(this.scene, this.object.lightPoints[j], this, this.lightPointWaveShader);
+                            laserLight1.lightPoints[i][j] = true;
+                        }
+                    }
+                }
                 if (laserLight1.list[i].position.z < this.objectPosition.z) {
                     this.scene.remove(laserLight1.list[i]);
                     this.removeFromLaserLight1(laserLight1.list[i]);
 
-                    if (!laserLight1.object[i]) {
-                        CGHLab.ObjectPerspective.sendLightPointWave(this.scene, this.object.lightPoints, this, this.lightPointWaveShader);
+                    /*if (!laserLight1.object[i]) {
+                        //console.log(laserLight1.list[i].position.z);
+                        //console.log(this.objectPosition.z);
+                        //CGHLab.ObjectPerspective.sendLightPointWave(this.scene, this.object.lightPoints, this, this.lightPointWaveShader);
                         laserLight1.object[i] = true;
-                    }
+                    }*/
                 }
             }
         }
@@ -699,6 +735,32 @@ CGHLab.MainScene.prototype = {
         }
         this.eraseObjLight();
         this.getPlatePoints();
+
+        //DESENHAR TRIANGULO PARA VER SE PLANO ESTA BEM FEITO
+        /*var geometry = new THREE.BufferGeometry();
+        // create a simple square shape. We duplicate the top left and bottom right
+        // vertices because each vertex needs to appear once per triangle.
+        var vertexPositions = [
+            [this.object.lightPoints[0].position.x, this.object.lightPoints[0].position.y,  this.object.lightPoints[0].position.z],
+            [this.platePoints[0].x, this.platePoints[0].y,  this.platePoints[0].z],
+            [this.platePoints[1].x, this.platePoints[1].y,  this.platePoints[1].z]
+        ];
+        var vertices = new Float32Array( vertexPositions.length * 3 ); // three components per vertex
+
+        // components of the position vector for each vertex are stored
+        // contiguously in the buffer.
+        for ( var i = 0; i < vertexPositions.length; i++ )
+        {
+            vertices[ i*3 + 0 ] = vertexPositions[i][0];
+            vertices[ i*3 + 1 ] = vertexPositions[i][1];
+            vertices[ i*3 + 2 ] = vertexPositions[i][2];
+        }
+
+        // itemSize = 3 because there are 3 values (components) per vertex
+        geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+        var material = new THREE.MeshBasicMaterial( { color: 0x000000, side: THREE.DoubleSide} );
+        var mesh = new THREE.Mesh( geometry, material );
+        this.scene.add(mesh);*/
     },
 
     changeToMainPerspective: function()

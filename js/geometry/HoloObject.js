@@ -39,7 +39,7 @@ CGHLab.HoloObject.prototype = {
         this.object.position.set(this.position.x, this.position.y, this.position.z);
         this.object.rotateY(this.rotation);
         this.object.name = 'object';
-        //this.convertToLightPoints();
+        this.convertToLightPoints();
     },
 
     //Convert all the vertices to objects of the class LightPoint.
@@ -52,7 +52,7 @@ CGHLab.HoloObject.prototype = {
         clone.updateMatrixWorld();
         for(var i = 0; i < vertices.length; i++){
             vertices[i].applyMatrix4(clone.matrixWorld);
-            //alert('y '+ vertices[i].y);
+            //alert('x: '+ vertices[i].x + 'y '+ vertices[i].y + ' z: '+ vertices[i].z);
             var lp = new CGHLab.LightPoint(vertices[i].x,vertices[i].y,vertices[i].z, 0);
             lightPoints.push(lp);
         }

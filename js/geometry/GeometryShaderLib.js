@@ -40,6 +40,7 @@ CGHLab.GeometryShaderLib = {
             "   vec3 n = cross(normalize(op0), normalize(op1));",
             "   float d = -(n.x * origin.x + n.y * origin.y + n.z * origin.z);",
             "   if (n.x * position.x + n.y * position.y + n.z * position.z + d > 0.0)",
+            //"   if (position.y < (position.x - origin.x) * ((plate[0].y - origin.y)/(plate[0].x - origin.x)) + origin.y)",
             "       return false;",
             "   else",
             "       return true;",
@@ -55,11 +56,11 @@ CGHLab.GeometryShaderLib = {
             "       return true;",
             "}",
             "void main(){",
-            "   if(worldPosition.y > 160.0 || worldPosition.y < 0.0) discard;",
+            //"   if(worldPosition.y > 160.0 || worldPosition.y < 0.0) discard;",
             "   if(worldPosition.z < 0.0 || worldPosition.x > 80.0) discard;",
             "   if(check1(worldPosition.xyz) || check2(worldPosition.xyz)) discard;",
             "   if(check3(worldPosition.xyz) || check4(worldPosition.xyz)) discard;",
-            "   gl_FragColor = vec4( vec3(1.0), 0.5 );",
+            "   gl_FragColor = vec4( vec3(0.0,0.0,1.0), 0.5 );",
             "}"
         ].join('\n')
     }
