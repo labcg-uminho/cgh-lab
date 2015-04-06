@@ -624,7 +624,7 @@ CGHLab.MainScene.prototype = {
                     /*if (!laserLight1.object[i]) {
                         //console.log(laserLight1.list[i].position.z);
                         //console.log(this.objectPosition.z);
-                        //CGHLab.ObjectPerspective.sendLightPointWave(this.scene, this.object.lightPoints, this, this.lightPointWaveShader);
+                        CGHLab.ObjectPerspective.sendLightPointWave(this.scene, this.object.lightPoints, this, this.lightPointWaveShader);
                         laserLight1.object[i] = true;
                     }*/
                 }
