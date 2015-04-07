@@ -4,7 +4,7 @@
 
 CGHLab.ObjectPerspective = {
 
-    setLightPoints: function( scene, lightPoints )
+    setLightPoints: function( scene, lightPoints, collidableList )
     {
         var i;
         var lightPointGeometry = new THREE.SphereGeometry(0.5, 16, 16);
@@ -13,6 +13,7 @@ CGHLab.ObjectPerspective = {
             var lightPointMesh = new THREE.Mesh(lightPointGeometry, lightPointMaterial);
             lightPointMesh.position.set(lightPoints[i].position.x, lightPoints[i].position.y, lightPoints[i].position.z);
             lightPointMesh.name = 'lightPoint'+i;
+            collidableList.push(lightPointMesh);
             scene.add(lightPointMesh);
         }
     },
