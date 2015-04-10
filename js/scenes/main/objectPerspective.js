@@ -20,7 +20,7 @@ CGHLab.ObjectPerspective = {
 
     getPlatePoints: function( mainScene )
     {
-        var clone = this.scene.getObjectByName('plate').clone();
+        var clone = mainScene.scene.getObjectByName('plate').clone();
         var geometry = clone.geometry.clone();
         var vertices = geometry.vertices;
         var points = [];
