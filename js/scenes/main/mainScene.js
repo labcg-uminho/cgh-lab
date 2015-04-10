@@ -79,7 +79,7 @@ CGHLab.MainScene = function( renderer, camera )
     center.addVectors(this.platePosition,this.laserPosition).divideScalar(2);
 
     //Reference wave initialization
-    this.referenceWave = new CGHLab.Wave(0,1,10);
+    this.referenceWave = new CGHLab.Wave(0,1,1);
 
     this.interferencePatternShader = new THREE.Material;
     this.lightPointWaveShader = new THREE.Material;
@@ -576,7 +576,7 @@ CGHLab.MainScene.prototype = {
             laserLight1.list[i].position.z -= dirLaser.normalize().z * timer;
             laserLight1.list[i].position.x -= dirLaser.normalize().x * timer;
             //Create next wave starting on the laser
-            if((laserLight1.list[i].position.distanceTo(this.laserPosition) > this.referenceWave.waveLength * 10) && !laserLight1.next[i]){
+            if((laserLight1.list[i].position.distanceTo(this.laserPosition) > this.referenceWave.waveLength * 100) && !laserLight1.next[i]){
                 var newWave = laserLight1.list[i].clone();
                 newWave.position.set(this.laserPosition.x, this.laserPosition.y, this.laserPosition.z);
                 this.addToLaserLight1(newWave);
@@ -612,9 +612,7 @@ CGHLab.MainScene.prototype = {
                         this.addToObjWaveLight(newObjWave);
                         laserLight1.object[i] = true;
                     }
-                }
 
-                if (laserLight1.list[i].position.z < this.objectPosition.z) {
                     this.scene.remove(laserLight1.list[i]);
                     this.removeFromLaserLight1(laserLight1.list[i]);
                 }
@@ -775,7 +773,7 @@ CGHLab.MainScene.prototype = {
             this.scene.remove(objWaveLight[i]);
         }
         this.eraseObjLight();
-        this.getPlatePoints();
+        CGHLab.ObjectPerspective.getPlatePoints(this);
 
         //DESENHAR TRIANGULO PARA VER SE PLANO ESTA BEM FEITO
         /*var geometry = new THREE.BufferGeometry();
@@ -819,20 +817,5 @@ CGHLab.MainScene.prototype = {
         this.eraseLightPointWaves();
         this.scene.add(this.object.object);
         this.collidableList = [];
-    },
-
-    getPlatePoints: function()
-    {
-        var clone = this.scene.getObjectByName('plate').clone();
-        var geometry = clone.geometry.clone();
-        var vertices = geometry.vertices;
-        var points = [];
-        clone.updateMatrixWorld();
-        for(var i = 0; i < vertices.length; i++){
-            vertices[i].applyMatrix4(clone.matrixWorld);
-            //alert('x: '+ vertices[i].x + ' y: '+vertices[i].y + ' z: '+vertices[i].z);
-            points.push(vertices[i]);
-        }
-        this.platePoints = points;
     }
 };

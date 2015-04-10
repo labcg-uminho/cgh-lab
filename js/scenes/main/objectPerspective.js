@@ -18,6 +18,21 @@ CGHLab.ObjectPerspective = {
         }
     },
 
+    getPlatePoints: function( mainScene )
+    {
+        var clone = this.scene.getObjectByName('plate').clone();
+        var geometry = clone.geometry.clone();
+        var vertices = geometry.vertices;
+        var points = [];
+        clone.updateMatrixWorld();
+        for(var i = 0; i < vertices.length; i++){
+            vertices[i].applyMatrix4(clone.matrixWorld);
+            //alert('x: '+ vertices[i].x + ' y: '+vertices[i].y + ' z: '+vertices[i].z);
+            points.push(vertices[i]);
+        }
+        mainScene.platePoints = points;
+    },
+
     setLightPointWaveMaterial: function(mainScene){
         var shader = CGHLab.GeometryShaderLib.sphereShader;
         var lightPointMaterial = new THREE.ShaderMaterial({

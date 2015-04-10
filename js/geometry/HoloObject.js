@@ -58,6 +58,7 @@ CGHLab.HoloObject.prototype = {
         }
         this.lightPoints = [];
         this.lightPoints = lightPoints;
+        //alert(lightPoints.length);
     },
 
     changeObject: function( geometry )
