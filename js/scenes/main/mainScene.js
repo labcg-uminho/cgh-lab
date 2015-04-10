@@ -83,8 +83,10 @@ CGHLab.MainScene = function( renderer, camera )
 
     this.interferencePatternShader = new THREE.Material;
     this.lightPointWaveShader = new THREE.Material;
+    this.laserShader = new THREE.Material;
 
     this.platePoints = [];
+    this.mirrorPoints = [];
 
     this.collidableList = [];
 
@@ -275,7 +277,7 @@ CGHLab.MainScene.prototype = {
         mirror.rotateY(this.mirrorRotation);
         mirror.name = 'mirror';
         var mirrorBoxGeometry = new THREE.BoxGeometry(1, 1, 1);
-        var mirrorBoxMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, ambient: 0xffffff });
+        var mirrorBoxMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff });
         var mirrorBox = new THREE.Mesh(mirrorBoxGeometry, mirrorBoxMaterial);
         mirrorBox.scale.set(0.1,100,100);
         mirrorBox.position.set(0,0,-2);
@@ -289,7 +291,7 @@ CGHLab.MainScene.prototype = {
 
         //LASER
         var laserSourceGeometry = new THREE.CylinderGeometry( 10, 10, 30, 32);
-        var laserSourceMaterial = new THREE.MeshPhongMaterial( {color: 0x00ffff, ambient: 0x00ffff} );
+        var laserSourceMaterial = new THREE.MeshLambertMaterial( {color: 0x00ffff, ambient: 0x00ffff} );
         var laserSource = new THREE.Mesh(laserSourceGeometry, laserSourceMaterial);
         laserSource.position.set(this.laserPosition.x, this.laserPosition.y, this.laserPosition.z);
         laserSource.rotateY(this.laserRotation);
@@ -307,7 +309,7 @@ CGHLab.MainScene.prototype = {
         var sphere_bsp = new ThreeBSP( sphere_mesh );
         var subtract_bsp = sphere_bsp.subtract( cube_bsp );
 
-        var amplifierMaterial = new THREE.MeshPhongMaterial( {color: 0x00ffff, ambient: 0x00ffff} );
+        var amplifierMaterial = new THREE.MeshLambertMaterial( {color: 0x00ffff, ambient: 0x00ffff} );
 
         var amplifier = subtract_bsp.toMesh(amplifierMaterial);
         amplifier.scale.set(10,10,5);
@@ -323,7 +325,7 @@ CGHLab.MainScene.prototype = {
 
         //BEAM SPLITTER
         var beamSplitterGeometry = new THREE.BoxGeometry(1, 1, 1);
-        var beamSplitterMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff, ambient: 0xffffff });
+        var beamSplitterMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff });
         var beamSplitter = new THREE.Mesh(beamSplitterGeometry, beamSplitterMaterial);
         beamSplitter.scale.set(40,40,40);
         beamSplitter.position.set(this.beamSplitterPosition.x,this.beamSplitterPosition.y, this.beamSplitterPosition.z);
@@ -335,7 +337,7 @@ CGHLab.MainScene.prototype = {
 
         //HOLOGRAPHIC PLATE
         var holographicPlateGeometry = new THREE.PlaneGeometry( 160, 160 );
-        var holographicPlateMaterial = new THREE.MeshPhongMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
+        var holographicPlateMaterial = new THREE.MeshLambertMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
 
         var holographicPlate = new THREE.Mesh(holographicPlateGeometry, holographicPlateMaterial);
         holographicPlate.position.set(this.platePosition.x, this.platePosition.y, this.platePosition.z);
@@ -386,6 +388,10 @@ CGHLab.MainScene.prototype = {
 
         //Initialize shader used on the object perspective to paint the light point waves
         CGHLab.ObjectPerspective.setLightPointWaveMaterial(this);
+        this.getMirrorPoints();
+        this.setLaserMaterial();
+
+        this.getPlatePoints();
 
     },
 
@@ -509,15 +515,33 @@ CGHLab.MainScene.prototype = {
     seeInterferencePattern: function()
     {
         var plate = this.scene.getObjectByName('plate');
-        plate.material = new THREE.MeshPhongMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
+        plate.material = new THREE.MeshLambertMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
 
         plate.material = this.interferencePatternShader;
+    },
+
+    setLaserMaterial: function () {
+        var shader = CGHLab.GeometryShaderLib.myLambert;
+        var lightMaterial = new THREE.ShaderMaterial({
+            uniforms: shader.uniforms,
+            vertexShader: shader.vertexShader,
+            fragmentShader: shader.fragmentShader,
+            lights:true,
+            fog: true,
+            side: THREE.DoubleSide,
+            transparent: true
+        });
+        console.log(lightMaterial.fragmentShader);
+        lightMaterial.uniforms.ambient.value = new THREE.Color(0x0000ff);
+        lightMaterial.uniforms.opacity.value = 0.5;
+        lightMaterial.uniforms.mirror.value = this.mirrorPoints;
+        this.laserShader = lightMaterial;
     },
 
     laserOn: function()
     {
         var lightGeometry = new THREE.CircleGeometry(10,512);
-        var lightMaterial = new THREE.MeshPhongMaterial( {color: 0x0000ff, ambient: 0x0000ff, side: THREE.DoubleSide, transparent: true, opacity: 0.5} );
+        var lightMaterial = new THREE.MeshLambertMaterial( {color: 0x0000ff, ambient: 0x0000ff, side: THREE.DoubleSide, transparent: true, opacity: 0.5} );
         var light = new THREE.Mesh(lightGeometry, lightMaterial);
         light.position.set(this.laserPosition.x, this.laserPosition.y, this.laserPosition.z);
 
@@ -587,6 +611,9 @@ CGHLab.MainScene.prototype = {
             //of the mirror is created
             if((laserLight1.list[i].position.z < this.beamSplitterPosition.z) && !laserLight1.beam[i]){
                 var newSplit = laserLight1.list[i].clone();
+                var lightMirrorMaterial = this.laserShader.clone();
+                lightMirrorMaterial.uniforms.limit.value = 2;
+                newSplit.material = lightMirrorMaterial;
                 newSplit.position.set(this.beamSplitterPosition.x, this.beamSplitterPosition.y, this.beamSplitterPosition.z);
                 newSplit.rotateY(Math.PI/2);
                 this.addToLaserLight2(newSplit);
@@ -600,7 +627,7 @@ CGHLab.MainScene.prototype = {
                     if (!laserLight1.object[i]) {
                         //var newObjWave = objWave.clone();
                         var newObjWave = this.object.object.clone();
-                        newObjWave.material = new THREE.MeshPhongMaterial({
+                        newObjWave.material = new THREE.MeshLambertMaterial({
                             color: 0x0000ff,
                             ambient: 0x0000ff,
                             transparent: true,
@@ -676,6 +703,9 @@ CGHLab.MainScene.prototype = {
             //Every time a wavefront cross the mirror a reflection is created
             if((laserLight2.list[i].position.z < this.mirrorPosition.z) && !laserLight2.mirror[i]){
                 var newReflect = laserLight2.list[i].clone();
+                var lightMaterial = this.laserShader.clone();
+                lightMaterial.uniforms.limit.value = 1;
+                newReflect.material = lightMaterial;
                 newReflect.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
                 //The wave is perpendicular to the direction and the angle made by the 2 directions is arccos(dot(dirMirror, dirBeam))
                 //So the angle os rotation is 360 - 90 - 90 - arccos(dot(dirMirror, dirBeam))
@@ -773,7 +803,6 @@ CGHLab.MainScene.prototype = {
             this.scene.remove(objWaveLight[i]);
         }
         this.eraseObjLight();
-        CGHLab.ObjectPerspective.getPlatePoints(this);
 
         //DESENHAR TRIANGULO PARA VER SE PLANO ESTA BEM FEITO
         /*var geometry = new THREE.BufferGeometry();
@@ -817,5 +846,35 @@ CGHLab.MainScene.prototype = {
         this.eraseLightPointWaves();
         this.scene.add(this.object.object);
         this.collidableList = [];
+    },
+
+    getPlatePoints: function()
+    {
+        var clone = this.scene.getObjectByName('plate').clone();
+        var geometry = clone.geometry.clone();
+        var vertices = geometry.vertices;
+        var points = [];
+        clone.updateMatrixWorld();
+        for(var i = 0; i < vertices.length; i++){
+            vertices[i].applyMatrix4(clone.matrixWorld);
+            //alert('x: '+ vertices[i].x + ' y: '+vertices[i].y + ' z: '+vertices[i].z);
+            points.push(vertices[i]);
+        }
+        this.platePoints = points;
+    },
+
+    getMirrorPoints: function()
+    {
+        var clone = this.scene.getObjectByName('mirror').clone();
+        var geometry = clone.geometry.clone();
+        var vertices = geometry.vertices;
+        var points = [];
+        clone.updateMatrixWorld();
+        for(var i = 0; i < vertices.length/2; i++){
+            vertices[i].applyMatrix4(clone.matrixWorld);
+            //alert('x: '+ vertices[i].x + ' y: '+vertices[i].y + ' z: '+vertices[i].z);
+            points.push(vertices[i]);
+        }
+        this.mirrorPoints = points;
     }
 };

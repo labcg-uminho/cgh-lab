@@ -8,7 +8,7 @@ CGHLab.ObjectPerspective = {
     {
         var i;
         var lightPointGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-        var lightPointMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 , ambient: 0x000000});
+        var lightPointMaterial = new THREE.MeshLambertMaterial({ color: 0x000000 , ambient: 0x000000});
         for(i = 0; i < lightPoints.length; i++ ){
             var lightPointMesh = new THREE.Mesh(lightPointGeometry, lightPointMaterial);
             lightPointMesh.position.set(lightPoints[i].position.x, lightPoints[i].position.y, lightPoints[i].position.z);
@@ -16,21 +16,6 @@ CGHLab.ObjectPerspective = {
             collidableList.push(lightPointMesh);
             scene.add(lightPointMesh);
         }
-    },
-
-    getPlatePoints: function( mainScene )
-    {
-        var clone = mainScene.scene.getObjectByName('plate').clone();
-        var geometry = clone.geometry.clone();
-        var vertices = geometry.vertices;
-        var points = [];
-        clone.updateMatrixWorld();
-        for(var i = 0; i < vertices.length; i++){
-            vertices[i].applyMatrix4(clone.matrixWorld);
-            //alert('x: '+ vertices[i].x + ' y: '+vertices[i].y + ' z: '+vertices[i].z);
-            points.push(vertices[i]);
-        }
-        mainScene.platePoints = points;
     },
 
     setLightPointWaveMaterial: function(mainScene){
