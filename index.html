@@ -173,7 +173,7 @@
                 {
                     laserOn: function(){if (!laserTurnOn) mainScene.laserOn(); laserTurnOn = true;},
                     laserOff: function(){if (laserTurnOn) mainScene.laserOff(); laserTurnOn = false;},
-                    objectRotationSlider: mainScene.objectRotationScene,
+                    objectRotationSlider: CGHLab.Helpers.rad2deg(mainScene.objectRotationScene),
                     focusCenter: function(){controls.target = mainScene.getCenter()},
                     geometry: 'cube',
                     interferencePattern: function(){ mainScene.seeInterferencePattern(); },

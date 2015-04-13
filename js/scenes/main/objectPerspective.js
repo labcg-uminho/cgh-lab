@@ -19,15 +19,17 @@ CGHLab.ObjectPerspective = {
     },
 
     setLightPointWaveMaterial: function(mainScene){
-        var shader = CGHLab.GeometryShaderLib.sphereShader;
+        var shader = CGHLab.GeometryShaderLib.myLambertSphere;
         var lightPointMaterial = new THREE.ShaderMaterial({
             uniforms: shader.uniforms,
             vertexShader: shader.vertexShader,
             fragmentShader: shader.fragmentShader,
             side: THREE.DoubleSide,
+            lights:true,
+            fog: true,
             transparent: true
         });
-
+        lightPointMaterial.uniforms.opacity.value = 0.5;
         mainScene.lightPointWaveShader = lightPointMaterial;
     },
 

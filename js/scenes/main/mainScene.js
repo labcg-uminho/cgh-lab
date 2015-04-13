@@ -83,6 +83,9 @@ CGHLab.MainScene = function( renderer, camera )
 
     this.interferencePatternShader = new THREE.Material;
     this.lightPointWaveShader = new THREE.Material;
+    this.laserDupliateShader = new THREE.Material;
+    this.laserReflectionShader = new THREE.Material;
+    this.laserObjectWaveShader = new THREE.Material;
     this.laserShader = new THREE.Material;
 
     this.platePoints = [];
@@ -96,7 +99,8 @@ CGHLab.MainScene = function( renderer, camera )
         next: [],
         beam: [],
         object: [],
-        lightPoints: []
+        lightPoints: [],
+        updated: []
     };
     var laserLight2 = {
         list: [],
@@ -164,6 +168,7 @@ CGHLab.MainScene = function( renderer, camera )
             names: []
         };
         laserLight1.lightPoints.push(l);
+        laserLight1.updated.push(false);
         //console.log('l: '+l.length);
         //console.log('lL1: '+laserLight1.list.length);
     };
@@ -176,6 +181,7 @@ CGHLab.MainScene = function( renderer, camera )
             laserLight1.beam.splice(i, 1);
             laserLight1.object.splice(i, 1);
             laserLight1.lightPoints.splice(i, 1);
+            laserLight1.updated.splice(i,1);
         }
     };
 
@@ -521,7 +527,7 @@ CGHLab.MainScene.prototype = {
     },
 
     setLaserMaterial: function () {
-        var shader = CGHLab.GeometryShaderLib.myLambert;
+        var shader = CGHLab.GeometryShaderLib.myLambertLaser;
         var lightMaterial = new THREE.ShaderMaterial({
             uniforms: shader.uniforms,
             vertexShader: shader.vertexShader,
@@ -530,18 +536,42 @@ CGHLab.MainScene.prototype = {
             fog: true,
             side: THREE.DoubleSide,
             transparent: true
+
         });
-        console.log(lightMaterial.fragmentShader);
+        //console.log(lightMaterial.fragmentShader);
         lightMaterial.uniforms.ambient.value = new THREE.Color(0x0000ff);
         lightMaterial.uniforms.opacity.value = 0.5;
         lightMaterial.uniforms.mirror.value = this.mirrorPoints;
-        this.laserShader = lightMaterial;
+
+        var laserReflectionShader = lightMaterial.clone();
+        laserReflectionShader.uniforms.limit.value = 2;
+        this.laserReflectionShader = laserReflectionShader;
+
+        var laserDuplicateShader = lightMaterial.clone();
+        laserDuplicateShader.uniforms.limit.value = 1;
+        this.laserDupliateShader = laserDuplicateShader;
+
+        var laserObjectWaveShader = new THREE.ShaderMaterial({
+            uniforms: shader.uniforms,
+            vertexShader: shader.vertexShader,
+            fragmentShader: shader.fragmentShader,
+            lights:true,
+            fog: true,
+            transparent: true
+        });
+        laserObjectWaveShader.uniforms.limit.value = 3;
+        this.laserObjectWaveShader = laserObjectWaveShader;
+
+        var laserShader = lightMaterial.clone();
+        laserShader.uniforms.limit.value = 0;
+        this.laserShader = laserShader;
+        console.log(lightMaterial.uniforms.limit.value);
     },
 
     laserOn: function()
     {
-        var lightGeometry = new THREE.CircleGeometry(10,512);
-        var lightMaterial = new THREE.MeshLambertMaterial( {color: 0x0000ff, ambient: 0x0000ff, side: THREE.DoubleSide, transparent: true, opacity: 0.5} );
+        var lightGeometry = new THREE.CircleGeometry(10,32);
+        var lightMaterial = this.laserShader;//new THREE.MeshLambertMaterial( {color: 0x0000ff, ambient: 0x0000ff, side: THREE.DoubleSide, transparent: true, opacity: 0.5} );
         var light = new THREE.Mesh(lightGeometry, lightMaterial);
         light.position.set(this.laserPosition.x, this.laserPosition.y, this.laserPosition.z);
 
@@ -591,6 +621,8 @@ CGHLab.MainScene.prototype = {
 
         var negDirAmplifier = dirAmplifier.clone().normalize().negate();
 
+        //extend the maximum path from 'laser to object' to 'laser to object + 50 units' on the object perspective, so the wavefronts
+        //can pass through all the light points of an object
         var newLaser1Finish = new THREE.Vector3();
         newLaser1Finish.addVectors(this.objectPosition, negDirAmplifier.multiplyScalar(50));
         //console.log(newLaser1Finish);
@@ -611,9 +643,7 @@ CGHLab.MainScene.prototype = {
             //of the mirror is created
             if((laserLight1.list[i].position.z < this.beamSplitterPosition.z) && !laserLight1.beam[i]){
                 var newSplit = laserLight1.list[i].clone();
-                var lightMirrorMaterial = this.laserShader.clone();
-                lightMirrorMaterial.uniforms.limit.value = 2;
-                newSplit.material = lightMirrorMaterial;
+                newSplit.material = this.laserDupliateShader;
                 newSplit.position.set(this.beamSplitterPosition.x, this.beamSplitterPosition.y, this.beamSplitterPosition.z);
                 newSplit.rotateY(Math.PI/2);
                 this.addToLaserLight2(newSplit);
@@ -627,12 +657,13 @@ CGHLab.MainScene.prototype = {
                     if (!laserLight1.object[i]) {
                         //var newObjWave = objWave.clone();
                         var newObjWave = this.object.object.clone();
-                        newObjWave.material = new THREE.MeshLambertMaterial({
+                        /*newObjWave.material = new THREE.MeshLambertMaterial({
                             color: 0x0000ff,
                             ambient: 0x0000ff,
                             transparent: true,
                             opacity: 0.5
-                        });
+                        });*/
+                        newObjWave.material = this.laserObjectWaveShader;
                         newObjWave.position.set(this.objectPosition.x, this.objectPosition.y, this.objectPosition.z);
                         this.scene.add(newObjWave);
                         //console.log('ola');
@@ -645,6 +676,12 @@ CGHLab.MainScene.prototype = {
                 }
             }
             else if(this.objectPerspective){
+                //When the wavefronts get close to the object light points more detail is given to the wavefronts geometry.
+                //This way the collision detector will have more precision
+                if (laserLight1.list[i].position.z < this.objectPosition.z + 50 && !laserLight1.updated[i]){
+                    laserLight1.list[i].geometry = new THREE.CircleGeometry(10,512);
+                    laserLight1.updated[i] = true;
+                }
                 /*var j;
                 for (j = 0; j < this.object.lightPoints.length; j++){
                     if (laserLight1.list[i].position.z < this.object.lightPoints[j].position.z){
@@ -703,9 +740,7 @@ CGHLab.MainScene.prototype = {
             //Every time a wavefront cross the mirror a reflection is created
             if((laserLight2.list[i].position.z < this.mirrorPosition.z) && !laserLight2.mirror[i]){
                 var newReflect = laserLight2.list[i].clone();
-                var lightMaterial = this.laserShader.clone();
-                lightMaterial.uniforms.limit.value = 1;
-                newReflect.material = lightMaterial;
+                newReflect.material = this.laserReflectionShader;
                 newReflect.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
                 //The wave is perpendicular to the direction and the angle made by the 2 directions is arccos(dot(dirMirror, dirBeam))
                 //So the angle os rotation is 360 - 90 - 90 - arccos(dot(dirMirror, dirBeam))
