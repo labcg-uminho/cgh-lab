@@ -88,6 +88,10 @@ CGHLab.MainScene = function( renderer, camera )
     this.laserObjectWaveShader = new THREE.Material;
     this.laserShader = new THREE.Material;
 
+    this.refWaveArrived = false;
+    this.objWaveArrived = false;
+    this.patternShown = false;
+
     this.platePoints = [];
     this.mirrorPoints = [];
 
@@ -427,6 +431,9 @@ CGHLab.MainScene.prototype = {
         }
         this.eraseObjLight();
         this.collidableList = [];
+        this.objWaveArrived = false;
+        this.patternShown = false;
+        this.hideInterferencePattern();
     },
 
     //Handles the update of the reference wave angle. The position of the mirror and amplifier are updated to match the parameters
@@ -516,6 +523,8 @@ CGHLab.MainScene.prototype = {
         this.interferencePatternShader.uniforms.n_lightPoints.value = this.object.lightPoints.length;
         this.interferencePatternShader.uniforms.horizCycleLength.value = this.referenceWave.waveLength / Math.sin(this.referenceWaveAngle);
         this.interferencePatternShader.uniforms.waveLength.value = this.referenceWave.waveLength;
+        //console.log(this.interferencePatternShader.uniforms.lightPoints.value);
+        //console.log(this.interferencePatternShader.uniforms.n_lightPoints.value);
     },
 
     seeInterferencePattern: function()
@@ -524,6 +533,12 @@ CGHLab.MainScene.prototype = {
         plate.material = new THREE.MeshLambertMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
 
         plate.material = this.interferencePatternShader;
+    },
+
+    hideInterferencePattern: function()
+    {
+        var plate = this.scene.getObjectByName('plate');
+        plate.material = new THREE.MeshLambertMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
     },
 
     setLaserMaterial: function () {
@@ -565,7 +580,6 @@ CGHLab.MainScene.prototype = {
         var laserShader = lightMaterial.clone();
         laserShader.uniforms.limit.value = 0;
         this.laserShader = laserShader;
-        console.log(lightMaterial.uniforms.limit.value);
     },
 
     laserOn: function()
@@ -601,6 +615,9 @@ CGHLab.MainScene.prototype = {
             this.scene.remove(objWaveLight[i]);
         }
         this.eraseWaveArrays();
+        this.refWaveArrived = false;
+        this.objWaveArrived = false;
+        this.patternShown = false;
     },
 
     updateLaser: function(){
@@ -626,6 +643,8 @@ CGHLab.MainScene.prototype = {
         var newLaser1Finish = new THREE.Vector3();
         newLaser1Finish.addVectors(this.objectPosition, negDirAmplifier.multiplyScalar(50));
         //console.log(newLaser1Finish);
+        var newLaser3Finish = new THREE.Vector3();
+        newLaser3Finish.addVectors(this.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 350));
 
         //LASER
         for(i = 0; i < laserLight1.list.length; i++){
@@ -670,7 +689,8 @@ CGHLab.MainScene.prototype = {
                         this.addToObjWaveLight(newObjWave);
                         laserLight1.object[i] = true;
                     }
-
+                }
+                if (laserLight1.list[i].position.z < newLaser1Finish.z) {
                     this.scene.remove(laserLight1.list[i]);
                     this.removeFromLaserLight1(laserLight1.list[i]);
                 }
@@ -760,7 +780,7 @@ CGHLab.MainScene.prototype = {
         //AMPLIFIER1
         var distance_AO = this.amplifierPosition.distanceTo(newLaser1Finish);
         var initScale_A1 = 1;
-        var deltaScale_A1 = 4;
+        var deltaScale_A1 = 10;
         for(i = 0; i < laserLight1.list.length; i++){
             //Cross the amplifier
             if(laserLight1.list[i].position.z < this.amplifierPosition.z){
@@ -775,20 +795,21 @@ CGHLab.MainScene.prototype = {
         for(i = 0; i < laserLight3.length; i++){
             laserLight3[i].position.z -= dirMirror.normalize().z * timer;
             laserLight3[i].position.x -= dirMirror.normalize().x * timer;
-            if (laserLight3[i].position.z < this.platePosition.z) {
+            if (laserLight3[i].position.z <  newLaser3Finish.z) {
+                if(!this.refWaveArrived) this.refWaveArrived = true;
                 this.scene.remove(laserLight3[i]);
                 this.removeFromLaserLight3(laserLight3[i]);
             }
         }
 
         //AMPLIFIER2
-        var distance_AP = this.amplifierPosition2.distanceTo(this.platePosition);
+        var distance_AP = this.amplifierPosition2.distanceTo(newLaser3Finish);
         var initScale_A2 = 1;
-        var deltaScale_A2 = 2;
+        var deltaScale_A2 = 10;
         for(i = 0; i < laserLight3.length; i++){
             //Cross the amplifier
             if(laserLight3[i].position.z < this.amplifierPosition2.z){
-                var actualDistance_A2 = laserLight3[i].position.distanceTo(this.platePosition);
+                var actualDistance_A2 = laserLight3[i].position.distanceTo(newLaser3Finish);
                 var ratio_A2 = actualDistance_A2/distance_AP;
                 laserLight3[i].scale.set(initScale_A2+deltaScale_A2*(1-ratio_A2),initScale_A2+deltaScale_A2*(1-ratio_A2),initScale_A2+deltaScale_A2*(1-ratio_A2));
             }
@@ -807,6 +828,7 @@ CGHLab.MainScene.prototype = {
                 //The closer to the plate (minor distance) the lower is the ratio and bigger is objWaveLight
                 objWaveLight[i].scale.set(initScale + deltaScale * (1 - ratio), initScale + deltaScale * (1 - ratio), initScale + deltaScale * (1 - ratio));
                 if (objWaveLight[i].position.z < this.platePosition.z) {
+                    if(!this.objWaveArrived) this.objWaveArrived = true;
                     this.scene.remove(objWaveLight[i]);
                     this.removeFromObjWaveLight(objWaveLight[i]);
                 }
@@ -818,11 +840,14 @@ CGHLab.MainScene.prototype = {
                 lightPointsWaves.scales[i] += 3.0;
 
                 if (lightPointsWaves.scales[i] > 800) {
+                    if(!this.objWaveArrived) this.objWaveArrived = true;
                     this.scene.remove(lightPointsWaves.list[i]);
                     this.removeFromLightPointWaves(lightPointsWaves.list[i]);
                 }
             }
         }
+
+        if(!this.patternShown && this.refWaveArrived && this.objWaveArrived) this.seeInterferencePattern();
     },
 
     changeToObjectPerspective: function()

@@ -8,6 +8,7 @@ CGHLab.HoloObject = function ( position, rotation )
     this.rotation = rotation;
 
     this.object = new THREE.Mesh;
+    this.figure = "";
 
     this.lightPoints = [];
 
@@ -39,6 +40,7 @@ CGHLab.HoloObject.prototype = {
         this.object.position.set(this.position.x, this.position.y, this.position.z);
         this.object.rotateY(this.rotation);
         this.object.name = 'object';
+        this.figure = geometry;
         this.convertToLightPoints();
     },
 
@@ -71,6 +73,7 @@ CGHLab.HoloObject.prototype = {
         else if (geometry == 'octahedron') objectGeometry = new THREE.OctahedronGeometry(0.5,0);
         else if (geometry == 'tetrahedron') objectGeometry = new THREE.TetrahedronGeometry(0.5,0);
         o.geometry = objectGeometry;
+        this.figure = geometry;
         this.convertToLightPoints();
     },
 

@@ -132,53 +132,55 @@
 
         function setGUI( perspective )
         {
-            var parameters;
             gui.destroy();
             gui2.destroy();
             gui2 = new dat.GUI();
-            parameters =
+            gui2.open();
+
+            var parametersGUIPerspectives = function()
             {
-                mainPerspectiveChange: function(){
+                this.mainPerspectiveChange = function(){
                     mainScene.objectPerspective = false;
                     mainScene.mainPerspective = true;
                     mainScene.platePerspective = false;
                     setGUI('main');
-                },
-                objectPerspectiveChange: function(){
+                };
+                this.objectPerspectiveChange = function(){
                     mainScene.objectPerspective = true;
                     mainScene.mainPerspective = false;
                     mainScene.platePerspective = false;
                     setGUI('object');
-                },
-                platePerspectiveChange: function(){
+                };
+                this.platePerspectiveChange = function(){
                     mainScene.objectPerspective = false;
                     mainScene.mainPerspective = false;
                     mainScene.platePerspective = true;
                     setGUI('plate');
-                }
+                };
             };
 
+            var guiPerspectivesConfig = new parametersGUIPerspectives();
+
             var folder3 = gui2.addFolder('Perspectives');
-            folder3.add(parameters, 'mainPerspectiveChange').name('Main Perspective');
-            folder3.add(parameters, 'objectPerspectiveChange').name('Object Perspective');
-            folder3.add(parameters, 'platePerspectiveChange').name('Plate Perspective');
             folder3.open();
-            gui2.open();
+            folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('Main');
+            folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('Object');
+            folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('Plate');
 
             if(perspective == 'main')
             {
                 gui = new dat.GUI();
-
-                parameters =
+                gui.open();
+                var parametersGUIMain = function()
                 {
-                    laserOn: function(){if (!laserTurnOn) mainScene.laserOn(); laserTurnOn = true;},
-                    laserOff: function(){if (laserTurnOn) mainScene.laserOff(); laserTurnOn = false;},
-                    objectRotationSlider: CGHLab.Helpers.rad2deg(mainScene.objectRotationScene),
-                    focusCenter: function(){controls.target = mainScene.getCenter()},
-                    geometry: 'cube',
-                    interferencePattern: function(){ mainScene.seeInterferencePattern(); },
-                    refWaveLength: mainScene.referenceWave.waveLength,
-                    refWaveAngle: CGHLab.Helpers.rad2deg(mainScene.referenceWaveAngle)
+                    this.laserOn = function(){if (!laserTurnOn) mainScene.laserOn(); laserTurnOn = true;};
+                    this.laserOff = function(){if (laserTurnOn) mainScene.laserOff(); laserTurnOn = false;};
+                    this.objectRotationSlider = CGHLab.Helpers.rad2deg(mainScene.objectRotationScene);
+                    this.focusCenter = function(){controls.target = mainScene.getCenter()};
+                    this.geometry = mainScene.object.figure;
+                    this.interferencePattern = function(){ mainScene.seeInterferencePattern(); };
+                    this.refWaveLength = mainScene.referenceWave.waveLength;
+                    this.refWaveAngle = CGHLab.Helpers.rad2deg(mainScene.referenceWaveAngle);
                 };
 
                 /*var cubeRotation = gui.add(parameters, 'cubeRotation').min(0).listen();
@@ -186,86 +188,91 @@
                     mainScene.updateObjectRotation(value)
                 });*/
 
-                gui.add(parameters, 'laserOn').name('Turn On Laser');
-                gui.add(parameters, 'laserOff').name('Turn Off Laser');
-                gui.add(parameters, 'focusCenter').name('Focus Center');
-                gui.add(parameters, 'interferencePattern').name('See Interference Pattern');
+                var mainParametersConfig = new parametersGUIMain();
+
+                gui.add(mainParametersConfig, 'laserOn').name('Turn On Laser');
+                gui.add(mainParametersConfig, 'laserOff').name('Turn Off Laser');
+                gui.add(mainParametersConfig, 'focusCenter').name('Focus Center');
+                gui.add(mainParametersConfig, 'interferencePattern').name('See Interference Pattern');
 
                 var folder1 = gui.addFolder('Object');
-                var r = folder1.add( parameters, 'objectRotationSlider').min(0).max(360).name('Rotation');
+                folder1.open();
+                var r = folder1.add( mainParametersConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
                 r.onChange(function(value){
                     mainScene.rotateObject(value);
                 });
-                var geometry = folder1.add( parameters, 'geometry', [ 'cube', 'sphere', 'octahedron', 'tetrahedron' ] ).name('Geometry').listen();
+                var figureList = [ "cube", "sphere", "octahedron", "tetrahedron" ];
+                var geometry = folder1.add( mainParametersConfig, 'geometry', figureList ).name('Geometry');
                 geometry.onChange(function(value)
                 {
                     mainScene.changeObject(value);
                 });
-                folder1.open();
+
                 var folder2 = gui.addFolder('Reference Wave');
-                var wl = folder2.add(parameters, 'refWaveLength').name('WaveLength');
+                folder2.open();
+                var wl = folder2.add(mainParametersConfig, 'refWaveLength').name('WaveLength');
                 wl.onChange(function(value){
                     mainScene.referenceWave.waveLength = value;
                     mainScene.updateShaderUniforms();
                 });
-                var wa = folder2.add(parameters, 'refWaveAngle').min(0).max(90).name('Wave Angle');
+                var wa = folder2.add(mainParametersConfig, 'refWaveAngle').min(0).max(90).name('Wave Angle');
                 wa.onChange(function(value){
                    mainScene.updateMirror(value);
                 });
-                folder2.open();
-                gui.open();
             }
 
             else if(perspective == 'object')
             {
                 gui = new dat.GUI();
+                gui.open();
 
-                parameters =
+                var parametersGUIObject = function()
                 {
-                    a: 200, // numeric
-                    b: 200, // numeric slider
-                    c: "Hello, GUI!", // string
-                    d: false // boolean (checkbox)
+                    this.a = 200; // numeric
+                    this.b = 200; // numeric slider
+                    this.c = "Hello, GUI!"; // string
+                    this.d = false; // boolean (checkbox)
                 };
                 // gui.add( parameters )
-                gui.add( parameters, 'a' ).name('Number');
-                gui.add( parameters, 'b' ).min(128).max(256).step(16).name('Slider');
-                gui.add( parameters, 'c' ).name('String');
-                gui.add( parameters, 'd' ).name('Boolean');
-
-                gui.open();
+                var objectParametersConfig = new parametersGUIObject();
+                gui.add( objectParametersConfig, 'a' ).name('Number');
+                gui.add( objectParametersConfig, 'b' ).min(128).max(256).step(16).name('Slider');
+                gui.add( objectParametersConfig, 'c' ).name('String');
+                gui.add( objectParametersConfig, 'd' ).name('Boolean');
             }
             else if(perspective == 'plate')
             {
                 gui = new dat.GUI();
+                gui.open();
 
-                parameters =
+                var parametersGUIPlate = function()
                 {
-                    e: "#ff8800", // color (hex)
-                    f: function() { alert("Hello!") },
-                    g: function() { alert( parameters.c ) },
-                    v : 0,    // dummy value, only type is important
-                    w: "...", // dummy value, only type is important
-                    x: 0, y: 0, z: 0
+                    this.e = "#ff8800"; // color (hex)
+                    this.f = function() { alert("Hello!") };
+                    this.v = 0;    // dummy value, only type is important
+                    this.w = "..."; // dummy value, only type is important
+                    this.x = 0;
+                    this.y = 0;
+                    this.z = 0;
                 };
                 // gui.add( parameters )
 
-                gui.addColor( parameters, 'e' ).name('Color');
+                var plateParametersConfig = new parametersGUIPlate();
+
+                gui.addColor( plateParametersConfig, 'e' ).name('Color');
 
                 var numberList = [1, 2, 3];
-                gui.add( parameters, 'v', numberList ).name('List');
+                gui.add( plateParametersConfig, 'v', numberList ).name('List');
 
                 var stringList = ["One", "Two", "Three"];
-                gui.add( parameters, 'w', stringList ).name('List');
+                gui.add( plateParametersConfig, 'w', stringList ).name('List');
 
-                gui.add( parameters, 'f' ).name('Say "Hello!"');
-                gui.add( parameters, 'g' ).name("Alert Message");
+                gui.add( plateParametersConfig, 'f' ).name('Say "Hello!"');
 
                 var folder = gui.addFolder('Coordinates');
-                folder.add( parameters, 'x' );
-                folder.add( parameters, 'y' );
                 folder.close();
-                gui.open();
+                folder.add( plateParametersConfig, 'x' );
+                folder.add( plateParametersConfig, 'y' );
             }
         }
 
