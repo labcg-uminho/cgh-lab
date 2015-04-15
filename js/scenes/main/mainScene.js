@@ -487,6 +487,13 @@ CGHLab.MainScene.prototype = {
             this.scene.remove(laserLight3[i]);
         }
         this.eraseLight3Array();
+
+        this.getMirrorPoints();
+        this.laserDupliateShader.uniforms.mirror.value = this.mirrorPoints;
+        this.laserDupliateShader.uniforms.referenceWaveAngle.value = this.referenceWaveAngle;
+        this.laserReflectionShader.uniforms.mirror.value = this.mirrorPoints;
+        this.laserReflectionShader.uniforms.referenceWaveAngle.value = this.referenceWaveAngle;
+        //console.log('update: '+this.laserReflectionShader.uniforms.referenceWaveAngle.value);
     },
 
     setHologramShader: function()
@@ -557,6 +564,8 @@ CGHLab.MainScene.prototype = {
         lightMaterial.uniforms.ambient.value = new THREE.Color(0x0000ff);
         lightMaterial.uniforms.opacity.value = 0.5;
         lightMaterial.uniforms.mirror.value = this.mirrorPoints;
+        lightMaterial.uniforms.referenceWaveAngle.value = this.referenceWaveAngle;
+        //console.log(lightMaterial.uniforms.referenceWaveAngle);
 
         var laserReflectionShader = lightMaterial.clone();
         laserReflectionShader.uniforms.limit.value = 2;

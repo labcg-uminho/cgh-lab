@@ -257,7 +257,8 @@ CGHLab.GeometryShaderLib = {
                 "emissive" : { type: "c", value: new THREE.Color( 0x000000 ) },
                 "wrapRGB"  : { type: "v3", value: new THREE.Vector3( 1, 1, 1 ) },
                 "limit": { type: "f", value: 1},
-                "mirror": {type: "v3v", value: [ new THREE.Vector3( 1, 1, 1) ] }
+                "mirror": {type: "v3v", value: [ new THREE.Vector3( 1, 1, 1) ] },
+                "referenceWaveAngle": { type: "f", value: 45 }
             }
 
         ] ),
@@ -319,6 +320,7 @@ CGHLab.GeometryShaderLib = {
 
             "uniform float limit;",
             "uniform vec3 mirror[2];",
+            "uniform float referenceWaveAngle;",
             "varying vec4 worldPosition;",
 
             "varying vec3 vLightFront;",
@@ -340,14 +342,22 @@ CGHLab.GeometryShaderLib = {
             THREE.ShaderChunk[ "logdepthbuf_pars_fragment" ],
 
             "bool checkMirror(vec3 position){",
-            "   if (position.z > (position.x - mirror[0].x) * ((mirror[1].z - mirror[0].z)/(mirror[1].x - mirror[0].x)) + mirror[0].z)",
-            "       return false;",
-            "   else",
-            "       return true;",
+            "   const float pi = 3.1415926535897932384626433832795;",
+            "   if(referenceWaveAngle < pi/4.0){",
+            "       if (position.z < (position.x - mirror[0].x) * ((mirror[1].z - mirror[0].z)/(mirror[1].x - mirror[0].x)) + mirror[0].z)",
+            "           return false;",
+            "       else",
+            "           return true;",
+            "   }",
+            "   else{",
+            "       if (position.z > (position.x - mirror[0].x) * ((mirror[1].z - mirror[0].z)/(mirror[1].x - mirror[0].x)) + mirror[0].z)",
+            "           return false;",
+            "       else",
+            "           return true;",
+            "   }",
             "}",
 
             "void main() {",
-
             "   if(limit == 1.0){",
             "       if(checkMirror(worldPosition.xyz)) discard;",
             "   }",
