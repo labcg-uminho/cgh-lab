@@ -239,6 +239,8 @@ CGHLab.MainScene = function( renderer, camera )
         laserLight2.mirror = [];
         laserLight3 = [];
         objWaveLight = [];
+        lightPointWaves.list = [];
+        lightPointWaves.scales = [];
     };
 
     this.eraseLight3Array = function(){
@@ -421,9 +423,11 @@ CGHLab.MainScene.prototype = {
     //Change the object
     changeObject: function(value)
     {
+        //Changes the object
         this.object.changeObject(value);
         this.updateShaderUniforms();
 
+        //Deletes the previous object waves
         var objWaveLight = this.getObjWaveLight();
         var i;
         for(i = 0; i < objWaveLight.length; i++){
@@ -611,6 +615,7 @@ CGHLab.MainScene.prototype = {
         var laserLight2 = this.getLaserLight2();
         var laserLight3 = this.getLaserLight3();
         var objWaveLight = this.getObjWaveLight();
+        var lightPointWaves = this.getLightPointWaves();
         for(i = 0; i < laserLight1.list.length; i++){
             this.scene.remove(laserLight1.list[i]);
         }
@@ -622,6 +627,9 @@ CGHLab.MainScene.prototype = {
         }
         for(i = 0; i < objWaveLight.length; i++){
             this.scene.remove(objWaveLight[i]);
+        }
+        for(i = 0; i < lightPointWaves.list.length; i++){
+            this.scene.remove(lightPointWaves.list[i]);
         }
         this.eraseWaveArrays();
         this.refWaveArrived = false;

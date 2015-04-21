@@ -161,11 +161,11 @@
 
             var guiPerspectivesConfig = new parametersGUIPerspectives();
 
-            var folder3 = gui2.addFolder('Perspectives');
+            var folder3 = gui2.addFolder('Change Perspective');
             folder3.open();
-            folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('Main');
-            folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('Object');
-            folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('Plate');
+            folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
+            folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
+            folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
 
             if(perspective == 'main')
             {
@@ -228,17 +228,25 @@
 
                 var parametersGUIObject = function()
                 {
-                    this.a = 200; // numeric
-                    this.b = 200; // numeric slider
-                    this.c = "Hello, GUI!"; // string
-                    this.d = false; // boolean (checkbox)
+                    this.laserOn = function(){if (!laserTurnOn) mainScene.laserOn(); laserTurnOn = true;};
+                    this.laserOff = function(){if (laserTurnOn) mainScene.laserOff(); laserTurnOn = false;};
+                    this.objectRotationSlider = CGHLab.Helpers.rad2deg(mainScene.objectRotationScene);
+                    this.geometry = mainScene.object.figure;
                 };
                 // gui.add( parameters )
                 var objectParametersConfig = new parametersGUIObject();
-                gui.add( objectParametersConfig, 'a' ).name('Number');
-                gui.add( objectParametersConfig, 'b' ).min(128).max(256).step(16).name('Slider');
-                gui.add( objectParametersConfig, 'c' ).name('String');
-                gui.add( objectParametersConfig, 'd' ).name('Boolean');
+                gui.add(objectParametersConfig, 'laserOn').name('Turn On Laser');
+                gui.add(objectParametersConfig, 'laserOff').name('Turn Off Laser');
+                var rObj = gui.add( objectParametersConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
+                rObj.onChange(function(value){
+                    CGHLab.ObjectPerspective.rotateObject(value,mainScene);
+                });
+                var figureListObj = [ "cube", "sphere", "octahedron", "tetrahedron" ];
+                var geometryObj = gui.add( objectParametersConfig, 'geometry', figureListObj ).name('Geometry');
+                geometryObj.onChange(function(value)
+                {
+                    CGHLab.ObjectPerspective.changeObject(value, mainScene);
+                });
             }
             else if(perspective == 'plate')
             {

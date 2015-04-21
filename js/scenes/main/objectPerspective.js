@@ -85,6 +85,57 @@ CGHLab.ObjectPerspective = {
             scene.add(clone);
             mainScene.addToLightPointWaves(clone);
         }
+    },
+
+    rotateObject: function(value, mainScene)
+    {
+        //First delete the previous light points from the scene
+        var i;
+        for (i = 0; i < mainScene.object.lightPoints.length; i++){
+            var object = mainScene.scene.getObjectByName('lightPoint'+i);
+            mainScene.scene.remove(object);
+        }
+
+        //Rotate the object
+        var rad = CGHLab.Helpers.deg2rad(value);
+        var r = rad - mainScene.objectRotationScene;
+        mainScene.objectRotationScene += r;
+        if ((mainScene.objectRotationScene) > 2*Math.PI) mainScene.objectRotationScene = mainScene.objectRotationScene - 2*Math.PI;
+        mainScene.object.object.rotateY(r);
+        mainScene.object.convertToLightPoints();
+
+        mainScene.collidableList = [];
+        //Sets the new light points (moves them to the new positions)
+        this.setLightPoints(mainScene.scene, mainScene.object.lightPoints, mainScene.collidableList);
+
+        mainScene.updateShaderUniforms();
+    },
+
+    changeObject: function(value, mainScene)
+    {
+        //First delete the previous light points from the scene
+        var i;
+        for (i = 0; i < mainScene.object.lightPoints.length; i++){
+            var object = mainScene.scene.getObjectByName('lightPoint'+i);
+            mainScene.scene.remove(object);
+        }
+
+        //Change the object
+        mainScene.object.changeObject(value);
+        mainScene.updateShaderUniforms();
+
+        //Delete the lightPoint waves
+        var lightPointsWave = mainScene.getLightPointWaves();
+        for(i = 0; i < lightPointsWave.list.length; i++){
+            mainScene.scene.remove(lightPointsWave.list[i]);
+        }
+        mainScene.eraseLightPointWaves();
+        mainScene.collidableList = [];
+        //Sets the new light points
+        this.setLightPoints(mainScene.scene, mainScene.object.lightPoints, mainScene.collidableList);
+        mainScene.objWaveArrived = false;
+        mainScene.patternShown = false;
+        mainScene.hideInterferencePattern();
     }
 
 };
