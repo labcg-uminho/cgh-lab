@@ -74,6 +74,8 @@ CGHLab.MainScene = function( renderer, camera )
     var dot = dirSplitter.dot(dirMirror.clone().negate().normalize());
     this.amplifierRotation2 = Math.PI - Math.acos(dot) - Math.PI/4;
 
+    this.simpleLaserOn = false;
+
     //Discovers the center of the scene
     var center = new THREE.Vector3();
     center.addVectors(this.platePosition,this.laserPosition).divideScalar(2);
@@ -82,6 +84,7 @@ CGHLab.MainScene = function( renderer, camera )
     this.referenceWave = new CGHLab.Wave(0,1,1);
 
     this.interferencePatternShader = new THREE.Material;
+    this.interferencePatternShaderUnchanged = new THREE.Material;
     this.lightPointWaveShader = new THREE.Material;
     this.laserDupliateShader = new THREE.Material;
     this.laserReflectionShader = new THREE.Material;
@@ -469,6 +472,14 @@ CGHLab.MainScene.prototype = {
         mirror.rotateY(this.mirrorRotation);
         this.updateShaderUniforms();
 
+        //if simple laser is on then it needs to be updated
+        if(this.simpleLaserOn) {
+            var laserM_AP2 = this.scene.getObjectByName('simpleMirrorAP2');
+            var laserAP2_P = this.scene.getObjectByName('simpleAP2Plate');
+            laserM_AP2.rotateZ(-this.amplifierRotation2);
+            laserAP2_P.rotateZ(-this.amplifierRotation2);
+        }
+
         //Calculate amplifier position with new mirror direction
         this.amplifierPosition2 = new THREE.Vector3();
         this.amplifierPosition2.addVectors(this.platePosition, newDirMirror.normalize().multiplyScalar(unitsAmplifier2));
@@ -484,7 +495,7 @@ CGHLab.MainScene.prototype = {
         amplifier2.position.set(this.amplifierPosition2.x, this.amplifierPosition2.y, this.amplifierPosition2.z);
         amplifier2.rotateY(this.amplifierRotation2);
 
-        //Reset reflect geometry
+        //Reset reflected geometry
         var laserLight3 = this.getLaserLight3();
         var i;
         for(i = 0; i < laserLight3.length; i++){
@@ -497,7 +508,32 @@ CGHLab.MainScene.prototype = {
         this.laserDupliateShader.uniforms.referenceWaveAngle.value = this.referenceWaveAngle;
         this.laserReflectionShader.uniforms.mirror.value = this.mirrorPoints;
         this.laserReflectionShader.uniforms.referenceWaveAngle.value = this.referenceWaveAngle;
-        //console.log('update: '+this.laserReflectionShader.uniforms.referenceWaveAngle.value);
+
+        //if simple laser is on then it needs to be updated
+        if(this.simpleLaserOn) {
+            var laserB_M = this.scene.getObjectByName('simpleLaserBeam');
+            var middleB_M = new THREE.Vector3();
+            middleB_M.subVectors(this.mirrorPosition, this.beamSplitterPosition).divideScalar(2);
+            var unitsB_M = this.mirrorPosition.distanceTo(this.beamSplitterPosition);
+            laserB_M.geometry = new THREE.CylinderGeometry(10, 10, unitsB_M, 32);
+            laserB_M.position.set(this.mirrorPosition.x - middleB_M.x, this.mirrorPosition.y - middleB_M.y, this.mirrorPosition.z - middleB_M.z);
+
+            var middleM_AP2 = new THREE.Vector3();
+            middleM_AP2.subVectors(this.amplifierPosition2, this.mirrorPosition).divideScalar(2);
+            var unitsM_AP2 = this.mirrorPosition.distanceTo(this.amplifierPosition2);
+            laserM_AP2.geometry = new THREE.CylinderGeometry(10, 10, unitsM_AP2, 32);
+            laserM_AP2.position.set(this.amplifierPosition2.x - middleM_AP2.x, this.amplifierPosition2.y - middleM_AP2.y, this.amplifierPosition2.z - middleM_AP2.z);
+            laserM_AP2.rotateZ(this.amplifierRotation2);
+
+            var newLaser3Finish = new THREE.Vector3();
+            newLaser3Finish.addVectors(this.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1 / Math.cos(Math.PI / 4 - this.referenceWaveAngle)) * 350));
+            var unitsAP2_P = newLaser3Finish.distanceTo(this.amplifierPosition2);
+            var middleAP2_P = new THREE.Vector3();
+            middleAP2_P.subVectors(newLaser3Finish, this.amplifierPosition2).divideScalar(2);
+            laserAP2_P.geometry = new THREE.CylinderGeometry(110, 10, unitsAP2_P, 32);
+            laserAP2_P.position.set(newLaser3Finish.x - middleAP2_P.x, newLaser3Finish.y - middleAP2_P.y, newLaser3Finish.z - middleAP2_P.z);
+            laserAP2_P.rotateZ(this.amplifierRotation2);
+        }
     },
 
     setHologramShader: function()
@@ -520,20 +556,25 @@ CGHLab.MainScene.prototype = {
         //           wave   `-. /
         //                     `
 
-        holographicPlateMaterial.uniforms.lightPoints.value = this.object.getLightPointsPositions();
-        holographicPlateMaterial.uniforms.n_lightPoints.value = this.object.lightPoints.length;
-        holographicPlateMaterial.uniforms.horizCycleLength.value = this.referenceWave.waveLength / Math.sin(this.referenceWaveAngle);
-        holographicPlateMaterial.uniforms.waveLength.value = this.referenceWave.waveLength;
+        this.interferencePatternShaderUnchanged = holographicPlateMaterial.clone();
+        this.interferencePatternShader = holographicPlateMaterial.clone();
 
-        this.interferencePatternShader = holographicPlateMaterial;
-    },
-
-    updateShaderUniforms: function()
-    {
         this.interferencePatternShader.uniforms.lightPoints.value = this.object.getLightPointsPositions();
         this.interferencePatternShader.uniforms.n_lightPoints.value = this.object.lightPoints.length;
         this.interferencePatternShader.uniforms.horizCycleLength.value = this.referenceWave.waveLength / Math.sin(this.referenceWaveAngle);
         this.interferencePatternShader.uniforms.waveLength.value = this.referenceWave.waveLength;
+    },
+
+    updateShaderUniforms: function()
+    {
+        this.interferencePatternShader = this.interferencePatternShaderUnchanged.clone();
+
+        this.interferencePatternShader.uniforms.lightPoints.value = this.object.getLightPointsPositions();
+        this.interferencePatternShader.uniforms.n_lightPoints.value = this.object.lightPoints.length;
+        this.interferencePatternShader.uniforms.horizCycleLength.value = this.referenceWave.waveLength / Math.sin(this.referenceWaveAngle);
+        this.interferencePatternShader.uniforms.waveLength.value = this.referenceWave.waveLength;
+
+        //this.interferencePatternShader = holographicPlateMaterial;
         //console.log(this.interferencePatternShader.uniforms.lightPoints.value);
         //console.log(this.interferencePatternShader.uniforms.n_lightPoints.value);
     },
@@ -593,6 +634,77 @@ CGHLab.MainScene.prototype = {
         var laserShader = lightMaterial.clone();
         laserShader.uniforms.limit.value = 0;
         this.laserShader = laserShader;
+    },
+
+    simpleLaser: function()
+    {
+        var middleL_AP1 = new THREE.Vector3();
+        middleL_AP1.subVectors(this.amplifierPosition, this.laserPosition).divideScalar(2);
+        var unitsL_AP1 = this.laserPosition.distanceTo(this.amplifierPosition);
+        var laserGeometryL_AP1 = new THREE.CylinderGeometry(10,10,unitsL_AP1,32);
+        var laserL_AP1 = new THREE.Mesh(laserGeometryL_AP1, this.laserShader);
+        laserL_AP1.position.set(this.amplifierPosition.x - middleL_AP1.x, this.amplifierPosition.y - middleL_AP1.y, this.amplifierPosition.z - middleL_AP1.z);
+        laserL_AP1.rotateY(this.laserRotation);
+        laserL_AP1.rotateX(-Math.PI / 2);
+        this.scene.add(laserL_AP1);
+
+        var dirAmplifier = this.getDirAmplifier();
+        var negDirAmplifier = dirAmplifier.clone().normalize().negate();
+        //extend the maximum path from 'laser to object' to 'laser to object + 50 units' on the object perspective, so the wavefronts
+        //can pass through all the light points of an object
+        var newLaser1Finish = new THREE.Vector3();
+        newLaser1Finish.addVectors(this.objectPosition, negDirAmplifier.multiplyScalar(50));
+        var unitsAP1_O = newLaser1Finish.distanceTo(this.amplifierPosition);
+        var laserGeometryAP1_O = new THREE.CylinderGeometry(110,10,unitsAP1_O,32);
+        var laserAP1_O = new THREE.Mesh(laserGeometryAP1_O, this.laserShader);
+        var middleAP1_O = new THREE.Vector3();
+        middleAP1_O.subVectors(newLaser1Finish, this.amplifierPosition).divideScalar(2);
+        laserAP1_O.position.set(newLaser1Finish.x - middleAP1_O.x, newLaser1Finish.y - middleAP1_O.y, newLaser1Finish.z - middleAP1_O.z);
+        laserAP1_O.rotateY(this.laserRotation);
+        laserAP1_O.rotateX(-Math.PI / 2);
+        this.scene.add(laserAP1_O);
+
+        var middleB_M = new THREE.Vector3();
+        middleB_M.subVectors(this.mirrorPosition, this.beamSplitterPosition).divideScalar(2);
+        var unitsB_M = this.mirrorPosition.distanceTo(this.beamSplitterPosition);
+        var laserGeometryB_M = new THREE.CylinderGeometry(10,10,unitsB_M,32);
+        var laserB_M = new THREE.Mesh(laserGeometryB_M, this.laserDupliateShader);
+        laserB_M.position.set(this.mirrorPosition.x - middleB_M.x, this.mirrorPosition.y - middleB_M.y, this.mirrorPosition.z - middleB_M.z);
+        laserB_M.rotateY(this.laserRotation + Math.PI/2);
+        laserB_M.rotateX(-Math.PI / 2);
+        laserB_M.name = 'simpleLaserBeam';
+        this.scene.add(laserB_M);
+
+        var dirSplitter = this.getDirSplitter().clone().normalize();
+        var dirMirror = this.getDirMirror();
+        var negDirMirror = dirMirror.clone().normalize().negate();
+        var middleM_AP2 = new THREE.Vector3();
+        middleM_AP2.subVectors(this.amplifierPosition2, this.mirrorPosition).divideScalar(2);
+        var unitsM_AP2 = this.mirrorPosition.distanceTo(this.amplifierPosition2);
+        var laserGeometryM_AP2 = new THREE.CylinderGeometry(10,10,unitsM_AP2,32);
+        var laserM_AP2 = new THREE.Mesh(laserGeometryM_AP2, this.laserReflectionShader);
+        laserM_AP2.position.set(this.amplifierPosition2.x - middleM_AP2.x, this.amplifierPosition2.y - middleM_AP2.y, this.amplifierPosition2.z - middleM_AP2.z);
+        var dot = dirSplitter.dot(negDirMirror);
+        var rotationAngle = Math.PI - Math.acos(dot) - Math.PI/4;
+        laserM_AP2.rotateY(rotationAngle);
+        laserM_AP2.rotateX(-Math.PI / 2);
+        laserM_AP2.name = 'simpleMirrorAP2';
+        this.scene.add(laserM_AP2);
+
+        var newLaser3Finish = new THREE.Vector3();
+        newLaser3Finish.addVectors(this.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 350));
+        var unitsAP2_P = newLaser3Finish.distanceTo(this.amplifierPosition2);
+        var laserGeometryAP2_P = new THREE.CylinderGeometry(110,10,unitsAP2_P,32);
+        var laserAP2_P = new THREE.Mesh(laserGeometryAP2_P, this.laserReflectionShader);
+        var middleAP2_P = new THREE.Vector3();
+        middleAP2_P.subVectors(newLaser3Finish, this.amplifierPosition2).divideScalar(2);
+        laserAP2_P.position.set(newLaser3Finish.x - middleAP2_P.x, newLaser3Finish.y - middleAP2_P.y, newLaser3Finish.z - middleAP2_P.z);
+        laserAP2_P.rotateY(rotationAngle);
+        laserAP2_P.rotateX(-Math.PI / 2);
+        laserAP2_P.name = 'simpleAP2Plate';
+        this.scene.add(laserAP2_P);
+
+        this.simpleLaserOn = true;
     },
 
     laserOn: function()
@@ -779,6 +891,7 @@ CGHLab.MainScene.prototype = {
                 var newReflect = laserLight2.list[i].clone();
                 newReflect.material = this.laserReflectionShader;
                 newReflect.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
+                console.log(newReflect);
                 //The wave is perpendicular to the direction and the angle made by the 2 directions is arccos(dot(dirMirror, dirBeam))
                 //So the angle os rotation is 360 - 90 - 90 - arccos(dot(dirMirror, dirBeam))
                 var dot = dirSplitter.dot(negDirMirror);

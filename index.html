@@ -34,6 +34,7 @@
         var currentPerspective;
         //var currentScene;
         var laserTurnOn = false;
+        var simpleLaserOn = false;
 
         var rayCaster;
         var mouse = new THREE.Vector2(), INTERSECTED, SELECTED;
@@ -173,6 +174,7 @@
                 gui.open();
                 var parametersGUIMain = function()
                 {
+                    this.laserSimples = function(){if (!simpleLaserOn) mainScene.simpleLaser(); simpleLaserOn = true;};
                     this.laserOn = function(){if (!laserTurnOn) mainScene.laserOn(); laserTurnOn = true;};
                     this.laserOff = function(){if (laserTurnOn) mainScene.laserOff(); laserTurnOn = false;};
                     this.objectRotationSlider = CGHLab.Helpers.rad2deg(mainScene.objectRotationScene);
@@ -190,6 +192,7 @@
 
                 var mainParametersConfig = new parametersGUIMain();
 
+                gui.add(mainParametersConfig, 'laserSimples').name('Simples');
                 gui.add(mainParametersConfig, 'laserOn').name('Turn On Laser');
                 gui.add(mainParametersConfig, 'laserOff').name('Turn Off Laser');
                 gui.add(mainParametersConfig, 'focusCenter').name('Focus Center');

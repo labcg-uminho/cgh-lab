@@ -8,7 +8,7 @@ CGHLab.HologramShaderLib = {
         uniforms: {
             "color": { type: "c", value: new THREE.Color( 0x666666 ) },
             "lightPoints": { type: "v4v", value: [ new THREE.Vector4() ] },
-            "n_lightPoints": { type: "i", value: 1 },
+            "n_lightPoints": { type: "i", value: 162 },
             "horizCycleLength": { type: "f", value: 0 },
             "waveLength": { type: "f", value: 1 }
         },
@@ -41,13 +41,13 @@ CGHLab.HologramShaderLib = {
             "   float k = tau / waveLength;",
 
             "   for(int i = 0; i < 162; i++){",
+            "       if (i == n_lightPoints) break;",
             "       float d = distance(lightPoints[i].xyz, worldPosition.xyz);",
             "       float objArrivalPhase = (d - lightPoints[i].w) * k;",
             //"       perWaveAmplitude[i] = cos(objArrivalPhase);",
             //"       totalAmplitude += perWaveAmplitude[i];",
             "       totalIntensity += cos(objArrivalPhase - refArrivalPhase);",
             "       normalizedIntensity = totalIntensity / (n*2.0) + 0.5;",
-            "       if (i == n_lightPoints) break;",
             "   }",
             "   gl_FragColor = vec4( vec3(normalizedIntensity), 1.0 );",
             "}"
