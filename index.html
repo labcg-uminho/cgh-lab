@@ -192,33 +192,35 @@
 
                 var mainParametersConfig = new parametersGUIMain();
 
-                gui.add(mainParametersConfig, 'laserSimples').name('Simples');
-                gui.add(mainParametersConfig, 'laserOn').name('Turn On Laser');
-                gui.add(mainParametersConfig, 'laserOff').name('Turn Off Laser');
-                gui.add(mainParametersConfig, 'focusCenter').name('Focus Center');
-                gui.add(mainParametersConfig, 'interferencePattern').name('See Interference Pattern');
+                var folderGeneralMain = gui.addFolder('General');
+                folderGeneralMain.open();
+                folderGeneralMain.add(mainParametersConfig, 'laserSimples').name('Simples');
+                folderGeneralMain.add(mainParametersConfig, 'laserOn').name('Turn On Laser');
+                folderGeneralMain.add(mainParametersConfig, 'laserOff').name('Turn Off Laser');
+                folderGeneralMain.add(mainParametersConfig, 'focusCenter').name('Focus Center');
+                folderGeneralMain.add(mainParametersConfig, 'interferencePattern').name('See Interference Pattern');
 
-                var folder1 = gui.addFolder('Object');
-                folder1.open();
-                var r = folder1.add( mainParametersConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
+                var folderObjectMain = gui.addFolder('Object');
+                folderObjectMain.open();
+                var r = folderObjectMain.add( mainParametersConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
                 r.onChange(function(value){
                     mainScene.rotateObject(value);
                 });
                 var figureList = [ "cube", "sphere", "cylinder", "pyramid", "torus", "torus_knot" ];
-                var geometry = folder1.add( mainParametersConfig, 'geometry', figureList ).name('Geometry');
+                var geometry = folderObjectMain.add( mainParametersConfig, 'geometry', figureList ).name('Geometry');
                 geometry.onChange(function(value)
                 {
                     mainScene.changeObject(value);
                 });
 
-                var folder2 = gui.addFolder('Reference Wave');
-                folder2.open();
-                var wl = folder2.add(mainParametersConfig, 'refWaveLength').name('WaveLength');
+                var folderRefWaveMain = gui.addFolder('Reference Wave');
+                folderRefWaveMain.open();
+                var wl = folderRefWaveMain.add(mainParametersConfig, 'refWaveLength').name('WaveLength');
                 wl.onChange(function(value){
                     mainScene.referenceWave.waveLength = value;
                     mainScene.updateShaderUniforms();
                 });
-                var wa = folder2.add(mainParametersConfig, 'refWaveAngle').min(0).max(90).name('Wave Angle');
+                var wa = folderRefWaveMain.add(mainParametersConfig, 'refWaveAngle').min(0).max(90).name('Wave Angle');
                 wa.onChange(function(value){
                    mainScene.updateMirror(value);
                 });
@@ -235,20 +237,43 @@
                     this.laserOff = function(){if (laserTurnOn) mainScene.laserOff(); laserTurnOn = false;};
                     this.objectRotationSlider = CGHLab.Helpers.rad2deg(mainScene.objectRotationScene);
                     this.geometry = mainScene.object.figure;
+                    this.detail = mainScene.object.detail;
+                    this.simpleSending = mainScene.simpleWaveSending;
                 };
                 // gui.add( parameters )
                 var objectParametersConfig = new parametersGUIObject();
-                gui.add(objectParametersConfig, 'laserOn').name('Turn On Laser');
-                gui.add(objectParametersConfig, 'laserOff').name('Turn Off Laser');
-                var rObj = gui.add( objectParametersConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
+
+                var folderGeneralObject = gui.addFolder('General');
+                folderGeneralObject.open();
+
+                folderGeneralObject.add(objectParametersConfig, 'laserOn').name('Turn On Laser');
+                folderGeneralObject.add(objectParametersConfig, 'laserOff').name('Turn Off Laser');
+
+                var simpleSendingCheck = folderGeneralObject.add(objectParametersConfig, 'simpleSending').name('Simple Sending?');
+                simpleSendingCheck.onChange(function(value){
+                    mainScene.simpleWaveSending = value;
+                });
+
+                var folderObjectObject = gui.addFolder('Object');
+                folderObjectObject.open();
+                var rObj = folderObjectObject.add( objectParametersConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
                 rObj.onChange(function(value){
                     CGHLab.ObjectPerspective.rotateObject(value,mainScene);
                 });
                 var figureListObj = [ "cube", "sphere", "cylinder", "pyramid", "torus", "torus_knot" ];
-                var geometryObj = gui.add( objectParametersConfig, 'geometry', figureListObj ).name('Geometry');
+                var geometryObj = folderObjectObject.add( objectParametersConfig, 'geometry', figureListObj ).name('Geometry');
                 geometryObj.onChange(function(value)
                 {
                     CGHLab.ObjectPerspective.changeObject(value, mainScene);
+                    setGUI('object');
+                });
+                var detailList = [];
+                if (mainScene.object.figure == 'sphere') detailList = [ "low", "high" ];
+                else detailList = [ "low", "medium", "high" ];
+                var detailObj = folderObjectObject.add( objectParametersConfig, 'detail', detailList ).name('Detail');
+                detailObj.onChange(function(value)
+                {
+                    CGHLab.ObjectPerspective.changeDetail(mainScene.object.figure, value, mainScene);
                 });
             }
             else if(perspective == 'plate')
