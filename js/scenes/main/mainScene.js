@@ -85,11 +85,17 @@ CGHLab.MainScene = function( renderer, camera )
 
     this.interferencePatternShader = new THREE.Material;
     this.interferencePatternShaderUnchanged = new THREE.Material;
+
     this.lightPointWaveShader = new THREE.Material;
+    this.simpleWaveSending = true;
+
     this.laserDupliateShader = new THREE.Material;
     this.laserReflectionShader = new THREE.Material;
     this.laserObjectWaveShader = new THREE.Material;
     this.laserShader = new THREE.Material;
+
+    this.interferencePatternOn = false;
+    this.interferencePatternInstant = false;
 
     this.refWaveArrived = false;
     this.objWaveArrived = false;
@@ -305,7 +311,7 @@ CGHLab.MainScene.prototype = {
 
 
         //LASER
-        var laserSourceGeometry = new THREE.CylinderGeometry( 10, 10, 30, 32);
+        var laserSourceGeometry = new THREE.CylinderGeometry( 11, 11, 30, 32);
         var laserSourceMaterial = new THREE.MeshLambertMaterial( {color: 0x00ffff, ambient: 0x00ffff} );
         var laserSource = new THREE.Mesh(laserSourceGeometry, laserSourceMaterial);
         laserSource.position.set(this.laserPosition.x, this.laserPosition.y, this.laserPosition.z);
@@ -577,6 +583,11 @@ CGHLab.MainScene.prototype = {
         //this.interferencePatternShader = holographicPlateMaterial;
         //console.log(this.interferencePatternShader.uniforms.lightPoints.value);
         //console.log(this.interferencePatternShader.uniforms.n_lightPoints.value);
+
+        if(this.interferencePatternOn) {
+            var plate = this.scene.getObjectByName('plate');
+            plate.material = this.interferencePatternShader;
+        }
     },
 
     seeInterferencePattern: function()
@@ -585,12 +596,17 @@ CGHLab.MainScene.prototype = {
         plate.material = new THREE.MeshLambertMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
 
         plate.material = this.interferencePatternShader;
+
+        this.interferencePatternOn = true;
+        this.interferencePatternInstant = true;
     },
 
     hideInterferencePattern: function()
     {
         var plate = this.scene.getObjectByName('plate');
         plate.material = new THREE.MeshLambertMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
+
+        this.interferencePatternOn = false;
     },
 
     setLaserMaterial: function () {
@@ -825,59 +841,55 @@ CGHLab.MainScene.prototype = {
                 }
             }
             else if(this.objectPerspective){
-                //When the wavefronts get close to the object light points more detail is given to the wavefronts geometry.
-                //This way the collision detector will have more precision
-                if (laserLight1.list[i].position.z < this.objectPosition.z + 50 && !laserLight1.updated[i]){
-                    laserLight1.list[i].geometry = new THREE.CircleGeometry(10,512);
-                    laserLight1.updated[i] = true;
-                }
-                /*var j;
-                for (j = 0; j < this.object.lightPoints.length; j++){
-                    if (laserLight1.list[i].position.z < this.object.lightPoints[j].position.z){
-                        if(!laserLight1.lightPoints[i][j]){
-                            //console.log(laserLight1.list[i].position.z);
-                            //console.log(this.object.lightPoints[j].position.z);
-                            CGHLab.ObjectPerspective.sendLightPointWave2(this.scene, this.object.lightPoints[j], this, this.lightPointWaveShader);
-                            laserLight1.lightPoints[i][j] = true;
-                        }
+                if(!this.simpleWaveSending) {
+                    //When the wavefronts get close to the object light points more detail is given to the wavefronts geometry.
+                    //This way the collision detector will have more precision
+                    if (laserLight1.list[i].position.z < this.objectPosition.z + 50 && !laserLight1.updated[i]){
+                        laserLight1.list[i].geometry = new THREE.CircleGeometry(10,512);
+                        laserLight1.updated[i] = true;
                     }
-                }*/
 
-                var originPoint = laserLight1.list[i].position.clone();
-                for (var vertexIndex = 0; vertexIndex < laserLight1.list[i].geometry.vertices.length; vertexIndex++)
-                {
-                    var localVertex = laserLight1.list[i].geometry.vertices[vertexIndex].clone();
-                    var globalVertex = localVertex.applyMatrix4( laserLight1.list[i].matrix );
-                    var directionVector = globalVertex.sub( laserLight1.list[i].position );
+                    var originPoint = laserLight1.list[i].position.clone();
+                    for (var vertexIndex = 0; vertexIndex < laserLight1.list[i].geometry.vertices.length; vertexIndex++) {
+                        var localVertex = laserLight1.list[i].geometry.vertices[vertexIndex].clone();
+                        var globalVertex = localVertex.applyMatrix4(laserLight1.list[i].matrix);
+                        var directionVector = globalVertex.sub(laserLight1.list[i].position);
 
-                    var ray = new THREE.Raycaster( originPoint, directionVector.clone().normalize() );
-                    var collisionResults = ray.intersectObjects( this.collidableList );
-                    if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) {
-                        //console.log('antes ' + collisionResults.length);
-                        //CGHLab.Helpers.uniq_fast(collisionResults);
-                        //console.log('depois '+ collisionResults.length);
-                        for (var j = 0; j < collisionResults.length; j++){
-                            if(laserLight1.lightPoints[i].names.indexOf(collisionResults[j].object.name) == -1) {
-                                CGHLab.ObjectPerspective.sendLightPointWave2(this.scene, collisionResults[j].object, this, this.lightPointWaveShader);
-                                laserLight1.lightPoints[i].names.push(collisionResults[j].object.name);
+                        var ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
+                        var collisionResults = ray.intersectObjects(this.collidableList);
+                        if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
+                            //console.log('antes ' + collisionResults.length);
+                            //CGHLab.Helpers.uniq_fast(collisionResults);
+                            //console.log('depois '+ collisionResults.length);
+                            for (var j = 0; j < collisionResults.length; j++) {
+                                if (laserLight1.lightPoints[i].names.indexOf(collisionResults[j].object.name) == -1) {
+                                    CGHLab.ObjectPerspective.sendLightPointWaveComplete(this.scene, collisionResults[j].object, this, this.lightPointWaveShader);
+                                    laserLight1.lightPoints[i].names.push(collisionResults[j].object.name);
+                                    //console.log(collisionResults[j].object.name);
+                                }
                                 //console.log(collisionResults[j].object.name);
                             }
-                            //console.log(collisionResults[j].object.name);
                         }
                     }
+
+                    //if (laserLight1.list[i].position.z < this.objectPosition.z) {
+                    if (laserLight1.list[i].position.z < newLaser1Finish.z) {
+                        this.scene.remove(laserLight1.list[i]);
+                        this.removeFromLaserLight1(laserLight1.list[i]);
+                    }
                 }
+                else {
+                    if (laserLight1.list[i].position.z < this.objectPosition.z) {
+                        this.scene.remove(laserLight1.list[i]);
+                        this.removeFromLaserLight1(laserLight1.list[i]);
 
-                //if (laserLight1.list[i].position.z < this.objectPosition.z) {
-                if (laserLight1.list[i].position.z < newLaser1Finish.z) {
-                    this.scene.remove(laserLight1.list[i]);
-                    this.removeFromLaserLight1(laserLight1.list[i]);
-
-                    /*if (!laserLight1.object[i]) {
-                        //console.log(laserLight1.list[i].position.z);
-                        //console.log(this.objectPosition.z);
-                        CGHLab.ObjectPerspective.sendLightPointWave(this.scene, this.object.lightPoints, this, this.lightPointWaveShader);
-                        laserLight1.object[i] = true;
-                    }*/
+                        if (!laserLight1.object[i]) {
+                         //console.log(laserLight1.list[i].position.z);
+                         //console.log(this.objectPosition.z);
+                         CGHLab.ObjectPerspective.sendLightPointWaveSimple(this.scene, this.object.lightPoints, this, this.lightPointWaveShader);
+                         laserLight1.object[i] = true;
+                         }
+                    }
                 }
             }
         }

@@ -9,6 +9,7 @@ CGHLab.HoloObject = function ( position, rotation )
 
     this.object = new THREE.Mesh;
     this.figure = "";
+    this.detail = "";
 
     this.lightPoints = [];
 
@@ -30,10 +31,11 @@ CGHLab.HoloObject.prototype = {
     {
         var objectGeometry;
         if (geometry == 'cube') objectGeometry = new THREE.BoxGeometry(1, 1, 1);
-        //else if (geometry == 'sphere') objectGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-        else if (geometry == 'sphere') objectGeometry = new THREE.IcosahedronGeometry(0.5,2);
-        else if (geometry == 'octahedron') objectGeometry = new THREE.OctahedronGeometry(0.5,0);
-        else if (geometry == 'tetrahedron') objectGeometry = new THREE.TetrahedronGeometry(0.5,0);
+        else if (geometry == 'sphere') objectGeometry = new THREE.IcosahedronGeometry(0.5, 1);
+        else if (geometry == 'cylinder') objectGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16, 1);
+        else if (geometry == 'pyramid') objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 1);
+        else if (geometry == 'torus') objectGeometry = new THREE.TorusGeometry(0.5, 0.2, 8, 6);
+        else if (geometry == 'torus_knot') objectGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 12, 4, 1, 2);
         var objectMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 , ambient: 0x00ff00});
         this.object = new THREE.Mesh(objectGeometry, objectMaterial);
         this.object.scale.set(30,30,30);
@@ -41,6 +43,7 @@ CGHLab.HoloObject.prototype = {
         this.object.rotateY(this.rotation);
         this.object.name = 'object';
         this.figure = geometry;
+        this.detail = 'low';
         this.convertToLightPoints();
     },
 
@@ -60,6 +63,7 @@ CGHLab.HoloObject.prototype = {
         }
         this.lightPoints = [];
         this.lightPoints = lightPoints;
+        console.log(this.lightPoints.length);
         //alert(lightPoints.length);
     },
 
@@ -68,12 +72,111 @@ CGHLab.HoloObject.prototype = {
         var objectGeometry;
         var o = this.object;//this.scene.getObjectByName('object');
         if (geometry == 'cube') objectGeometry = new THREE.BoxGeometry(1, 1, 1);
-        //else if (geometry == 'sphere') objectGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-        else if (geometry == 'sphere') objectGeometry = new THREE.IcosahedronGeometry(0.5,2);
-        else if (geometry == 'octahedron') objectGeometry = new THREE.OctahedronGeometry(0.5,0);
-        else if (geometry == 'tetrahedron') objectGeometry = new THREE.TetrahedronGeometry(0.5,0);
+        else if (geometry == 'sphere') objectGeometry = new THREE.IcosahedronGeometry(0.5, 1);
+        else if (geometry == 'cylinder') objectGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16, 1);
+        else if (geometry == 'pyramid') objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 1);
+        else if (geometry == 'torus') objectGeometry = new THREE.TorusGeometry(0.5, 0.2, 8, 6);
+        else if (geometry == 'torus_knot') objectGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 12, 4, 1, 2);
         o.geometry = objectGeometry;
         this.figure = geometry;
+        this.detail = 'low';
+        this.convertToLightPoints();
+    },
+
+    changeDetail: function( geometry, detail ){
+        var objectGeometry;
+        var o = this.object;
+        if (geometry == 'cube') {
+            switch (detail) {
+                case 'low':
+                    objectGeometry = new THREE.BoxGeometry(1, 1, 1, 1, 1, 1);
+                    break;
+                case 'medium':
+                    objectGeometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2);
+                    break;
+                case 'high':
+                    objectGeometry = new THREE.BoxGeometry(1, 1, 1, 4, 4, 4);
+                    break;
+                /*case 'ultra':
+                    objectGeometry = new THREE.BoxGeometry(1, 1, 1, 5, 5, 5);
+                    break;*/
+            }
+        }
+        else if (geometry == 'sphere') {
+            switch (detail) {
+                case 'low':
+                    objectGeometry = new THREE.IcosahedronGeometry(0.5, 1);
+                    break;
+                case 'high':
+                    objectGeometry = new THREE.IcosahedronGeometry(0.5, 2);
+                    break;
+            }
+        }
+        else if (geometry == 'cylinder') {
+            switch (detail) {
+                case 'low':
+                    objectGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16, 1);
+                    break;
+                case 'medium':
+                    objectGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16, 2);
+                    break;
+                case 'high':
+                    objectGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16, 4);
+                    break;
+                /*case 'ultra':
+                    objectGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16, 4);
+                    break;*/
+            }
+        }
+        else if (geometry == 'pyramid'){
+            switch (detail) {
+                case 'low':
+                    objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 1);
+                    break;
+                case 'medium':
+                    objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 4);
+                    break;
+                case 'high':
+                    objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 8);
+                    break;
+                /*case 'ultra':
+                    objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 8);
+                    break;*/
+            }
+        }
+        else if (geometry == 'torus') {
+            switch (detail) {
+                case 'low':
+                    objectGeometry = new THREE.TorusGeometry(0.5, 0.2, 8, 8);
+                    break;
+                case 'medium':
+                    objectGeometry = new THREE.TorusGeometry(0.5, 0.2, 8, 12);
+                    break;
+                case 'high':
+                    objectGeometry = new THREE.TorusGeometry(0.5, 0.2, 8, 16);
+                    break;
+                /*case 'ultra':
+                    objectGeometry = new THREE.TorusGeometry(0.5, 0.2, 8, 16);
+                    break;*/
+            }
+        }
+        else if (geometry == 'torus_knot') {
+            switch (detail) {
+                case 'low':
+                    objectGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 8, 4, 1, 2);
+                    break;
+                case 'medium':
+                    objectGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 16, 4, 1, 2);
+                    break;
+                case 'high':
+                    objectGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 32, 4, 1, 2);
+                    break;
+                /*case 'ultra':
+                    objectGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 32, 4, 1, 2);
+                    break;*/
+            }
+        }
+        o.geometry = objectGeometry;
         this.convertToLightPoints();
     },
 

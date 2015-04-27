@@ -33,7 +33,7 @@ CGHLab.ObjectPerspective = {
         mainScene.lightPointWaveShader = lightPointMaterial;
     },
 
-    sendLightPointWave: function( scene, lightPoints, mainScene, lightPointMaterial ){
+    sendLightPointWaveSimple: function( scene, lightPoints, mainScene, lightPointMaterial ){
         var i;
         var lightPointGeometry = new THREE.SphereGeometry(0.5, 16, 16);
         /*var shader = CGHLab.GeometryShaderLib.sphereShader;
@@ -60,7 +60,7 @@ CGHLab.ObjectPerspective = {
         }
     },
 
-    sendLightPointWave2: function( scene, lightPoint, mainScene, lightPointMaterial ){
+    sendLightPointWaveComplete: function( scene, lightPoint, mainScene, lightPointMaterial ){
         var i;
         var lightPointGeometry = new THREE.SphereGeometry(0.5, 16, 16);
         /*var shader = CGHLab.GeometryShaderLib.sphereShader;
@@ -75,16 +75,14 @@ CGHLab.ObjectPerspective = {
 
         var platePoints = mainScene.platePoints;
 
-        for(i = 0; i < 1; i++ ){
-            var clone = lightPointMesh.clone();
-            var materialClone  = lightPointMaterial.clone();
-            clone.position.set(lightPoint.position.x, lightPoint.position.y, lightPoint.position.z);
-            materialClone.uniforms.origin.value = new THREE.Vector3(lightPoint.position.x, lightPoint.position.y, lightPoint.position.z);
-            materialClone.uniforms.plate.value = platePoints;
-            clone.material = materialClone;
-            scene.add(clone);
-            mainScene.addToLightPointWaves(clone);
-        }
+        var clone = lightPointMesh.clone();
+        var materialClone  = lightPointMaterial.clone();
+        clone.position.set(lightPoint.position.x, lightPoint.position.y, lightPoint.position.z);
+        materialClone.uniforms.origin.value = new THREE.Vector3(lightPoint.position.x, lightPoint.position.y, lightPoint.position.z);
+        materialClone.uniforms.plate.value = platePoints;
+        clone.material = materialClone;
+        scene.add(clone);
+        mainScene.addToLightPointWaves(clone);
     },
 
     rotateObject: function(value, mainScene)
@@ -135,7 +133,33 @@ CGHLab.ObjectPerspective = {
         this.setLightPoints(mainScene.scene, mainScene.object.lightPoints, mainScene.collidableList);
         mainScene.objWaveArrived = false;
         mainScene.patternShown = false;
-        mainScene.hideInterferencePattern();
+        if(!mainScene.interferencePatternInstant) mainScene.hideInterferencePattern();
+    },
+
+    changeDetail: function(geometry, detail, mainScene){
+        //First delete the previous light points from the scene
+        var i;
+        for (i = 0; i < mainScene.object.lightPoints.length; i++){
+            var object = mainScene.scene.getObjectByName('lightPoint'+i);
+            mainScene.scene.remove(object);
+        }
+
+        //ChangeDetail
+        mainScene.object.changeDetail(geometry, detail);
+        mainScene.updateShaderUniforms();
+
+        //Delete the lightPoint waves
+        var lightPointsWave = mainScene.getLightPointWaves();
+        for(i = 0; i < lightPointsWave.list.length; i++){
+            mainScene.scene.remove(lightPointsWave.list[i]);
+        }
+        mainScene.eraseLightPointWaves();
+        mainScene.collidableList = [];
+        //Sets the new light points
+        this.setLightPoints(mainScene.scene, mainScene.object.lightPoints, mainScene.collidableList);
+        mainScene.objWaveArrived = false;
+        mainScene.patternShown = false;
+        if(!mainScene.interferencePatternInstant) mainScene.hideInterferencePattern();
     }
 
 };
