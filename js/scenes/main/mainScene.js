@@ -891,7 +891,6 @@ CGHLab.MainScene.prototype = {
                 var newReflect = laserLight2.list[i].clone();
                 newReflect.material = this.laserReflectionShader;
                 newReflect.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
-                console.log(newReflect);
                 //The wave is perpendicular to the direction and the angle made by the 2 directions is arccos(dot(dirMirror, dirBeam))
                 //So the angle os rotation is 360 - 90 - 90 - arccos(dot(dirMirror, dirBeam))
                 var dot = dirSplitter.dot(negDirMirror);
