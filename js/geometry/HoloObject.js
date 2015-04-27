@@ -29,11 +29,13 @@ CGHLab.HoloObject.prototype = {
     setObject: function( geometry )
     {
         var objectGeometry;
-        if (geometry == 'cube') objectGeometry = new THREE.BoxGeometry(1, 1, 1);
+        if (geometry == 'cube') objectGeometry = new THREE.BoxGeometry(1, 1, 1, 1, 1, 1);
         //else if (geometry == 'sphere') objectGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-        else if (geometry == 'sphere') objectGeometry = new THREE.IcosahedronGeometry(0.5,2);
-        else if (geometry == 'octahedron') objectGeometry = new THREE.OctahedronGeometry(0.5,0);
-        else if (geometry == 'tetrahedron') objectGeometry = new THREE.TetrahedronGeometry(0.5,0);
+        else if (geometry == 'sphere') objectGeometry = new THREE.IcosahedronGeometry(0.5, 2);
+        else if (geometry == 'cylinder') objectGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 8, 1);
+        else if (geometry == 'pyramid') objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 1);
+        else if (geometry == 'torus') objectGeometry = new THREE.TorusGeometry(0.5, 0.1, 8, 4);
+        else if (geometry == 'torus_knot') objectGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 32, 10, 2, 3);
         var objectMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 , ambient: 0x00ff00});
         this.object = new THREE.Mesh(objectGeometry, objectMaterial);
         this.object.scale.set(30,30,30);
@@ -70,11 +72,17 @@ CGHLab.HoloObject.prototype = {
         if (geometry == 'cube') objectGeometry = new THREE.BoxGeometry(1, 1, 1);
         //else if (geometry == 'sphere') objectGeometry = new THREE.SphereGeometry(0.5, 16, 16);
         else if (geometry == 'sphere') objectGeometry = new THREE.IcosahedronGeometry(0.5,2);
-        else if (geometry == 'octahedron') objectGeometry = new THREE.OctahedronGeometry(0.5,0);
-        else if (geometry == 'tetrahedron') objectGeometry = new THREE.TetrahedronGeometry(0.5,0);
+        else if (geometry == 'cylinder') objectGeometry = new THREE.CylinderGeometry(0.5,0.5,1,16,4);
+        else if (geometry == 'pyramid') objectGeometry = new THREE.CylinderGeometry(0,0.5,1,4,8);
+        else if (geometry == 'torus') objectGeometry = new THREE.TorusGeometry(0.5, 0.1, 8, 4);
+        else if (geometry == 'torus_knot') objectGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 32, 10, 2, 3);
         o.geometry = objectGeometry;
         this.figure = geometry;
         this.convertToLightPoints();
+    },
+
+    changeDetail: function(){
+
     },
 
     clone: function()

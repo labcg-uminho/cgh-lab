@@ -91,6 +91,7 @@ CGHLab.MainScene = function( renderer, camera )
     this.laserObjectWaveShader = new THREE.Material;
     this.laserShader = new THREE.Material;
 
+    this.interferencePatternOn = false;
     this.refWaveArrived = false;
     this.objWaveArrived = false;
     this.patternShown = false;
@@ -577,6 +578,11 @@ CGHLab.MainScene.prototype = {
         //this.interferencePatternShader = holographicPlateMaterial;
         //console.log(this.interferencePatternShader.uniforms.lightPoints.value);
         //console.log(this.interferencePatternShader.uniforms.n_lightPoints.value);
+
+        if(this.interferencePatternOn) {
+            var plate = this.scene.getObjectByName('plate');
+            plate.material = this.interferencePatternShader;
+        }
     },
 
     seeInterferencePattern: function()
@@ -585,12 +591,16 @@ CGHLab.MainScene.prototype = {
         plate.material = new THREE.MeshLambertMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
 
         plate.material = this.interferencePatternShader;
+
+        this.interferencePatternOn = true;
     },
 
     hideInterferencePattern: function()
     {
         var plate = this.scene.getObjectByName('plate');
         plate.material = new THREE.MeshLambertMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
+
+        this.interferencePatternOn = false;
     },
 
     setLaserMaterial: function () {

@@ -204,7 +204,7 @@
                 r.onChange(function(value){
                     mainScene.rotateObject(value);
                 });
-                var figureList = [ "cube", "sphere", "octahedron", "tetrahedron" ];
+                var figureList = [ "cube", "sphere", "cylinder", "pyramid", "torus", "torus_knot" ];
                 var geometry = folder1.add( mainParametersConfig, 'geometry', figureList ).name('Geometry');
                 geometry.onChange(function(value)
                 {
@@ -244,7 +244,7 @@
                 rObj.onChange(function(value){
                     CGHLab.ObjectPerspective.rotateObject(value,mainScene);
                 });
-                var figureListObj = [ "cube", "sphere", "octahedron", "tetrahedron" ];
+                var figureListObj = [ "cube", "sphere", "cylinder", "pyramid", "torus", "torus_knot" ];
                 var geometryObj = gui.add( objectParametersConfig, 'geometry', figureListObj ).name('Geometry');
                 geometryObj.onChange(function(value)
                 {
