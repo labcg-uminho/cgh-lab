@@ -63,7 +63,7 @@ CGHLab.HoloObject.prototype = {
         }
         this.lightPoints = [];
         this.lightPoints = lightPoints;
-        console.log(this.lightPoints.length);
+        //console.log(this.lightPoints.length);
         //alert(lightPoints.length);
     },
 
