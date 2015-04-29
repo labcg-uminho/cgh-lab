@@ -8,10 +8,13 @@ CGHLab.MainScene = function( renderer, camera, controls )
     this.camera = camera;
 
     this.scene = new THREE.Scene();
-    this.mainPerspective = true;
-    this.objectPerspective = false;
-    this.platePerspective = false;
-    //this.objects = [];
+    this.mainPerspectiveChosen = true;
+    this.objectPerspectiveChosen = false;
+    this.platePerspectiveChosen = false;
+
+    this.objectPerspective = new CGHLab.ObjectPerspective(this);
+    this.mainPerspective = new CGHLab.MainPerspective(this);
+
     this.mirror = new THREE.Mirror( renderer, camera, { clipBias: 0.003, textureWidth: window.innerWidth, textureHeight: window.innerHeight, color:0x889999 } );
 
     this.platePosition = new THREE.Vector3(0,80,0);
@@ -31,14 +34,14 @@ CGHLab.MainScene = function( renderer, camera, controls )
     this.referenceWaveAngle = Math.PI/4;
 
     //Direction of mirror in relation to plate
-    var dirMirror = new THREE.Vector3(Math.sin(this.plateRotation+this.referenceWaveAngle), 0, Math.cos(this.plateRotation+this.referenceWaveAngle)).normalize();
+    var dirMirror = new THREE.Vector3(Math.sin(this.plateRotation + this.referenceWaveAngle), 0, Math.cos(this.plateRotation + this.referenceWaveAngle)).normalize();
     var unitsMirror = (1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 250;
     this.mirrorPosition = new THREE.Vector3();
     this.mirrorPosition.addVectors(this.platePosition, dirMirror.multiplyScalar(unitsMirror));
     this.mirrorRotation = -Math.PI/2 + this.plateRotation - ((Math.PI/4 - this.referenceWaveAngle)/2);
 
     //Direction of object in relation to plate
-    var dirObject = new THREE.Vector3(Math.sin(this.plateRotation-Math.PI/4), 0, Math.cos(this.plateRotation-Math.PI/4)).normalize();
+    var dirObject = new THREE.Vector3(Math.sin(this.plateRotation - Math.PI/4), 0, Math.cos(this.plateRotation - Math.PI/4)).normalize();
     var unitsObject = 350;
     this.objectPosition = new THREE.Vector3();
     this.objectPosition.addVectors(this.platePosition, dirObject.multiplyScalar(unitsObject));
@@ -48,7 +51,7 @@ CGHLab.MainScene = function( renderer, camera, controls )
 
     //Direction of laser in relation to object
     //This direction is the same as the mirror direction but the position is calculated in relation to the object and not the plate
-    var dirLaser = new THREE.Vector3(Math.sin(this.plateRotation+Math.PI/4), 0, Math.cos(this.plateRotation+Math.PI/4)).normalize();
+    var dirLaser = new THREE.Vector3(Math.sin(this.plateRotation + Math.PI/4), 0, Math.cos(this.plateRotation + Math.PI/4)).normalize();
     var unitsLaser = 350;
     this.laserPosition = new THREE.Vector3();
     this.laserPosition.addVectors(this.objectPosition, dirLaser.multiplyScalar(unitsLaser));
@@ -56,7 +59,7 @@ CGHLab.MainScene = function( renderer, camera, controls )
 
     //Direction of beam splitter in relation to mirror
     //This direction is the same as the object direction but the position is calculated in relation to the mirror and not the plate
-    var dirSplitter = new THREE.Vector3(Math.sin(this.plateRotation-Math.PI/4), 0, Math.cos(this.plateRotation-Math.PI/4)).normalize();
+    var dirSplitter = new THREE.Vector3(Math.sin(this.plateRotation - Math.PI/4), 0, Math.cos(this.plateRotation - Math.PI/4)).normalize();
     var unitsSplitter = 350 - (250 * Math.tan(Math.PI/4 - this.referenceWaveAngle));
     this.beamSplitterPosition = new THREE.Vector3();
     this.beamSplitterPosition.addVectors(this.mirrorPosition, dirSplitter.multiplyScalar(unitsSplitter));
@@ -64,7 +67,7 @@ CGHLab.MainScene = function( renderer, camera, controls )
 
     //Direction of light amplifiers in relation to object and plate
     //This direction is the same as the mirror direction but the position is calculated in relation to the object and not the plate
-    var dirAmplifier = new THREE.Vector3(Math.sin(this.plateRotation+Math.PI/4), 0, Math.cos(this.plateRotation+Math.PI/4)).normalize();
+    var dirAmplifier = new THREE.Vector3(Math.sin(this.plateRotation + Math.PI/4), 0, Math.cos(this.plateRotation + Math.PI/4)).normalize();
     var unitsAmplifier = 200;
     this.amplifierPosition = new THREE.Vector3();
     this.amplifierPosition.addVectors(this.objectPosition, dirAmplifier.multiplyScalar(unitsAmplifier));
@@ -84,12 +87,11 @@ CGHLab.MainScene = function( renderer, camera, controls )
     center.addVectors(this.platePosition,this.laserPosition).divideScalar(2);
 
     //Reference wave initialization
-    this.referenceWave = new CGHLab.Wave(0,1,1);
+    this.referenceWave = new CGHLab.Wave(1,1);
 
     this.interferencePatternShader = new THREE.Material;
     this.interferencePatternShaderUnchanged = new THREE.Material;
 
-    this.lightPointWaveShader = new THREE.Material;
     this.simpleWaveSending = true;
 
     this.laserDupliateShader = new THREE.Material;
@@ -411,7 +413,7 @@ CGHLab.MainScene.prototype = {
         this.setHologramShader();
 
         //Initialize shader used on the object perspective to paint the light point waves
-        CGHLab.ObjectPerspective.setLightPointWaveMaterial(this);
+        this.objectPerspective.setLightPointWaveMaterial();
         this.getMirrorPoints();
         this.setLaserMaterial();
 
@@ -423,132 +425,6 @@ CGHLab.MainScene.prototype = {
         //this.controls.noZoom = true;
         //console.log(this.camera.getWorldPosition());
         this.controls.rotateLeft(Math.PI/2);
-    },
-
-    //Transforms a degrees in radians and rotate the object. This function calculates the difference between the actual rotation and the new value
-    //of rotation and rotate that value. For example, if the object has a 90º rotation and you want rotate it to 100º, the rotation will be of 10º
-    rotateObject: function(value)
-    {
-        var rad = CGHLab.Helpers.deg2rad(value);
-        var r = rad - this.objectRotationScene;
-        this.objectRotationScene += r;
-        if ((this.objectRotationScene) > 2*Math.PI) this.objectRotationScene = this.objectRotationScene - 2*Math.PI;
-        this.object.object.rotateY(r);
-        this.object.convertToLightPoints();
-        this.updateShaderUniforms();
-    },
-
-    //Change the object
-    changeObject: function(value)
-    {
-        //Changes the object
-        this.object.changeObject(value);
-        this.updateShaderUniforms();
-
-        //Deletes the previous object waves
-        var objWaveLight = this.getObjWaveLight();
-        var i;
-        for(i = 0; i < objWaveLight.length; i++){
-            this.scene.remove(objWaveLight[i]);
-        }
-        this.eraseObjLight();
-        this.collidableList = [];
-        this.objWaveArrived = false;
-        this.patternShown = false;
-        this.hideInterferencePattern();
-    },
-
-    //Handles the update of the reference wave angle. The position of the mirror and amplifier are updated to match the parameters
-    updateMirror: function(value)
-    {
-        var mirror = this.scene.getObjectByName('mirror');
-        var amplifier2 = this.scene.getObjectByName('amplifier2');
-
-        //Updates the mirror direction and units
-        this.referenceWaveAngle = CGHLab.Helpers.deg2rad(value);
-        var newDirMirror = new THREE.Vector3(Math.sin(this.plateRotation+this.referenceWaveAngle), 0, Math.cos(this.plateRotation+this.referenceWaveAngle)).normalize();
-        var unitsMirror = (1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 250;
-
-        //Update the amplifier units
-        var unitsAmplifier2 = 200;//(1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 200;
-
-        //Make the changes permanent
-        this.setMirrorDirAndUnits(newDirMirror, unitsMirror, unitsAmplifier2);
-
-        //Updates mirror position with the new mirror direction and units
-        this.mirrorPosition = new THREE.Vector3();
-        this.mirrorPosition.addVectors(this.platePosition, newDirMirror.normalize().multiplyScalar(unitsMirror));
-        mirror.rotateY(-this.mirrorRotation);
-        //TO_DO: tentar perceber o porque disto... xD
-        this.mirrorRotation = -Math.PI/2 + this.plateRotation - ((Math.PI/4 - this.referenceWaveAngle)/2);
-
-        //Update the rotation of the mirror to match parameters
-        mirror.position.set(this.mirrorPosition.x, this.mirrorPosition.y, this.mirrorPosition.z);
-        mirror.rotateY(this.mirrorRotation);
-        this.updateShaderUniforms();
-
-        //if simple laser is on then it needs to be updated
-        if(this.simpleLaserOn) {
-            var laserM_AP2 = this.scene.getObjectByName('simpleMirrorAP2');
-            var laserAP2_P = this.scene.getObjectByName('simpleAP2Plate');
-            laserM_AP2.rotateZ(-this.amplifierRotation2);
-            laserAP2_P.rotateZ(-this.amplifierRotation2);
-        }
-
-        //Calculate amplifier position with new mirror direction
-        this.amplifierPosition2 = new THREE.Vector3();
-        this.amplifierPosition2.addVectors(this.platePosition, newDirMirror.normalize().multiplyScalar(unitsAmplifier2));
-        amplifier2.rotateY(-this.amplifierRotation2);
-
-        //Calculate amplifier rotation to match rotation of reference wave
-        var negDirMirror = newDirMirror.clone().negate().normalize();
-        var dirSplitter = this.getDirSplitter().clone().normalize();
-        var dot = dirSplitter.dot(negDirMirror);
-        this.amplifierRotation2 = Math.PI - Math.acos(dot) - Math.PI/4;
-
-        //Update position and rotation
-        amplifier2.position.set(this.amplifierPosition2.x, this.amplifierPosition2.y, this.amplifierPosition2.z);
-        amplifier2.rotateY(this.amplifierRotation2);
-
-        //Reset reflected geometry
-        var laserLight3 = this.getLaserLight3();
-        var i;
-        for(i = 0; i < laserLight3.length; i++){
-            this.scene.remove(laserLight3[i]);
-        }
-        this.eraseLight3Array();
-
-        this.getMirrorPoints();
-        this.laserDupliateShader.uniforms.mirror.value = this.mirrorPoints;
-        this.laserDupliateShader.uniforms.referenceWaveAngle.value = this.referenceWaveAngle;
-        this.laserReflectionShader.uniforms.mirror.value = this.mirrorPoints;
-        this.laserReflectionShader.uniforms.referenceWaveAngle.value = this.referenceWaveAngle;
-
-        //if simple laser is on then it needs to be updated
-        if(this.simpleLaserOn) {
-            var laserB_M = this.scene.getObjectByName('simpleLaserBeam');
-            var middleB_M = new THREE.Vector3();
-            middleB_M.subVectors(this.mirrorPosition, this.beamSplitterPosition).divideScalar(2);
-            var unitsB_M = this.mirrorPosition.distanceTo(this.beamSplitterPosition);
-            laserB_M.geometry = new THREE.CylinderGeometry(10, 10, unitsB_M, 32);
-            laserB_M.position.set(this.mirrorPosition.x - middleB_M.x, this.mirrorPosition.y - middleB_M.y, this.mirrorPosition.z - middleB_M.z);
-
-            var middleM_AP2 = new THREE.Vector3();
-            middleM_AP2.subVectors(this.amplifierPosition2, this.mirrorPosition).divideScalar(2);
-            var unitsM_AP2 = this.mirrorPosition.distanceTo(this.amplifierPosition2);
-            laserM_AP2.geometry = new THREE.CylinderGeometry(10, 10, unitsM_AP2, 32);
-            laserM_AP2.position.set(this.amplifierPosition2.x - middleM_AP2.x, this.amplifierPosition2.y - middleM_AP2.y, this.amplifierPosition2.z - middleM_AP2.z);
-            laserM_AP2.rotateZ(this.amplifierRotation2);
-
-            var newLaser3Finish = new THREE.Vector3();
-            newLaser3Finish.addVectors(this.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1 / Math.cos(Math.PI / 4 - this.referenceWaveAngle)) * 350));
-            var unitsAP2_P = newLaser3Finish.distanceTo(this.amplifierPosition2);
-            var middleAP2_P = new THREE.Vector3();
-            middleAP2_P.subVectors(newLaser3Finish, this.amplifierPosition2).divideScalar(2);
-            laserAP2_P.geometry = new THREE.CylinderGeometry(110, 10, unitsAP2_P, 32);
-            laserAP2_P.position.set(newLaser3Finish.x - middleAP2_P.x, newLaser3Finish.y - middleAP2_P.y, newLaser3Finish.z - middleAP2_P.z);
-            laserAP2_P.rotateZ(this.amplifierRotation2);
-        }
     },
 
     setHologramShader: function()
@@ -825,7 +701,7 @@ CGHLab.MainScene.prototype = {
             }
             //Every time a wavefront cross the object a new object wavefront is created
             //and the ref wave disappears
-            if(this.mainPerspective) {
+            if(this.mainPerspectiveChosen) {
                 if (laserLight1.list[i].position.z < this.objectPosition.z) {
                     if (!laserLight1.object[i]) {
                         //var newObjWave = objWave.clone();
@@ -849,7 +725,7 @@ CGHLab.MainScene.prototype = {
                     this.removeFromLaserLight1(laserLight1.list[i]);
                 }
             }
-            else if(this.objectPerspective){
+            else if(this.objectPerspectiveChosen){
                 if(!this.simpleWaveSending) {
                     //When the wavefronts get close to the object light points more detail is given to the wavefronts geometry.
                     //This way the collision detector will have more precision
@@ -872,7 +748,7 @@ CGHLab.MainScene.prototype = {
                             //console.log('depois '+ collisionResults.length);
                             for (var j = 0; j < collisionResults.length; j++) {
                                 if (laserLight1.lightPoints[i].names.indexOf(collisionResults[j].object.name) == -1) {
-                                    CGHLab.ObjectPerspective.sendLightPointWaveComplete(this.scene, collisionResults[j].object, this, this.lightPointWaveShader);
+                                    this.objectPerspective.sendLightPointWaveComplete(collisionResults[j].object);
                                     laserLight1.lightPoints[i].names.push(collisionResults[j].object.name);
                                     //console.log(collisionResults[j].object.name);
                                 }
@@ -895,7 +771,7 @@ CGHLab.MainScene.prototype = {
                         if (!laserLight1.object[i]) {
                          //console.log(laserLight1.list[i].position.z);
                          //console.log(this.objectPosition.z);
-                         CGHLab.ObjectPerspective.sendLightPointWaveSimple(this.scene, this.object.lightPoints, this, this.lightPointWaveShader);
+                            this.objectPerspective.sendLightPointWaveSimple(this.object.lightPoints);
                          laserLight1.object[i] = true;
                          }
                     }
@@ -966,7 +842,7 @@ CGHLab.MainScene.prototype = {
         }
 
         //OBJECT
-        if(this.mainPerspective) {
+        if(this.mainPerspectiveChosen) {
             var distance = this.objectPosition.distanceTo(this.platePosition);
             var initScale = 30.0;
             var deltaScale = 40;
@@ -984,7 +860,7 @@ CGHLab.MainScene.prototype = {
                 }
             }
         }
-        else if(this.objectPerspective){
+        else if(this.objectPerspectiveChosen){
             for (i = 0; i < lightPointsWaves.list.length; i++) {
                 lightPointsWaves.list[i].scale.set(lightPointsWaves.scales[i], lightPointsWaves.scales[i], lightPointsWaves.scales[i]);
                 lightPointsWaves.scales[i] += 3.0;
@@ -1005,7 +881,7 @@ CGHLab.MainScene.prototype = {
         var object = this.scene.getObjectByName('object');
         this.scene.remove(object);
 
-        CGHLab.ObjectPerspective.setLightPoints(this.scene, this.object.lightPoints, this.collidableList);
+        this.objectPerspective.setLightPoints(this.object.lightPoints, this.collidableList);
 
         var objWaveLight = this.getObjWaveLight();
         var i;

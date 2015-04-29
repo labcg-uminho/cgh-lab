@@ -2,9 +2,18 @@
  * Created by tiago on 3/21/15.
  */
 
-CGHLab.ObjectPerspective = {
+CGHLab.ObjectPerspective = function( mainScene ){
 
-    setLightPoints: function( scene, lightPoints, collidableList )
+    this.mainScene = mainScene;
+    this.lightPointWaveShader = THREE.Material;
+
+};
+
+CGHLab.ObjectPerspective.prototype = {
+
+    constructor: CGHLab.ObjectPerspective,
+
+    setLightPoints: function( lightPoints, collidableList )
     {
         var i;
         var lightPointGeometry = new THREE.SphereGeometry(0.5, 16, 16);
@@ -14,11 +23,11 @@ CGHLab.ObjectPerspective = {
             lightPointMesh.position.set(lightPoints[i].position.x, lightPoints[i].position.y, lightPoints[i].position.z);
             lightPointMesh.name = 'lightPoint'+i;
             collidableList.push(lightPointMesh);
-            scene.add(lightPointMesh);
+            this.mainScene.scene.add(lightPointMesh);
         }
     },
 
-    setLightPointWaveMaterial: function(mainScene){
+    setLightPointWaveMaterial: function(){
         var shader = CGHLab.GeometryShaderLib.myLambertSphere;
         var lightPointMaterial = new THREE.ShaderMaterial({
             uniforms: shader.uniforms,
@@ -30,10 +39,10 @@ CGHLab.ObjectPerspective = {
             transparent: true
         });
         lightPointMaterial.uniforms.opacity.value = 0.5;
-        mainScene.lightPointWaveShader = lightPointMaterial;
+        this.lightPointWaveShader = lightPointMaterial;
     },
 
-    sendLightPointWaveSimple: function( scene, lightPoints, mainScene, lightPointMaterial ){
+    sendLightPointWaveSimple: function( lightPoints ){
         var i;
         var lightPointGeometry = new THREE.SphereGeometry(0.5, 16, 16);
         /*var shader = CGHLab.GeometryShaderLib.sphereShader;
@@ -44,7 +53,7 @@ CGHLab.ObjectPerspective = {
             side: THREE.DoubleSide,
             transparent: true
         });*/
-        var lightPointMesh = new THREE.Mesh(lightPointGeometry, lightPointMaterial);
+        var lightPointMesh = new THREE.Mesh(lightPointGeometry, this.lightPointWaveShader);
 
         var platePoints = mainScene.platePoints;
 
@@ -55,13 +64,12 @@ CGHLab.ObjectPerspective = {
             materialClone.uniforms.origin.value = new THREE.Vector3(lightPoints[i].position.x, lightPoints[i].position.y, lightPoints[i].position.z);
             materialClone.uniforms.plate.value = platePoints;
             clone.material = materialClone;
-            scene.add(clone);
-            mainScene.addToLightPointWaves(clone);
+            this.mainScene.scene.add(clone);
+            this.mainScene.addToLightPointWaves(clone);
         }
     },
 
-    sendLightPointWaveComplete: function( scene, lightPoint, mainScene, lightPointMaterial ){
-        var i;
+    sendLightPointWaveComplete: function( lightPoint, lightPointMaterial ){
         var lightPointGeometry = new THREE.SphereGeometry(0.5, 16, 16);
         /*var shader = CGHLab.GeometryShaderLib.sphereShader;
          var lightPointMaterial = new THREE.ShaderMaterial({
@@ -81,85 +89,85 @@ CGHLab.ObjectPerspective = {
         materialClone.uniforms.origin.value = new THREE.Vector3(lightPoint.position.x, lightPoint.position.y, lightPoint.position.z);
         materialClone.uniforms.plate.value = platePoints;
         clone.material = materialClone;
-        scene.add(clone);
-        mainScene.addToLightPointWaves(clone);
+        this.mainScene.scene.add(clone);
+        this.mainScene.addToLightPointWaves(clone);
     },
 
-    rotateObject: function(value, mainScene)
+    rotateObject: function( value )
     {
         //First delete the previous light points from the scene
         var i;
-        for (i = 0; i < mainScene.object.lightPoints.length; i++){
-            var object = mainScene.scene.getObjectByName('lightPoint'+i);
-            mainScene.scene.remove(object);
+        for (i = 0; i < this.mainScene.object.lightPoints.length; i++){
+            var object = this.mainScene.scene.getObjectByName('lightPoint'+i);
+            this.mainScene.scene.remove(object);
         }
 
         //Rotate the object
         var rad = CGHLab.Helpers.deg2rad(value);
-        var r = rad - mainScene.objectRotationScene;
-        mainScene.objectRotationScene += r;
-        if ((mainScene.objectRotationScene) > 2*Math.PI) mainScene.objectRotationScene = mainScene.objectRotationScene - 2*Math.PI;
-        mainScene.object.object.rotateY(r);
-        mainScene.object.convertToLightPoints();
+        var r = rad - this.mainScene.objectRotationScene;
+        this.mainScene.objectRotationScene += r;
+        if ((this.mainScene.objectRotationScene) > 2*Math.PI) this.mainScene.objectRotationScene = this.mainScene.objectRotationScene - 2*Math.PI;
+        this.mainScene.object.object.rotateY(r);
+        this.mainScene.object.convertToLightPoints();
 
-        mainScene.collidableList = [];
+        this.mainScene.collidableList = [];
         //Sets the new light points (moves them to the new positions)
-        this.setLightPoints(mainScene.scene, mainScene.object.lightPoints, mainScene.collidableList);
+        this.setLightPoints(this.mainScene.object.lightPoints, this.mainScene.collidableList);
 
-        mainScene.updateShaderUniforms();
+        this.mainScene.updateShaderUniforms();
     },
 
-    changeObject: function(value, mainScene)
+    changeObject: function( value )
     {
         //First delete the previous light points from the scene
         var i;
-        for (i = 0; i < mainScene.object.lightPoints.length; i++){
-            var object = mainScene.scene.getObjectByName('lightPoint'+i);
-            mainScene.scene.remove(object);
+        for (i = 0; i < this.mainScene.object.lightPoints.length; i++){
+            var object = this.mainScene.scene.getObjectByName('lightPoint'+i);
+            this.mainScene.scene.remove(object);
         }
 
         //Change the object
-        mainScene.object.changeObject(value);
-        mainScene.updateShaderUniforms();
+        this.mainScene.object.changeObject(value);
+        this.mainScene.updateShaderUniforms();
 
         //Delete the lightPoint waves
-        var lightPointsWave = mainScene.getLightPointWaves();
+        var lightPointsWave = this.mainScene.getLightPointWaves();
         for(i = 0; i < lightPointsWave.list.length; i++){
-            mainScene.scene.remove(lightPointsWave.list[i]);
+            this.mainScene.scene.remove(lightPointsWave.list[i]);
         }
-        mainScene.eraseLightPointWaves();
-        mainScene.collidableList = [];
+        this.mainScene.eraseLightPointWaves();
+        this.mainScene.collidableList = [];
         //Sets the new light points
-        this.setLightPoints(mainScene.scene, mainScene.object.lightPoints, mainScene.collidableList);
-        mainScene.objWaveArrived = false;
-        mainScene.patternShown = false;
-        if(!mainScene.interferencePatternInstant) mainScene.hideInterferencePattern();
+        this.setLightPoints(this.mainScene.object.lightPoints, this.mainScene.collidableList);
+        this.mainScene.objWaveArrived = false;
+        this.mainScene.patternShown = false;
+        if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
     },
 
-    changeDetail: function(geometry, detail, mainScene){
+    changeDetail: function( geometry, detail ){
         //First delete the previous light points from the scene
         var i;
-        for (i = 0; i < mainScene.object.lightPoints.length; i++){
-            var object = mainScene.scene.getObjectByName('lightPoint'+i);
-            mainScene.scene.remove(object);
+        for (i = 0; i < this.mainScene.object.lightPoints.length; i++){
+            var object = this.mainScene.scene.getObjectByName('lightPoint'+i);
+            this.mainScene.scene.remove(object);
         }
 
         //ChangeDetail
-        mainScene.object.changeDetail(geometry, detail);
-        mainScene.updateShaderUniforms();
+        this.mainScene.object.changeDetail(geometry, detail);
+        this.mainScene.updateShaderUniforms();
 
         //Delete the lightPoint waves
-        var lightPointsWave = mainScene.getLightPointWaves();
+        var lightPointsWave = this.mainScene.getLightPointWaves();
         for(i = 0; i < lightPointsWave.list.length; i++){
-            mainScene.scene.remove(lightPointsWave.list[i]);
+            this.mainScene.scene.remove(lightPointsWave.list[i]);
         }
-        mainScene.eraseLightPointWaves();
-        mainScene.collidableList = [];
+        this.mainScene.eraseLightPointWaves();
+        this.mainScene.collidableList = [];
         //Sets the new light points
-        this.setLightPoints(mainScene.scene, mainScene.object.lightPoints, mainScene.collidableList);
-        mainScene.objWaveArrived = false;
-        mainScene.patternShown = false;
-        if(!mainScene.interferencePatternInstant) mainScene.hideInterferencePattern();
+        this.setLightPoints(this.mainScene.object.lightPoints, this.mainScene.collidableList);
+        this.mainScene.objWaveArrived = false;
+        this.mainScene.patternShown = false;
+        if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
     }
 
 };

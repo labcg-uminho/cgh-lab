@@ -18,6 +18,7 @@
     <script src="js/CGHLab.js"></script>
     <script src="js/scenes/main/mainScene.js"></script>
     <script src="js/scenes/main/objectPerspective.js"></script>
+    <script src="js/scenes/main/mainPerspective.js"></script>
     <script src="js/geometry/HoloObject.js"></script>
     <script src="js/holography/LightPoint.js"></script>
     <script src="js/holography/Wave.js"></script>
@@ -143,21 +144,21 @@
             var parametersGUIPerspectives = function()
             {
                 this.mainPerspectiveChange = function(){
-                    mainScene.objectPerspective = false;
-                    mainScene.mainPerspective = true;
-                    mainScene.platePerspective = false;
+                    mainScene.objectPerspectiveChosen = false;
+                    mainScene.mainPerspectiveChosen = true;
+                    mainScene.platePerspectiveChosen = false;
                     setGUI('main');
                 };
                 this.objectPerspectiveChange = function(){
-                    mainScene.objectPerspective = true;
-                    mainScene.mainPerspective = false;
-                    mainScene.platePerspective = false;
+                    mainScene.objectPerspectiveChosen = true;
+                    mainScene.mainPerspectiveChosen = false;
+                    mainScene.platePerspectiveChosen = false;
                     setGUI('object');
                 };
                 this.platePerspectiveChange = function(){
-                    mainScene.objectPerspective = false;
-                    mainScene.mainPerspective = false;
-                    mainScene.platePerspective = true;
+                    mainScene.objectPerspectiveChosen = false;
+                    mainScene.mainPerspectiveChosen = false;
+                    mainScene.platePerspectiveChosen = true;
                     setGUI('plate');
                 };
             };
@@ -208,13 +209,13 @@
                 folderObjectMain.open();
                 var r = folderObjectMain.add( mainParametersConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
                 r.onChange(function(value){
-                    mainScene.rotateObject(value);
+                    mainScene.mainPerspective.rotateObject(value);
                 });
                 var figureList = [ "cube", "sphere", "cylinder", "pyramid", "torus", "torus_knot" ];
                 var geometry = folderObjectMain.add( mainParametersConfig, 'geometry', figureList ).name('Geometry');
                 geometry.onChange(function(value)
                 {
-                    mainScene.changeObject(value);
+                    mainScene.mainPerspective.changeObject(value);
                 });
 
                 var folderRefWaveMain = gui.addFolder('Reference Wave');
@@ -226,7 +227,7 @@
                 });
                 var wa = folderRefWaveMain.add(mainParametersConfig, 'refWaveAngle').min(0).max(90).name('Wave Angle');
                 wa.onChange(function(value){
-                   mainScene.updateMirror(value);
+                    mainScene.mainPerspective.updateMirror(value);
                 });
             }
 
@@ -264,13 +265,13 @@
                 folderObjectObject.open();
                 var rObj = folderObjectObject.add( objectParametersConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
                 rObj.onChange(function(value){
-                    CGHLab.ObjectPerspective.rotateObject(value,mainScene);
+                    mainScene.objectPerspective.rotateObject(value);
                 });
                 var figureListObj = [ "cube", "sphere", "cylinder", "pyramid", "torus", "torus_knot" ];
                 var geometryObj = folderObjectObject.add( objectParametersConfig, 'geometry', figureListObj ).name('Geometry');
                 geometryObj.onChange(function(value)
                 {
-                    CGHLab.ObjectPerspective.changeObject(value, mainScene);
+                    mainScene.objectPerspective.changeObject(value);
                     setGUI('object');
                 });
                 var detailList = [];
@@ -279,7 +280,7 @@
                 var detailObj = folderObjectObject.add( objectParametersConfig, 'detail', detailList ).name('Detail');
                 detailObj.onChange(function(value)
                 {
-                    CGHLab.ObjectPerspective.changeDetail(mainScene.object.figure, value, mainScene);
+                    mainScene.objectPerspective.changeDetail(mainScene.object.figure, value);
                 });
             }
             else if(perspective == 'plate')
@@ -364,7 +365,7 @@
         {
             camera.updateMatrixWorld();
 
-            if(mainScene.objectPerspective){
+            if(mainScene.objectPerspectiveChosen){
                 if(currentPerspective != 'object'){
                     controls.target = mainScene.objectPosition;
                     setGUI('object');
@@ -372,14 +373,14 @@
                     mainScene.changeToObjectPerspective();
                 }
             }
-            else if(mainScene.platePerspective){
+            else if(mainScene.platePerspectiveChosen){
                 if(currentPerspective != 'plate'){
                     controls.target = mainScene.platePosition;
                     setGUI('plate');
                     currentPerspective = 'plate';
                 }
             }
-            else if(mainScene.mainPerspective){
+            else if(mainScene.mainPerspectiveChosen){
                 if(currentPerspective != 'main'){
                     controls.target = mainScene.getCenter();
                     setGUI('main');
