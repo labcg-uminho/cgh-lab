@@ -71,10 +71,12 @@
             ////CONTROLS
             controls = new THREE.OrbitControls( camera, renderer.domElement );
             controls.target = new THREE.Vector3(0,0,0);
+            controls.noPan = true;
+            controls.maxPolarAngle = Math.PI/2;
 
             /*------------------------------------------------------------------------------*/
             ////GEOMETRY
-            mainScene = new CGHLab.MainScene(renderer, camera);
+            mainScene = new CGHLab.MainScene(renderer, camera, controls);
             mainScene.init();
             controls.target = mainScene.getCenter();
 
@@ -183,6 +185,7 @@
                     this.interferencePattern = function(){ mainScene.seeInterferencePattern(); };
                     this.refWaveLength = mainScene.referenceWave.waveLength;
                     this.refWaveAngle = CGHLab.Helpers.rad2deg(mainScene.referenceWaveAngle);
+                    this.teste = function(){mainScene.teste()};
                 };
 
                 /*var cubeRotation = gui.add(parameters, 'cubeRotation').min(0).listen();
@@ -194,6 +197,7 @@
 
                 var folderGeneralMain = gui.addFolder('General');
                 folderGeneralMain.open();
+                folderGeneralMain.add(mainParametersConfig, 'teste').name('Teste');
                 folderGeneralMain.add(mainParametersConfig, 'laserSimples').name('Simples');
                 folderGeneralMain.add(mainParametersConfig, 'laserOn').name('Turn On Laser');
                 folderGeneralMain.add(mainParametersConfig, 'laserOff').name('Turn Off Laser');
@@ -239,6 +243,7 @@
                     this.geometry = mainScene.object.figure;
                     this.detail = mainScene.object.detail;
                     this.simpleSending = mainScene.simpleWaveSending;
+                    this.teste = function(){mainScene.teste()};
                 };
                 // gui.add( parameters )
                 var objectParametersConfig = new parametersGUIObject();
@@ -246,6 +251,7 @@
                 var folderGeneralObject = gui.addFolder('General');
                 folderGeneralObject.open();
 
+                folderGeneralObject.add(objectParametersConfig, 'teste').name('Teste');
                 folderGeneralObject.add(objectParametersConfig, 'laserOn').name('Turn On Laser');
                 folderGeneralObject.add(objectParametersConfig, 'laserOff').name('Turn Off Laser');
 

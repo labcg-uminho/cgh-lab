@@ -2,8 +2,11 @@
  * Created by TiagoLuís on 18/02/2015.
  */
 
-CGHLab.MainScene = function( renderer, camera )
+CGHLab.MainScene = function( renderer, camera, controls )
 {
+    this.controls = controls;
+    this.camera = camera;
+
     this.scene = new THREE.Scene();
     this.mainPerspective = true;
     this.objectPerspective = false;
@@ -416,6 +419,12 @@ CGHLab.MainScene.prototype = {
 
     },
 
+    teste: function(){
+        //this.controls.noZoom = true;
+        //console.log(this.camera.getWorldPosition());
+        this.controls.rotateLeft(Math.PI/2);
+    },
+
     //Transforms a degrees in radians and rotate the object. This function calculates the difference between the actual rotation and the new value
     //of rotation and rotate that value. For example, if the object has a 90º rotation and you want rotate it to 100º, the rotation will be of 10º
     rotateObject: function(value)
@@ -657,7 +666,7 @@ CGHLab.MainScene.prototype = {
         var middleL_AP1 = new THREE.Vector3();
         middleL_AP1.subVectors(this.amplifierPosition, this.laserPosition).divideScalar(2);
         var unitsL_AP1 = this.laserPosition.distanceTo(this.amplifierPosition);
-        var laserGeometryL_AP1 = new THREE.CylinderGeometry(10,10,unitsL_AP1,32);
+        var laserGeometryL_AP1 = new THREE.CylinderGeometry(10,10,unitsL_AP1,32, 1, true);
         var laserL_AP1 = new THREE.Mesh(laserGeometryL_AP1, this.laserShader);
         laserL_AP1.position.set(this.amplifierPosition.x - middleL_AP1.x, this.amplifierPosition.y - middleL_AP1.y, this.amplifierPosition.z - middleL_AP1.z);
         laserL_AP1.rotateY(this.laserRotation);
@@ -683,7 +692,7 @@ CGHLab.MainScene.prototype = {
         var middleB_M = new THREE.Vector3();
         middleB_M.subVectors(this.mirrorPosition, this.beamSplitterPosition).divideScalar(2);
         var unitsB_M = this.mirrorPosition.distanceTo(this.beamSplitterPosition);
-        var laserGeometryB_M = new THREE.CylinderGeometry(10,10,unitsB_M,32);
+        var laserGeometryB_M = new THREE.CylinderGeometry(10,10,unitsB_M,32, 1, true);
         var laserB_M = new THREE.Mesh(laserGeometryB_M, this.laserDupliateShader);
         laserB_M.position.set(this.mirrorPosition.x - middleB_M.x, this.mirrorPosition.y - middleB_M.y, this.mirrorPosition.z - middleB_M.z);
         laserB_M.rotateY(this.laserRotation + Math.PI/2);
@@ -697,7 +706,7 @@ CGHLab.MainScene.prototype = {
         var middleM_AP2 = new THREE.Vector3();
         middleM_AP2.subVectors(this.amplifierPosition2, this.mirrorPosition).divideScalar(2);
         var unitsM_AP2 = this.mirrorPosition.distanceTo(this.amplifierPosition2);
-        var laserGeometryM_AP2 = new THREE.CylinderGeometry(10,10,unitsM_AP2,32);
+        var laserGeometryM_AP2 = new THREE.CylinderGeometry(10,10,unitsM_AP2,32, 1, true);
         var laserM_AP2 = new THREE.Mesh(laserGeometryM_AP2, this.laserReflectionShader);
         laserM_AP2.position.set(this.amplifierPosition2.x - middleM_AP2.x, this.amplifierPosition2.y - middleM_AP2.y, this.amplifierPosition2.z - middleM_AP2.z);
         var dot = dirSplitter.dot(negDirMirror);
@@ -1077,5 +1086,9 @@ CGHLab.MainScene.prototype = {
             points.push(vertices[i]);
         }
         this.mirrorPoints = points;
+    },
+
+    changeCamera: function(){
+
     }
 };
