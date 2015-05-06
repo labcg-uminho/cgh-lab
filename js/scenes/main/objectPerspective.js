@@ -6,7 +6,10 @@ CGHLab.ObjectPerspective = function( mainScene ){
 
     this.mainScene = mainScene;
     this.lightPointWaveShader = THREE.Material;
-
+    this.views = [ 0, Math.PI/2, Math.PI, (3*Math.PI)/2 ];
+    this.currentView = 0;
+    this.currentViewName = 1;
+    this.lockViewCoords = new THREE.Vector3(-158.76, 230, 33.29);
 };
 
 CGHLab.ObjectPerspective.prototype = {
@@ -59,7 +62,7 @@ CGHLab.ObjectPerspective.prototype = {
 
         for(i = 0; i < lightPoints.length; i++ ){
             var clone = lightPointMesh.clone();
-            var materialClone  = lightPointMaterial.clone();
+            var materialClone  = this.lightPointWaveShader.clone();
             clone.position.set(lightPoints[i].position.x, lightPoints[i].position.y, lightPoints[i].position.z);
             materialClone.uniforms.origin.value = new THREE.Vector3(lightPoints[i].position.x, lightPoints[i].position.y, lightPoints[i].position.z);
             materialClone.uniforms.plate.value = platePoints;
@@ -69,7 +72,7 @@ CGHLab.ObjectPerspective.prototype = {
         }
     },
 
-    sendLightPointWaveComplete: function( lightPoint, lightPointMaterial ){
+    sendLightPointWaveComplete: function( lightPoint ){
         var lightPointGeometry = new THREE.SphereGeometry(0.5, 16, 16);
         /*var shader = CGHLab.GeometryShaderLib.sphereShader;
          var lightPointMaterial = new THREE.ShaderMaterial({
@@ -79,12 +82,12 @@ CGHLab.ObjectPerspective.prototype = {
          side: THREE.DoubleSide,
          transparent: true
          });*/
-        var lightPointMesh = new THREE.Mesh(lightPointGeometry, lightPointMaterial);
+        var lightPointMesh = new THREE.Mesh(lightPointGeometry, this.lightPointWaveShader);
 
         var platePoints = mainScene.platePoints;
 
         var clone = lightPointMesh.clone();
-        var materialClone  = lightPointMaterial.clone();
+        var materialClone  = this.lightPointWaveShader.clone();
         clone.position.set(lightPoint.position.x, lightPoint.position.y, lightPoint.position.z);
         materialClone.uniforms.origin.value = new THREE.Vector3(lightPoint.position.x, lightPoint.position.y, lightPoint.position.z);
         materialClone.uniforms.plate.value = platePoints;
@@ -168,6 +171,18 @@ CGHLab.ObjectPerspective.prototype = {
         this.mainScene.objWaveArrived = false;
         this.mainScene.patternShown = false;
         if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
+    },
+
+    changeView: function( value ){
+        if(value == 1) {
+            this.mainScene.controls.rotateLeft(0.01);
+            this.currentView += 0.01;
+            //this.currentViewCoords = this.camera.getWorldPosition();
+        }
+        else {
+            this.mainScene.controls.rotateLeft(-0.01);
+            this.currentView -= 0.01;
+        }
     }
 
 };

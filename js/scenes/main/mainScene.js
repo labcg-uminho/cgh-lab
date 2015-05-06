@@ -6,6 +6,7 @@ CGHLab.MainScene = function( renderer, camera, controls )
 {
     this.controls = controls;
     this.camera = camera;
+    this.cameraFree = true;
 
     this.scene = new THREE.Scene();
     this.mainPerspectiveChosen = true;
@@ -424,7 +425,8 @@ CGHLab.MainScene.prototype = {
     teste: function(){
         //this.controls.noZoom = true;
         //console.log(this.camera.getWorldPosition());
-        this.controls.rotateLeft(Math.PI/2);
+        //this.controls.rotateLeft(0.01);
+        console.log(this.camera.getWorldPosition());
     },
 
     setHologramShader: function()
@@ -890,6 +892,11 @@ CGHLab.MainScene.prototype = {
         }
         this.eraseObjLight();
 
+        if(!this.cameraFree){
+            this.camera.position.set(this.objectPerspective.lockViewCoords.x, this.objectPerspective.lockViewCoords.y, this.objectPerspective.lockViewCoords.z);
+            this.controls.rotateLeft(this.objectPerspective.views[this.objectPerspective.currentViewName - 1]);
+        }
+
         //DESENHAR TRIANGULO PARA VER SE PLANO ESTA BEM FEITO
         /*var geometry = new THREE.BufferGeometry();
         // create a simple square shape. We duplicate the top left and bottom right
@@ -932,6 +939,11 @@ CGHLab.MainScene.prototype = {
         this.eraseLightPointWaves();
         this.scene.add(this.object.object);
         this.collidableList = [];
+
+        if(!this.cameraFree){
+            this.camera.position.set(this.mainPerspective.lockViewCoords.x, this.mainPerspective.lockViewCoords.y, this.mainPerspective.lockViewCoords.z);
+            this.controls.rotateLeft(this.mainPerspective.views[this.mainPerspective.currentViewName - 1]);
+        }
     },
 
     getPlatePoints: function()
@@ -964,7 +976,20 @@ CGHLab.MainScene.prototype = {
         this.mirrorPoints = points;
     },
 
-    changeCamera: function(){
-
+    lockCamera: function( value ){
+        this.cameraFree = value;
+        this.controls.enabled = this.cameraFree;
+        if(this.mainPerspectiveChosen) {
+            if (!value) {
+                this.camera.position.set(this.mainPerspective.lockViewCoords.x, this.mainPerspective.lockViewCoords.y, this.mainPerspective.lockViewCoords.z);
+                this.controls.rotateLeft(this.mainPerspective.views[this.mainPerspective.currentViewName - 1]);
+            }
+        }
+        else if(this.objectPerspectiveChosen){
+            if (!value) {
+                this.camera.position.set(this.objectPerspective.lockViewCoords.x, this.objectPerspective.lockViewCoords.y, this.objectPerspective.lockViewCoords.z);
+                this.controls.rotateLeft(this.objectPerspective.views[this.objectPerspective.currentViewName - 1]);
+            }
+        }
     }
 };

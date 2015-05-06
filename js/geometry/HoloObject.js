@@ -177,6 +177,7 @@ CGHLab.HoloObject.prototype = {
             }
         }
         o.geometry = objectGeometry;
+        this.detail = detail;
         this.convertToLightPoints();
     },
 

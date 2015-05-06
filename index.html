@@ -36,6 +36,12 @@
         //var currentScene;
         var laserTurnOn = false;
         var simpleLaserOn = false;
+        var rotateCameraMain = false;
+        var rotateCameraObj = false;
+        var cameraRotationMain = 0;
+        var cameraRotationMainMax = Math.PI/2;
+        var cameraRotationObj = 0;
+        var cameraRotationObjMax = Math.PI/2;
 
         var rayCaster;
         var mouse = new THREE.Vector2(), INTERSECTED, SELECTED;
@@ -63,7 +69,7 @@
             var aspect = window.innerWidth / window.innerHeight;
 
             camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 10000);
-            camera.position.set(0, 500, 0);
+            camera.position.set(0, 500, -350);
 
             ////SCENES
             //spherescene = new THREE.Scene();
@@ -186,7 +192,9 @@
                     this.interferencePattern = function(){ mainScene.seeInterferencePattern(); };
                     this.refWaveLength = mainScene.referenceWave.waveLength;
                     this.refWaveAngle = CGHLab.Helpers.rad2deg(mainScene.referenceWaveAngle);
-                    this.teste = function(){mainScene.teste()};
+                    this.cameraLocked = mainScene.cameraFree;
+                    this.view = mainScene.mainPerspective.currentViewName;
+                    //this.teste = function(){mainScene.teste()};
                 };
 
                 /*var cubeRotation = gui.add(parameters, 'cubeRotation').min(0).listen();
@@ -198,12 +206,28 @@
 
                 var folderGeneralMain = gui.addFolder('General');
                 folderGeneralMain.open();
-                folderGeneralMain.add(mainParametersConfig, 'teste').name('Teste');
+                //folderGeneralMain.add(mainParametersConfig, 'teste').name('Teste');
                 folderGeneralMain.add(mainParametersConfig, 'laserSimples').name('Simples');
                 folderGeneralMain.add(mainParametersConfig, 'laserOn').name('Turn On Laser');
                 folderGeneralMain.add(mainParametersConfig, 'laserOff').name('Turn Off Laser');
                 folderGeneralMain.add(mainParametersConfig, 'focusCenter').name('Focus Center');
                 folderGeneralMain.add(mainParametersConfig, 'interferencePattern').name('See Interference Pattern');
+
+                var lockCamera = folderGeneralMain.add(mainParametersConfig, 'cameraLocked').name('Free Camera?');
+                lockCamera.onChange(function(value){
+                    mainScene.lockCamera(value);
+                    setGUI('main');
+                });
+
+                if (!mainScene.cameraFree) {
+                    var viewsList = [1, 2, 3, 4];
+                    var viewChosen = folderGeneralMain.add(mainParametersConfig, 'view', viewsList).name('View');
+                    viewChosen.onChange(function (value) {
+                        mainScene.mainPerspective.currentViewName = value;
+                        cameraRotationMainMax = mainScene.mainPerspective.views[value - 1] - mainScene.mainPerspective.currentView;
+                        rotateCameraMain = true;
+                    });
+                }
 
                 var folderObjectMain = gui.addFolder('Object');
                 folderObjectMain.open();
@@ -243,8 +267,10 @@
                     this.objectRotationSlider = CGHLab.Helpers.rad2deg(mainScene.objectRotationScene);
                     this.geometry = mainScene.object.figure;
                     this.detail = mainScene.object.detail;
-                    this.simpleSending = mainScene.simpleWaveSending;
-                    this.teste = function(){mainScene.teste()};
+                    this.simpleSending = mainScene.simpleWaveSending
+                    this.cameraLocked = mainScene.cameraFree;
+                    this.view = mainScene.objectPerspective.currentViewName;
+                    //this.teste = function(){mainScene.teste()};
                 };
                 // gui.add( parameters )
                 var objectParametersConfig = new parametersGUIObject();
@@ -252,7 +278,7 @@
                 var folderGeneralObject = gui.addFolder('General');
                 folderGeneralObject.open();
 
-                folderGeneralObject.add(objectParametersConfig, 'teste').name('Teste');
+                //folderGeneralObject.add(objectParametersConfig, 'teste').name('Teste');
                 folderGeneralObject.add(objectParametersConfig, 'laserOn').name('Turn On Laser');
                 folderGeneralObject.add(objectParametersConfig, 'laserOff').name('Turn Off Laser');
 
@@ -260,6 +286,22 @@
                 simpleSendingCheck.onChange(function(value){
                     mainScene.simpleWaveSending = value;
                 });
+
+                var lockCameraObj = folderGeneralObject.add(objectParametersConfig, 'cameraLocked').name('Free Camera?');
+                lockCameraObj.onChange(function(value){
+                    mainScene.lockCamera(value);
+                    setGUI('object');
+                });
+
+                if (!mainScene.cameraFree) {
+                    var viewsListObj = [1, 2, 3, 4];
+                    var viewChosenObj = folderGeneralObject.add(objectParametersConfig, 'view', viewsListObj).name('View');
+                    viewChosenObj.onChange(function (value) {
+                        mainScene.objectPerspective.currentViewName = value;
+                        cameraRotationObjMax = mainScene.objectPerspective.views[value - 1] - mainScene.objectPerspective.currentView;
+                        rotateCameraObj = true;
+                    });
+                }
 
                 var folderObjectObject = gui.addFolder('Object');
                 folderObjectObject.open();
@@ -364,6 +406,52 @@
         function render()
         {
             camera.updateMatrixWorld();
+
+            if(rotateCameraMain) {
+                if (cameraRotationMainMax > 0) {
+                    if (cameraRotationMain < cameraRotationMainMax) {
+                        mainScene.mainPerspective.changeView(1);
+                        cameraRotationMain += 0.01;
+                    }
+                    else {
+                        rotateCameraMain = false;
+                        cameraRotationMain = 0;
+                    }
+                }
+                else {
+                    if (cameraRotationMain > cameraRotationMainMax) {
+                        mainScene.mainPerspective.changeView(-1);
+                        cameraRotationMain -= 0.01;
+                    }
+                    else {
+                        rotateCameraMain = false;
+                        cameraRotationMain = 0;
+                    }
+                }
+            }
+
+            if(rotateCameraObj) {
+                if (cameraRotationObjMax > 0) {
+                    if (cameraRotationObj < cameraRotationObjMax) {
+                        mainScene.objectPerspective.changeView(1);
+                        cameraRotationObj += 0.01;
+                    }
+                    else {
+                        rotateCameraObj = false;
+                        cameraRotationObj = 0;
+                    }
+                }
+                else {
+                    if (cameraRotationObj > cameraRotationObjMax) {
+                        mainScene.objectPerspective.changeView(-1);
+                        cameraRotationObj -= 0.01;
+                    }
+                    else {
+                        rotateCameraObj = false;
+                        cameraRotationObj = 0;
+                    }
+                }
+            }
 
             if(mainScene.objectPerspectiveChosen){
                 if(currentPerspective != 'object'){
