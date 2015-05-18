@@ -19,12 +19,25 @@
     <script src="js/scenes/main/mainScene.js"></script>
     <script src="js/scenes/main/objectPerspective.js"></script>
     <script src="js/scenes/main/mainPerspective.js"></script>
+    <script src="js/scenes/main/platePerspective.js"></script>
     <script src="js/geometry/HoloObject.js"></script>
     <script src="js/holography/LightPoint.js"></script>
     <script src="js/holography/Wave.js"></script>
     <script src="js/holography/HologramShaderLib.js"></script>
     <script src="js/Helpers.js"></script>
     <script src="js/geometry/GeometryShaderLib.js"></script>
+
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+    <link rel=stylesheet href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+    <link rel=stylesheet href="css/info.css"/>
+    <script src="js/info.js"></script>
+    <div id="infoButton"></div>
+    <div id="infoBox" title="Lab Information">
+        <!--This is a demo, part of a collection at
+        <a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>-->
+    </div>
+
     <script>
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
@@ -34,7 +47,7 @@
         var gui2 = new dat.GUI();
         var currentPerspective;
         //var currentScene;
-        var laserTurnOn = false;
+        //var laserTurnOn = false;
         var simpleLaserOn = false;
         var rotateCameraMain = false;
         var rotateCameraObj = false;
@@ -42,6 +55,8 @@
         var cameraRotationMainMax = Math.PI/2;
         var cameraRotationObj = 0;
         var cameraRotationObjMax = Math.PI/2;
+        var map, mapWidth = 240, mapHeight = 160;
+        var camera2;
 
         var rayCaster;
         var mouse = new THREE.Vector2(), INTERSECTED, SELECTED;
@@ -55,6 +70,13 @@
 
         function init() {
             container = document.getElementById('container');
+
+            /*var test = document.getElementById('infoBox');
+            var text = document.createTextNode("Bla bla bla");
+            test.appendChild(text);
+            while (test.hasChildNodes()) {
+                test.removeChild(test.childNodes[0]);
+            }*/
 
             ////RENDERER
             renderer = new THREE.WebGLRenderer({antialias: true});
@@ -71,6 +93,19 @@
             camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 10000);
             camera.position.set(0, 500, -350);
 
+            //camera2 = new THREE.PerspectiveCamera(45, aspect, 0.1, 10000);
+            //camera2.position.set(0, 500, -350);
+
+            map = new THREE.OrthographicCamera(
+                    window.innerWidth / -2,		// Left
+                    window.innerWidth / 2,		// Right
+                    window.innerHeight / 2,		// Top
+                    window.innerHeight / -2,	// Bottom
+                    -5000,            			// Near
+                    10000 );           			// Far
+            map.up = new THREE.Vector3(0,0,-1);
+            map.lookAt( new THREE.Vector3(0,-1,0) );
+
             ////SCENES
             //spherescene = new THREE.Scene();
             //mainScene = new CGHLab.MainScene(renderer, camera);
@@ -83,40 +118,10 @@
 
             /*------------------------------------------------------------------------------*/
             ////GEOMETRY
-            mainScene = new CGHLab.MainScene(renderer, camera, controls);
+            mainScene = new CGHLab.MainScene(renderer, camera, map, controls);
             mainScene.init();
+            CGHLab.Helpers.addMainPerspectiveInfo();
             controls.target = mainScene.getCenter();
-
-            /*currentScene = mainScene;
-
-            object = mainScene.object.clone();
-            objectPosition = mainScene.objectPosition;
-            objectRotation = mainScene.objectRotation;
-            center = mainScene.getCenter();
-
-            referenceWave = mainScene.referenceWave;
-
-            objectPerspective = new CGHLab.ObjectPerspective(objectPosition, objectRotation, object, center, referenceWave);
-            objectPerspective.init();*/
-
-
-            //SPHERE SCENE
-            /*var spheregeometry2 = new THREE.SphereGeometry(1, 32, 32);
-            var spherematerial2 = new THREE.MeshPhongMaterial({ color: 0xffff00 });
-            var sphere2 = new THREE.Mesh(spheregeometry2, spherematerial2);
-            sphere2.position.set(5,0,0);
-            spherescene.add(sphere2);
-
-            var axes2 = new THREE.AxisHelper(10);
-            spherescene.add( axes2 );*/
-
-            ////LIGHTS
-            //SPHERE SCENE
-            /*var amblight3 = new THREE.AmbientLight( 0x505050 );
-            var light3 = new THREE.PointLight( 0xffffff, 1);
-            light3.position.set( 10, 10, 10 );
-            spherescene.add( amblight3 );
-            spherescene.add( light3 );*/
 
             /*---------------------------------------------------------------------------*/
 
@@ -150,23 +155,36 @@
             var parametersGUIPerspectives = function()
             {
                 this.mainPerspectiveChange = function(){
+                    if(mainScene.objectPerspectiveChosen){
+                        mainScene.objectPerspective.lastCameraPosition = camera.getWorldPosition();
+                    }
                     mainScene.objectPerspectiveChosen = false;
                     mainScene.mainPerspectiveChosen = true;
                     mainScene.platePerspectiveChosen = false;
                     setGUI('main');
                 };
                 this.objectPerspectiveChange = function(){
+                    if(mainScene.mainPerspectiveChosen){
+                        mainScene.mainPerspective.lastCameraPosition = camera.getWorldPosition();
+                    }
                     mainScene.objectPerspectiveChosen = true;
                     mainScene.mainPerspectiveChosen = false;
                     mainScene.platePerspectiveChosen = false;
                     setGUI('object');
                 };
                 this.platePerspectiveChange = function(){
+                    if(mainScene.objectPerspectiveChosen){
+                        mainScene.objectPerspective.lastCameraPosition = camera.getWorldPosition();
+                    }
+                    else if(mainScene.mainPerspectiveChosen){
+                        mainScene.mainPerspective.lastCameraPosition = camera.getWorldPosition();
+                    }
                     mainScene.objectPerspectiveChosen = false;
                     mainScene.mainPerspectiveChosen = false;
                     mainScene.platePerspectiveChosen = true;
                     setGUI('plate');
                 };
+                this.labelsOn = mainScene.labelsOn;
             };
 
             var guiPerspectivesConfig = new parametersGUIPerspectives();
@@ -176,6 +194,20 @@
             folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
             folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
             folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
+            var folder4 = gui2.addFolder('Other');
+            folder4.open();
+            var labelsOnOpt = folder4.add(guiPerspectivesConfig, 'labelsOn').name('Labels On?');
+            labelsOnOpt.onChange(function(value){
+                if(value) {
+                    if (mainScene.laserOnFlag) mainScene.setBeamLabels();
+                    mainScene.setLabels();
+                    mainScene.labelsOn = true;
+                }
+                else {
+                    mainScene.deleteAllLabels();
+                    mainScene.labelsOn = false;
+                }
+            });
 
             if(perspective == 'main')
             {
@@ -184,10 +216,10 @@
                 var parametersGUIMain = function()
                 {
                     this.laserSimples = function(){if (!simpleLaserOn) mainScene.simpleLaser(); simpleLaserOn = true;};
-                    this.laserOn = function(){if (!laserTurnOn) mainScene.laserOn(); laserTurnOn = true;};
-                    this.laserOff = function(){if (laserTurnOn) mainScene.laserOff(); laserTurnOn = false;};
+                    this.laserOn = function(){if (!mainScene.laserOnFlag) mainScene.laserOn(); mainScene.laserOnFlag = true;};
+                    this.laserOff = function(){if (mainScene.laserOnFlag) mainScene.laserOff(); mainScene.laserOnFlag = false;};
                     this.objectRotationSlider = CGHLab.Helpers.rad2deg(mainScene.objectRotationScene);
-                    this.focusCenter = function(){controls.target = mainScene.getCenter()};
+                    //this.focusCenter = function(){controls.target = mainScene.getCenter()};
                     this.geometry = mainScene.object.figure;
                     this.interferencePattern = function(){ mainScene.seeInterferencePattern(); };
                     this.refWaveLength = mainScene.referenceWave.waveLength;
@@ -210,7 +242,7 @@
                 folderGeneralMain.add(mainParametersConfig, 'laserSimples').name('Simples');
                 folderGeneralMain.add(mainParametersConfig, 'laserOn').name('Turn On Laser');
                 folderGeneralMain.add(mainParametersConfig, 'laserOff').name('Turn Off Laser');
-                folderGeneralMain.add(mainParametersConfig, 'focusCenter').name('Focus Center');
+                //folderGeneralMain.add(mainParametersConfig, 'focusCenter').name('Focus Center');
                 folderGeneralMain.add(mainParametersConfig, 'interferencePattern').name('See Interference Pattern');
 
                 var lockCamera = folderGeneralMain.add(mainParametersConfig, 'cameraLocked').name('Free Camera?');
@@ -262,12 +294,12 @@
 
                 var parametersGUIObject = function()
                 {
-                    this.laserOn = function(){if (!laserTurnOn) mainScene.laserOn(); laserTurnOn = true;};
-                    this.laserOff = function(){if (laserTurnOn) mainScene.laserOff(); laserTurnOn = false;};
+                    this.laserOn = function(){if (!mainScene.laserOnFlag) mainScene.laserOn(); mainScene.laserOnFlag = true;};
+                    this.laserOff = function(){if (mainScene.laserOnFlag) mainScene.laserOff(); mainScene.laserOnFlag = false;};
                     this.objectRotationSlider = CGHLab.Helpers.rad2deg(mainScene.objectRotationScene);
                     this.geometry = mainScene.object.figure;
                     this.detail = mainScene.object.detail;
-                    this.simpleSending = mainScene.simpleWaveSending
+                    this.simpleSending = mainScene.simpleWaveSending;
                     this.cameraLocked = mainScene.cameraFree;
                     this.view = mainScene.objectPerspective.currentViewName;
                     //this.teste = function(){mainScene.teste()};
@@ -332,32 +364,55 @@
 
                 var parametersGUIPlate = function()
                 {
-                    this.e = "#ff8800"; // color (hex)
-                    this.f = function() { alert("Hello!") };
-                    this.v = 0;    // dummy value, only type is important
-                    this.w = "..."; // dummy value, only type is important
-                    this.x = 0;
-                    this.y = 0;
-                    this.z = 0;
+                    this.objectRotationSlider = CGHLab.Helpers.rad2deg(mainScene.objectRotationScene);
+                    this.geometry = mainScene.object.figure;
+                    this.interferencePattern = function(){ mainScene.seeInterferencePattern(); };
+                    this.refWaveLength = mainScene.referenceWave.waveLength;
+                    this.refWaveAngle = CGHLab.Helpers.rad2deg(mainScene.referenceWaveAngle);
+                    this.detail = mainScene.object.detail;
                 };
                 // gui.add( parameters )
 
                 var plateParametersConfig = new parametersGUIPlate();
 
-                gui.addColor( plateParametersConfig, 'e' ).name('Color');
+                var folderGeneralPlate = gui.addFolder('General');
+                folderGeneralPlate.open();
+                folderGeneralPlate.add(plateParametersConfig, 'interferencePattern').name('See Interference Pattern');
 
-                var numberList = [1, 2, 3];
-                gui.add( plateParametersConfig, 'v', numberList ).name('List');
+                var folderObjectPlate = gui.addFolder('Object');
+                folderObjectPlate.open();
+                var rp = folderObjectPlate.add( plateParametersConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
+                rp.onChange(function(value){
+                    mainScene.mainPerspective.rotateObject(value);
+                });
+                var figureListPlate = [ "cube", "sphere", "cylinder", "pyramid", "torus", "torus_knot" ];
+                var geometryPlate = folderObjectPlate.add( plateParametersConfig, 'geometry', figureListPlate ).name('Geometry');
+                geometryPlate.onChange(function(value)
+                {
+                    mainScene.platePerspective.changeObject(value);
+                    setGUI('plate');
+                });
 
-                var stringList = ["One", "Two", "Three"];
-                gui.add( plateParametersConfig, 'w', stringList ).name('List');
+                var detailListPlate = [];
+                if (mainScene.object.figure == 'sphere') detailListPlate = [ "low", "high" ];
+                else detailListPlate = [ "low", "medium", "high" ];
+                var detailObjPlate = folderObjectPlate.add( plateParametersConfig, 'detail', detailListPlate ).name('Detail');
+                detailObjPlate.onChange(function(value)
+                {
+                    mainScene.platePerspective.changeDetail(mainScene.object.figure, value);
+                });
 
-                gui.add( plateParametersConfig, 'f' ).name('Say "Hello!"');
-
-                var folder = gui.addFolder('Coordinates');
-                folder.close();
-                folder.add( plateParametersConfig, 'x' );
-                folder.add( plateParametersConfig, 'y' );
+                var folderRefWavePlate = gui.addFolder('Reference Wave');
+                folderRefWavePlate.open();
+                var wlp = folderRefWavePlate.add(plateParametersConfig, 'refWaveLength').name('WaveLength');
+                wlp.onChange(function(value){
+                    mainScene.referenceWave.waveLength = value;
+                    mainScene.updateShaderUniforms();
+                });
+                var wap = folderRefWavePlate.add(plateParametersConfig, 'refWaveAngle').min(0).max(90).name('Wave Angle');
+                wap.onChange(function(value){
+                    mainScene.mainPerspective.updateMirror(value);
+                });
             }
         }
 
@@ -405,7 +460,9 @@
 
         function render()
         {
-            camera.updateMatrixWorld();
+            //camera.updateMatrixWorld();
+            camera.updateProjectionMatrix();
+            map.updateProjectionMatrix();
 
             if(rotateCameraMain) {
                 if (cameraRotationMainMax > 0) {
@@ -466,6 +523,7 @@
                     controls.target = mainScene.platePosition;
                     setGUI('plate');
                     currentPerspective = 'plate';
+                    mainScene.changeToPlatePerspective();
                 }
             }
             else if(mainScene.mainPerspectiveChosen){
@@ -476,15 +534,30 @@
                     mainScene.changeToMainPerspective();
                 }
             }
+
+            var w = window.innerWidth, h = window.innerHeight;
+            renderer.setViewport( 0, 0, w, h );
+            renderer.clear();
+
+            //renderer.setViewport( 10, h - mapHeight - 10, mapWidth, mapHeight );
+            //renderer.render( mainScene.scene, map );
+
             mainScene.mirror.render();
             renderer.render(mainScene.scene, camera);
+
+            //renderer.setViewport( 1, 1,   0.5 * w - 2, h - 2 );
+            //renderer.render( mainScene.scene, camera );
+
+            // right side
+            //renderer.setViewport( 0.5 * w + 1, 1,   0.5 * w - 2, h - 2 );
+            //renderer.render( mainScene.scene, map );
         }
 
         function update()
         {
             controls.update();
             stats.update();
-            if (laserTurnOn) mainScene.updateLaser();
+            if (mainScene.laserOnFlag) mainScene.updateLaser();
         }
     </script>
 </body>

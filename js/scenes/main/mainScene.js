@@ -2,19 +2,23 @@
  * Created by TiagoLuís on 18/02/2015.
  */
 
-CGHLab.MainScene = function( renderer, camera, controls )
+CGHLab.MainScene = function( renderer, camera, map, controls )
 {
     this.controls = controls;
     this.camera = camera;
     this.cameraFree = true;
 
     this.scene = new THREE.Scene();
+    //this.scene2 = new THREE.Scene();
+    //this.scene.add(camera);
+    //this.scene.add(map);
     this.mainPerspectiveChosen = true;
     this.objectPerspectiveChosen = false;
     this.platePerspectiveChosen = false;
 
     this.objectPerspective = new CGHLab.ObjectPerspective(this);
     this.mainPerspective = new CGHLab.MainPerspective(this);
+    this.platePerspective = new CGHLab.PlatePerspective(this);
 
     this.mirror = new THREE.Mirror( renderer, camera, { clipBias: 0.003, textureWidth: window.innerWidth, textureHeight: window.innerHeight, color:0x889999 } );
 
@@ -82,6 +86,7 @@ CGHLab.MainScene = function( renderer, camera, controls )
     this.amplifierRotation2 = Math.PI - Math.acos(dot) - Math.PI/4;
 
     this.simpleLaserOn = false;
+    this.laserOnFlag = false;
 
     //Discovers the center of the scene
     var center = new THREE.Vector3();
@@ -111,6 +116,10 @@ CGHLab.MainScene = function( renderer, camera, controls )
     this.mirrorPoints = [];
 
     this.collidableList = [];
+
+    this.labelsOn = true;
+    this.labelsList = [];
+    this.beamLabelsList = [];
 
     //Variables to store reference wave and object wave geometry
     var laserLight1 = {
@@ -381,6 +390,9 @@ CGHLab.MainScene.prototype = {
         floor.rotation.z = Math.PI / 4;
         floor.rotation.x = Math.PI / 2;
 
+        //LABELS
+        if(this.labelsOn) this.setLabels();
+
         //AXES HELPER
         var axes = new THREE.AxisHelper(100);
         this.scene.add( axes );
@@ -427,6 +439,160 @@ CGHLab.MainScene.prototype = {
         //console.log(this.camera.getWorldPosition());
         //this.controls.rotateLeft(0.01);
         console.log(this.camera.getWorldPosition());
+    },
+
+    setLabels: function(){
+        var spritey = CGHLab.Helpers.makeTextSprite( " Laser ", {
+            fontsize: 24,
+            borderColor: {r:255, g:0, b:0, a:1.0},
+            backgroundColor: {r:255, g:100, b:100, a:0.8}
+        });
+        spritey.position.set(this.laserPosition.x, this.laserPosition.y + 5 ,this.laserPosition.z);
+        spritey.name = "laser_label";
+        this.scene.add( spritey );
+        this.labelsList.push(spritey.name);
+
+        var spritey2 = CGHLab.Helpers.makeTextSprite( " Beam Splitter ", {
+            fontsize: 24,
+            borderColor: {r:255, g:0, b:0, a:1.0},
+            backgroundColor: {r:255, g:100, b:100, a:0.8}
+        });
+        spritey2.position.set(this.beamSplitterPosition.x, this.beamSplitterPosition.y + 15 ,this.beamSplitterPosition.z);
+        spritey2.name = "splitter_label";
+        this.scene.add( spritey2 );
+        this.labelsList.push(spritey2.name);
+
+        var spritey3 = CGHLab.Helpers.makeTextSprite( " Amplifier ", {
+            fontsize: 24,
+            borderColor: {r:255, g:0, b:0, a:1.0},
+            backgroundColor: {r:255, g:100, b:100, a:0.8}
+        });
+        spritey3.position.set(this.amplifierPosition.x, this.amplifierPosition.y ,this.amplifierPosition.z);
+        spritey3.name = "amplifier1_label";
+        this.scene.add( spritey3 );
+        this.labelsList.push(spritey3.name);
+
+        var spritey4 = CGHLab.Helpers.makeTextSprite( " Amplifier ", {
+            fontsize: 24,
+            borderColor: {r:255, g:0, b:0, a:1.0},
+            backgroundColor: {r:255, g:100, b:100, a:0.8}
+        });
+        spritey4.position.set(this.amplifierPosition2.x, this.amplifierPosition2.y ,this.amplifierPosition2.z);
+        spritey4.name = "amplifier2_label";
+        this.scene.add( spritey4 );
+        this.labelsList.push(spritey4.name);
+
+        var spritey5 = CGHLab.Helpers.makeTextSprite( " Mirror ", {
+            fontsize: 24,
+            borderColor: {r:255, g:0, b:0, a:1.0},
+            backgroundColor: {r:255, g:100, b:100, a:0.8}
+        });
+        spritey5.position.set(this.mirrorPosition.x, this.mirrorPosition.y + 45 ,this.mirrorPosition.z);
+        spritey5.name = "mirror_label";
+        this.scene.add( spritey5 );
+        this.labelsList.push(spritey5.name);
+
+        var spritey6;
+
+        if(this.mainPerspectiveChosen) {
+            spritey6 = CGHLab.Helpers.makeTextSprite(" Object ", {
+                fontsize: 24,
+                borderColor: {r: 255, g: 0, b: 0, a: 1.0},
+                backgroundColor: {r: 255, g: 100, b: 100, a: 0.8}
+            });
+            spritey6.position.set(this.objectPosition.x, this.objectPosition.y + 10, this.objectPosition.z);
+            spritey6.name = "object_label";
+            this.scene.add(spritey6);
+            this.labelsList.push(spritey6.name);
+        }
+
+        else if(this.objectPerspectiveChosen) {
+            spritey6 = CGHLab.Helpers.makeTextSprite(" Object Light Points ", {
+                fontsize: 24,
+                borderColor: {r: 255, g: 0, b: 0, a: 1.0},
+                backgroundColor: {r: 255, g: 100, b: 100, a: 0.8}
+            });
+            spritey6.position.set(this.objectPosition.x, this.objectPosition.y + 10, this.objectPosition.z);
+            spritey6.name = "object_light_points_label";
+            this.scene.add(spritey6);
+            this.labelsList.push(spritey6.name);
+        }
+
+        var spritey7 = CGHLab.Helpers.makeTextSprite( " Holographic Plate ", {
+            fontsize: 24,
+            borderColor: {r:255, g:0, b:0, a:1.0},
+            backgroundColor: {r:255, g:100, b:100, a:0.8}
+        });
+        spritey7.position.set(this.platePosition.x, this.platePosition.y + 80 ,this.platePosition.z);
+        spritey7.name = "plate_label";
+        this.scene.add( spritey7 );
+        this.labelsList.push(spritey7.name);
+    },
+
+    setBeamLabels: function(){
+        var spritey = CGHLab.Helpers.makeTextSprite( " Illumination Beam ", {
+            fontsize: 24,
+            borderColor: {r:0, g:0, b:255, a:1.0},
+            backgroundColor: {r:100, g:100, b:255, a:0.8}
+        });
+        var laserDir = this.getDirLaser().clone().normalize();
+        var spriteyPosition = new THREE.Vector3();
+        spriteyPosition.addVectors(this.objectPosition, laserDir.multiplyScalar(100));
+        spritey.position.set(spriteyPosition.x, spriteyPosition.y + 50 , spriteyPosition.z);
+        spritey.name = "illumination_beam_label";
+        this.scene.add( spritey );
+        this.beamLabelsList.push(spritey.name);
+
+        var spritey2 = CGHLab.Helpers.makeTextSprite( " Object Beam ", {
+            fontsize: 24,
+            borderColor: {r:0, g:0, b:255, a:1.0},
+            backgroundColor: {r:100, g:100, b:255, a:0.8}
+        });
+        var objDir = this.getDirObject().clone().normalize();
+        var spritey2Position = new THREE.Vector3();
+        spritey2Position.addVectors(this.platePosition, objDir.multiplyScalar(175));
+        spritey2.position.set(spritey2Position.x, spritey2Position.y + 50 , spritey2Position.z);
+        spritey2.name = "object_beam_label";
+        this.scene.add( spritey2 );
+        this.beamLabelsList.push(spritey2.name);
+
+        var spritey3 = CGHLab.Helpers.makeTextSprite( " Reference Beam ", {
+            fontsize: 24,
+            borderColor: {r:0, g:0, b:255, a:1.0},
+            backgroundColor: {r:100, g:100, b:255, a:0.8}
+        });
+        var mirrorDir = this.getDirMirror().clone().normalize();
+        var spritey3Position = new THREE.Vector3();
+        spritey3Position.addVectors(this.platePosition, mirrorDir.multiplyScalar((1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 125));
+        spritey3.position.set(spritey3Position.x, spritey3Position.y + 50 , spritey3Position.z);
+        spritey3.name = "reference_beam_label";
+        this.scene.add( spritey3 );
+        this.beamLabelsList.push(spritey3.name);
+    },
+
+    deleteLabels: function(){
+        var i;
+        var label;
+        for (i = 0; i < this.labelsList.length; i++){
+            label = this.scene.getObjectByName(this.labelsList[i]);
+            this.scene.remove(label);
+        }
+        this.labelsList = [];
+    },
+
+    deleteBeamLabels: function(){
+        var i;
+        var label;
+        for (i = 0; i < this.beamLabelsList.length; i++){
+            label = this.scene.getObjectByName(this.beamLabelsList[i]);
+            this.scene.remove(label);
+        }
+        this.beamLabelsList = [];
+    },
+
+    deleteAllLabels: function(){
+        this.deleteLabels();
+        this.deleteBeamLabels();
     },
 
     setHologramShader: function()
@@ -622,6 +788,10 @@ CGHLab.MainScene.prototype = {
         copy.rotateY(this.laserRotation);
         this.scene.add(copy);
         this.addToLaserLight1(copy);
+
+        if(this.labelsOn) this.setBeamLabels();
+
+        this.laserOnFlag = true;
     },
 
     laserOff: function(){
@@ -650,6 +820,10 @@ CGHLab.MainScene.prototype = {
         this.refWaveArrived = false;
         this.objWaveArrived = false;
         this.patternShown = false;
+
+        if(this.labelsOn) this.deleteBeamLabels();
+
+        this.laserOnFlag = false;
     },
 
     updateLaser: function(){
@@ -892,36 +1066,29 @@ CGHLab.MainScene.prototype = {
         }
         this.eraseObjLight();
 
+        this.controls.enabled = this.cameraFree;
+
         if(!this.cameraFree){
             this.camera.position.set(this.objectPerspective.lockViewCoords.x, this.objectPerspective.lockViewCoords.y, this.objectPerspective.lockViewCoords.z);
             this.controls.rotateLeft(this.objectPerspective.views[this.objectPerspective.currentViewName - 1]);
         }
-
-        //DESENHAR TRIANGULO PARA VER SE PLANO ESTA BEM FEITO
-        /*var geometry = new THREE.BufferGeometry();
-        // create a simple square shape. We duplicate the top left and bottom right
-        // vertices because each vertex needs to appear once per triangle.
-        var vertexPositions = [
-            [this.object.lightPoints[0].position.x, this.object.lightPoints[0].position.y,  this.object.lightPoints[0].position.z],
-            [this.platePoints[0].x, this.platePoints[0].y,  this.platePoints[0].z],
-            [this.platePoints[1].x, this.platePoints[1].y,  this.platePoints[1].z]
-        ];
-        var vertices = new Float32Array( vertexPositions.length * 3 ); // three components per vertex
-
-        // components of the position vector for each vertex are stored
-        // contiguously in the buffer.
-        for ( var i = 0; i < vertexPositions.length; i++ )
-        {
-            vertices[ i*3 + 0 ] = vertexPositions[i][0];
-            vertices[ i*3 + 1 ] = vertexPositions[i][1];
-            vertices[ i*3 + 2 ] = vertexPositions[i][2];
+        else{
+            this.camera.position.set(this.objectPerspective.lastCameraPosition.x, this.objectPerspective.lastCameraPosition.y, this.objectPerspective.lastCameraPosition.z);
         }
 
-        // itemSize = 3 because there are 3 values (components) per vertex
-        geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-        var material = new THREE.MeshBasicMaterial( { color: 0x000000, side: THREE.DoubleSide} );
-        var mesh = new THREE.Mesh( geometry, material );
-        this.scene.add(mesh);*/
+        //Change object label
+        if(this.labelsOn){
+            var objectLabel = this.scene.getObjectByName('object_label');
+            this.scene.remove(objectLabel);
+            var j = this.labelsList.indexOf('object_label');
+            if (j > -1) this.labelsList.splice(j, 1);
+
+            var spritey6 = CGHLab.Helpers.makeTextSprite( " Object Light Points ", { fontsize: 24, borderColor: {r:255, g:0, b:0, a:1.0}, backgroundColor: {r:255, g:100, b:100, a:0.8} } );
+            spritey6.position.set(this.objectPosition.x, this.objectPosition.y + 10 ,this.objectPosition.z);
+            spritey6.name = "object_light_points_label";
+            this.scene.add( spritey6 );
+            this.labelsList.push(spritey6.name);
+        }
     },
 
     changeToMainPerspective: function()
@@ -940,10 +1107,52 @@ CGHLab.MainScene.prototype = {
         this.scene.add(this.object.object);
         this.collidableList = [];
 
+        this.controls.enabled = this.cameraFree;
+
         if(!this.cameraFree){
             this.camera.position.set(this.mainPerspective.lockViewCoords.x, this.mainPerspective.lockViewCoords.y, this.mainPerspective.lockViewCoords.z);
             this.controls.rotateLeft(this.mainPerspective.views[this.mainPerspective.currentViewName - 1]);
         }
+        else{
+            this.camera.position.set(this.mainPerspective.lastCameraPosition.x, this.mainPerspective.lastCameraPosition.y, this.mainPerspective.lastCameraPosition.z);
+        }
+
+        //Change object label
+        if(this.labelsOn){
+            var objectLabel = this.scene.getObjectByName('object_light_points_label');
+            this.scene.remove(objectLabel);
+            var j = this.labelsList.indexOf('object_light_points_label');
+            if (j > -1) this.labelsList.splice(j, 1);
+
+            var spritey6 = CGHLab.Helpers.makeTextSprite( " Object ", { fontsize: 24, borderColor: {r:255, g:0, b:0, a:1.0}, backgroundColor: {r:255, g:100, b:100, a:0.8} } );
+            spritey6.position.set(this.objectPosition.x, this.objectPosition.y + 10 ,this.objectPosition.z);
+            spritey6.name = "object_label";
+            this.scene.add( spritey6 );
+            this.labelsList.push(spritey6.name);
+        }
+    },
+
+    changeToPlatePerspective: function()
+    {
+        var i;
+        for (i = 0; i < this.object.lightPoints.length; i++){
+            var object = this.scene.getObjectByName('lightPoint'+i);
+            this.scene.remove(object);
+        }
+
+        var lightPointsWave = this.getLightPointWaves();
+        for(i = 0; i < lightPointsWave.list.length; i++){
+            this.scene.remove(lightPointsWave.list[i]);
+        }
+        this.eraseLightPointWaves();
+        this.scene.add(this.object.object);
+        this.collidableList = [];
+
+        //ver isto
+        this.laserOff();
+
+        this.camera.position.set(0,0,250);
+        this.controls.enabled = false;
     },
 
     getPlatePoints: function()

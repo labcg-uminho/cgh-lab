@@ -10,6 +10,7 @@ CGHLab.ObjectPerspective = function( mainScene ){
     this.currentView = 0;
     this.currentViewName = 1;
     this.lockViewCoords = new THREE.Vector3(-158.76, 230, 33.29);
+    this.lastCameraPosition = new THREE.Vector3(-158.76, 230, 33.29);
 };
 
 CGHLab.ObjectPerspective.prototype = {
@@ -147,7 +148,8 @@ CGHLab.ObjectPerspective.prototype = {
         if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
     },
 
-    changeDetail: function( geometry, detail ){
+    changeDetail: function( geometry, detail )
+    {
         //First delete the previous light points from the scene
         var i;
         for (i = 0; i < this.mainScene.object.lightPoints.length; i++){

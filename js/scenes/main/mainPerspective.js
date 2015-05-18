@@ -9,6 +9,7 @@ CGHLab.MainPerspective = function( mainScene ){
     this.currentView = 0;
     this.currentViewName = 1;
     this.lockViewCoords = new THREE.Vector3(0, 500, -350);
+    this.lastCameraPosition = new THREE.Vector3();
 
 };
 
@@ -46,7 +47,7 @@ CGHLab.MainPerspective.prototype = {
         this.mainScene.collidableList = [];
         this.mainScene.objWaveArrived = false;
         this.mainScene.patternShown = false;
-        this.mainScene.hideInterferencePattern();
+        if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
     },
 
     //Handles the update of the reference wave angle. The position of the mirror and amplifier are updated to match the parameters
@@ -100,6 +101,23 @@ CGHLab.MainPerspective.prototype = {
         //Update position and rotation
         amplifier2.position.set(this.mainScene.amplifierPosition2.x, this.mainScene.amplifierPosition2.y, this.mainScene.amplifierPosition2.z);
         amplifier2.rotateY(this.mainScene.amplifierRotation2);
+
+        //Labels
+        if(mainScene.labelsOn) {
+            var mirror_label = this.mainScene.scene.getObjectByName('mirror_label');
+            var amplifier2_label = this.mainScene.scene.getObjectByName('amplifier2_label');
+
+            mirror_label.position.set(this.mainScene.mirrorPosition.x, this.mainScene.mirrorPosition.y + 45 ,this.mainScene.mirrorPosition.z);
+            amplifier2_label.position.set(this.mainScene.amplifierPosition2.x, this.mainScene.amplifierPosition2.y ,this.mainScene.amplifierPosition2.z);
+
+            if(mainScene.laserOnFlag){
+                var reference_beam_label = this.mainScene.scene.getObjectByName('reference_beam_label');
+                var mirrorDir = mainScene.getDirMirror().clone().normalize();
+                var spritey3Position = new THREE.Vector3();
+                spritey3Position.addVectors(mainScene.platePosition, mirrorDir.multiplyScalar((1/Math.cos(Math.PI/4 - mainScene.referenceWaveAngle)) * 125));
+                reference_beam_label.position.set(spritey3Position.x, spritey3Position.y + 50 , spritey3Position.z);
+            }
+        }
 
         //Reset reflected geometry
         var laserLight3 = this.mainScene.getLaserLight3();
