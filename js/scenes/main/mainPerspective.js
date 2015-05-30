@@ -28,6 +28,8 @@ CGHLab.MainPerspective.prototype = {
         this.mainScene.object.object.rotateY(r);
         this.mainScene.object.convertToLightPoints();
         this.mainScene.updateShaderUniforms();
+
+        //if(this.mainScene.simpleLaserOn) this.mainScene.updateSimpleLaser();
     },
 
     //Change the object
@@ -104,14 +106,14 @@ CGHLab.MainPerspective.prototype = {
 
         //Labels
         if(mainScene.labelsOn) {
-            var mirror_label = this.mainScene.scene.getObjectByName('mirror_label');
-            var amplifier2_label = this.mainScene.scene.getObjectByName('amplifier2_label');
+            var mirror_label = this.mainScene.scene2.getObjectByName('mirror_label');
+            var amplifier2_label = this.mainScene.scene2.getObjectByName('amplifier2_label');
 
             mirror_label.position.set(this.mainScene.mirrorPosition.x, this.mainScene.mirrorPosition.y + 45 ,this.mainScene.mirrorPosition.z);
             amplifier2_label.position.set(this.mainScene.amplifierPosition2.x, this.mainScene.amplifierPosition2.y ,this.mainScene.amplifierPosition2.z);
 
             if(mainScene.laserOnFlag){
-                var reference_beam_label = this.mainScene.scene.getObjectByName('reference_beam_label');
+                var reference_beam_label = this.mainScene.scene2.getObjectByName('reference_beam_label');
                 var mirrorDir = mainScene.getDirMirror().clone().normalize();
                 var spritey3Position = new THREE.Vector3();
                 spritey3Position.addVectors(mainScene.platePosition, mirrorDir.multiplyScalar((1/Math.cos(Math.PI/4 - mainScene.referenceWaveAngle)) * 125));

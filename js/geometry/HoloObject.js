@@ -33,7 +33,7 @@ CGHLab.HoloObject.prototype = {
         if (geometry == 'cube') objectGeometry = new THREE.BoxGeometry(1, 1, 1);
         else if (geometry == 'sphere') objectGeometry = new THREE.IcosahedronGeometry(0.5, 1);
         else if (geometry == 'cylinder') objectGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16, 1);
-        else if (geometry == 'pyramid') objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 1);
+        //else if (geometry == 'pyramid') objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 1);
         else if (geometry == 'torus') objectGeometry = new THREE.TorusGeometry(0.5, 0.2, 8, 6);
         else if (geometry == 'torus_knot') objectGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 12, 4, 1, 2);
         var objectMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 , ambient: 0x00ff00});
@@ -73,8 +73,8 @@ CGHLab.HoloObject.prototype = {
         var o = this.object;//this.scene.getObjectByName('object');
         if (geometry == 'cube') objectGeometry = new THREE.BoxGeometry(1, 1, 1);
         else if (geometry == 'sphere') objectGeometry = new THREE.IcosahedronGeometry(0.5, 1);
-        else if (geometry == 'cylinder') objectGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16, 1);
-        else if (geometry == 'pyramid') objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 1);
+        else if (geometry == 'cylinder') objectGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16, 1, false, 0, 2*Math.PI);
+        //else if (geometry == 'pyramid') objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 1);
         else if (geometry == 'torus') objectGeometry = new THREE.TorusGeometry(0.5, 0.2, 8, 6);
         else if (geometry == 'torus_knot') objectGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 12, 4, 1, 2);
         o.geometry = objectGeometry;
@@ -128,7 +128,7 @@ CGHLab.HoloObject.prototype = {
                     break;*/
             }
         }
-        else if (geometry == 'pyramid'){
+        /*else if (geometry == 'pyramid'){
             switch (detail) {
                 case 'low':
                     objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 1);
@@ -139,11 +139,8 @@ CGHLab.HoloObject.prototype = {
                 case 'high':
                     objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 8);
                     break;
-                /*case 'ultra':
-                    objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 8);
-                    break;*/
             }
-        }
+        }*/
         else if (geometry == 'torus') {
             switch (detail) {
                 case 'low':
