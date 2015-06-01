@@ -18,7 +18,7 @@ CGHLab.PlatePerspective.prototype = {
         this.mainScene.object.changeObject(value);
         this.mainScene.updateShaderUniforms();
 
-        if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
+        //if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
     },
 
     changeDetail: function( geometry, detail )

@@ -4,7 +4,6 @@
     <title>Computer Generated Holography Virtual Lab</title>
     <link rel="stylesheet" href="css/base.css" />
 </head>
-<body>
     <div id="container"></div>
 
     <script src="js/three.min.js"></script>
@@ -35,8 +34,10 @@
     <script src="js/info.js"></script>
     <div id="infoButton"></div>
     <div id="infoBox" title="Lab Information">
-        <!--This is a demo, part of a collection at
-        <a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>-->
+    </div>
+
+    <div id="info">For more information click the "i" icon on the bottom left conner.<br/>
+        Made by Tiago Leite
     </div>
 
     <script>
@@ -44,11 +45,8 @@
 
         var mainScene, camera, controls, renderer, objectPerspective, platePerspective;
         var container, stats;
-        //var gui = new dat.GUI();
-        var gui2 = new dat.GUI();
+        var gui = new dat.GUI();
         var currentPerspective;
-        //var currentScene;
-        //var laserTurnOn = false;
         var rotateCameraMain = false;
         var rotateCameraObj = false;
         var cameraRotationMain = 0;
@@ -148,9 +146,9 @@
         function setGUI( perspective )
         {
             //gui.destroy();
-            gui2.destroy();
-            gui2 = new dat.GUI();
-            gui2.open();
+            gui.destroy();
+            gui = new dat.GUI();
+            gui.open();
 
             var parametersGUIPerspectives = function()
             {
@@ -206,7 +204,7 @@
                 this.refWaveAngle = CGHLab.Helpers.rad2deg(mainScene.referenceWaveAngle);
                 this.geometry = mainScene.object.figure;
                 this.detail = mainScene.object.detail;
-                this.simpleSending = mainScene.simpleWaveSending;
+                this.simpleSending = mainScene.objWaveSendingTypeChoosen;
                 if (perspective == 'main') {
                     this.view = mainScene.mainPerspective.currentViewName;
                 }
@@ -217,12 +215,12 @@
 
             var guiPerspectivesConfig = new parametersGUIPerspectives();
 
-            var folder3 = gui2.addFolder('Change Perspective');
+            var folder3 = gui.addFolder('Change Perspective');
             folder3.open();
             folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
             folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
             folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
-            var lockCamera = folder3.add(guiPerspectivesConfig, 'cameraLocked').name('Free Camera?');
+            /*var lockCamera = folder3.add(guiPerspectivesConfig, 'cameraLocked').name('Free Camera?');
             lockCamera.onChange(function(value){
                 mainScene.lockCamera(value);
                 setGUI(perspective);
@@ -247,11 +245,13 @@
                         rotateCameraObj = true;
                     });
                 }
-            }
+            }*/
+
+            var figureList = ["cube", "sphere", "cylinder", "torus_knot"];
 
             if(perspective == 'main')
             {
-                var folderGeneralMain = gui2.addFolder('General');
+                var folderGeneralMain = gui.addFolder('Laser Options');
                 folderGeneralMain.open();
                 var type = folderGeneralMain.add(guiPerspectivesConfig, 'laserTypeChoosen', mainScene.laserTypes).name('Laser Type');
                 type.onChange(function (value){
@@ -263,22 +263,19 @@
                     else mainScene.laserTypeActive = value;
                 });
                 folderGeneralMain.add(guiPerspectivesConfig, 'laserOn').name('Laser On/Off');
-                folderGeneralMain.add(guiPerspectivesConfig, 'interferencePattern').name('See Interference Pattern');
 
-
-                var folderObjectMain = gui2.addFolder('Object');
+                var folderObjectMain = gui.addFolder('Object Options');
                 folderObjectMain.open();
-                var r = folderObjectMain.add(guiPerspectivesConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
+                /*var r = folderObjectMain.add(guiPerspectivesConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
                 r.onChange(function (value) {
                     mainScene.mainPerspective.rotateObject(value);
-                });
-                var figureList = ["cube", "sphere", "cylinder", "torus", "torus_knot"];
+                });*/
                 var geometry = folderObjectMain.add(guiPerspectivesConfig, 'geometry', figureList).name('Geometry');
                 geometry.onChange(function (value) {
                     mainScene.mainPerspective.changeObject(value);
                 });
 
-                var folderRefWaveMain = gui2.addFolder('Reference Wave');
+                var folderRefWaveMain = gui.addFolder('Reference Wave Options');
                 folderRefWaveMain.open();
                 var wl = folderRefWaveMain.add(guiPerspectivesConfig, 'refWaveLength').name('WaveLength');
                 wl.onChange(function (value) {
@@ -292,7 +289,7 @@
             }
             else if(perspective == 'object')
             {
-                var folderGeneralObject = gui2.addFolder('General');
+                var folderGeneralObject = gui.addFolder('Laser Options');
                 folderGeneralObject.open();
 
                 var type2 = folderGeneralObject.add(guiPerspectivesConfig, 'laserTypeChoosen', mainScene.laserTypes).name('Laser Type');
@@ -303,23 +300,34 @@
                         mainScene.laserOn();
                     }
                     else mainScene.laserTypeActive = value;
+                    setGUI(perspective);
                 });
+
+                if(mainScene.laserTypeActive == "Animated") {
+                    var simpleSendingCheck = folderGeneralObject.add(guiPerspectivesConfig, 'simpleSending', mainScene.objWaveSendingTypes).name('LP Wave Sending Type');
+                    simpleSendingCheck.onChange(function (value) {
+                        switch (value) {
+                            case "All Together":
+                                mainScene.simpleWaveSending = true;
+                                break;
+                            case "Collision Detection":
+                                mainScene.simpleWaveSending = false;
+                                break;
+                        }
+                        mainScene.objWaveSendingTypeChoosen = value;
+                    });
+                }
+
                 folderGeneralObject.add(guiPerspectivesConfig, 'laserOn').name('Laser On/Off');
 
-                var simpleSendingCheck = folderGeneralObject.add(guiPerspectivesConfig, 'simpleSending').name('Simple Sending?');
-                simpleSendingCheck.onChange(function(value){
-                    mainScene.simpleWaveSending = value;
-                });
 
-
-                var folderObjectObject = gui2.addFolder('Object');
+                var folderObjectObject = gui.addFolder('Object Options');
                 folderObjectObject.open();
-                var rObj = folderObjectObject.add( guiPerspectivesConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
+                /*var rObj = folderObjectObject.add( guiPerspectivesConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
                 rObj.onChange(function(value){
                     mainScene.objectPerspective.rotateObject(value);
-                });
-                var figureListObj = [ "cube", "sphere", "cylinder", "torus", "torus_knot" ];
-                var geometryObj = folderObjectObject.add( guiPerspectivesConfig, 'geometry', figureListObj ).name('Geometry');
+                });*/
+                var geometryObj = folderObjectObject.add( guiPerspectivesConfig, 'geometry', figureList ).name('Geometry');
                 geometryObj.onChange(function(value)
                 {
                     mainScene.objectPerspective.changeObject(value);
@@ -336,18 +344,13 @@
             }
             else if(perspective == 'plate')
             {
-                var folderGeneralPlate = gui2.addFolder('General');
-                folderGeneralPlate.open();
-                folderGeneralPlate.add(guiPerspectivesConfig, 'interferencePattern').name('See Interference Pattern');
-
-                var folderObjectPlate = gui2.addFolder('Object');
+                var folderObjectPlate = gui.addFolder('Object Options');
                 folderObjectPlate.open();
-                var rp = folderObjectPlate.add( guiPerspectivesConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
+                /*var rp = folderObjectPlate.add( guiPerspectivesConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
                 rp.onChange(function(value){
                     mainScene.mainPerspective.rotateObject(value);
-                });
-                var figureListPlate = [ "cube", "sphere", "cylinder", "pyramid", "torus", "torus_knot" ];
-                var geometryPlate = folderObjectPlate.add( guiPerspectivesConfig, 'geometry', figureListPlate ).name('Geometry');
+                });*/
+                var geometryPlate = folderObjectPlate.add( guiPerspectivesConfig, 'geometry', figureList ).name('Geometry');
                 geometryPlate.onChange(function(value)
                 {
                     mainScene.platePerspective.changeObject(value);
@@ -363,7 +366,7 @@
                     mainScene.platePerspective.changeDetail(mainScene.object.figure, value);
                 });
 
-                var folderRefWavePlate = gui2.addFolder('Reference Wave');
+                var folderRefWavePlate = gui.addFolder('Reference Wave Options');
                 folderRefWavePlate.open();
                 var wlp = folderRefWavePlate.add(guiPerspectivesConfig, 'refWaveLength').name('WaveLength');
                 wlp.onChange(function(value){
@@ -376,7 +379,7 @@
                 });
             }
 
-            var folder4 = gui2.addFolder('Other');
+            var folder4 = gui.addFolder('Other Options');
             folder4.open();
             var labelsOnOpt = folder4.add(guiPerspectivesConfig, 'labelsOn').name('Labels On?');
             labelsOnOpt.onChange(function(value){
@@ -390,6 +393,7 @@
                     mainScene.labelsOn = false;
                 }
             });
+            folder4.add(guiPerspectivesConfig, 'interferencePattern').name('See Interference Pattern');
         }
 
         function onWindowResize()
@@ -519,6 +523,8 @@
             //renderer.render( mainScene.scene, map );
 
             mainScene.mirror.render();
+            //renderer.render(mainScene.scene0, camera);
+            //renderer.clearDepth();
             renderer.render(mainScene.scene, camera);
             renderer.clearDepth();
             renderer.render(mainScene.scene2, camera);

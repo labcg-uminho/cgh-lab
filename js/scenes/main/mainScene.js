@@ -8,6 +8,7 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
     this.camera = camera;
     this.cameraFree = true;
 
+    this.scene0 = new THREE.Scene();
     this.scene = new THREE.Scene();
     this.scene2 = new THREE.Scene();
     this.mainPerspectiveChosen = true;
@@ -85,6 +86,7 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
 
     //this.simpleLaserOn = false;
     this.laserOnFlag = false;
+    this.laserOnStandBy = false;
 
     //Discovers the center of the scene
     var center = new THREE.Vector3();
@@ -97,6 +99,8 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
     this.interferencePatternShaderUnchanged = new THREE.Material;
 
     this.simpleWaveSending = true;
+    this.objWaveSendingTypes = ["All Together", "Collision Detection"];
+    this.objWaveSendingTypeChoosen = "All Together";
 
     this.laserDupliateShader = new THREE.Material;
     this.laserReflectionShader = new THREE.Material;
@@ -112,7 +116,7 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
     this.laserTypeActive = "Simple";
 
     this.interferencePatternOn = false;
-    this.interferencePatternInstant = false;
+    //this.interferencePatternInstant = false;
 
     this.refWaveArrived = false;
     this.objWaveArrived = false;
@@ -348,12 +352,19 @@ CGHLab.MainScene.prototype = {
 
         //LASER
         var laserSourceGeometry = new THREE.CylinderGeometry( 11, 11, 30, 32);
-        var laserSourceMaterial = new THREE.MeshLambertMaterial( {color: 0x00ffff, ambient: 0x00ffff} );
+        var laserSourceMaterial = new THREE.MeshPhongMaterial( {color: 0x222222, ambient: 0x222222} );
         var laserSource = new THREE.Mesh(laserSourceGeometry, laserSourceMaterial);
         laserSource.position.set(this.laserPosition.x, this.laserPosition.y, this.laserPosition.z);
         laserSource.rotateY(this.laserRotation);
         laserSource.rotateX(Math.PI / 2);
         laserSource.name = 'laser';
+
+        var laserSourceGeometry2 = new THREE.CylinderGeometry( 15, 15, 30, 32);
+        //var laserSourceMaterial2 = new THREE.MeshLambertMaterial( {color: 0x444444, ambient: 0xffffff} );
+        var laserSource2 = new THREE.Mesh(laserSourceGeometry2, laserSourceMaterial);
+        laserSource2.position.set(0, 20, 0);
+        //laserSource2.rotateY(this.laserRotation);
+        //laserSource2.rotateX(Math.PI / 2);
 
         //AMPLIFIER
         //ThreeCSG stuff
@@ -366,7 +377,7 @@ CGHLab.MainScene.prototype = {
         var sphere_bsp = new ThreeBSP( sphere_mesh );
         var subtract_bsp = sphere_bsp.subtract( cube_bsp );
 
-        var amplifierMaterial = new THREE.MeshLambertMaterial( {color: 0x00ffff, ambient: 0x00ffff} );
+        var amplifierMaterial = new THREE.MeshPhongMaterial( {color: 0x222222, ambient: 0x222222} );
 
         var amplifier = subtract_bsp.toMesh(amplifierMaterial);
         amplifier.scale.set(10,10,5);
@@ -380,39 +391,9 @@ CGHLab.MainScene.prototype = {
         amplifier2.rotateY(this.amplifierRotation2);
         amplifier2.name = 'amplifier2';
 
-        /*var cube_geometry2 = new THREE.CubeGeometry( 30, 30, 30 );
-        var cube_mesh2 = new THREE.Mesh( cube_geometry2 );
-
-        var cube_geometry3 = new THREE.CubeGeometry( 60, 60, 60 );
-        var cube_mesh3 = new THREE.Mesh( cube_geometry3 );
-        cube_mesh3.position.z = 100;
-
-        var points = cube_mesh2.geometry.clone();
-        var vertices = points.vertices;
-        var new_points = [];
-        cube_mesh2.updateMatrixWorld();
-        for(var i = 0; i < vertices.length; i++){
-            vertices[i].applyMatrix4(cube_mesh2.matrixWorld);
-            new_points.push(vertices[i]);
-        }
-
-        var points2 = cube_mesh3.geometry.clone();
-        var vertices2 = points2.vertices;
-        cube_mesh3.updateMatrixWorld();
-        for(var j = 0; j < vertices2.length; j++){
-            vertices2[j].applyMatrix4(cube_mesh3.matrixWorld);
-            new_points.push(vertices2[j]);
-        }
-
-        var testeMaterial = new THREE.MeshLambertMaterial( {color: 0x00ffff, ambient: 0x00ffff, transparent: true, opacity: 0.5} );
-        var teste = new THREE.Mesh(new THREE.ConvexGeometry(new_points), testeMaterial);
-        teste.position.set(100,100,100);
-        this.scene.add(teste);*/
-
-
         //BEAM SPLITTER
         var beamSplitterGeometry = new THREE.BoxGeometry(1, 1, 1);
-        var beamSplitterMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff });
+        var beamSplitterMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff, transparent: true, opacity: 1 });
         var beamSplitter = new THREE.Mesh(beamSplitterGeometry, beamSplitterMaterial);
         beamSplitter.scale.set(40,40,40);
         beamSplitter.position.set(this.beamSplitterPosition.x,this.beamSplitterPosition.y, this.beamSplitterPosition.z);
@@ -453,6 +434,7 @@ CGHLab.MainScene.prototype = {
         this.scene.add(this.object.object);
         this.scene.add(holographicPlate);
         this.scene.add(laserSource);
+        laserSource.add(laserSource2);
         this.scene.add(beamSplitter);
         this.scene.add(amplifier);
         this.scene.add(amplifier2);
@@ -470,8 +452,8 @@ CGHLab.MainScene.prototype = {
         this.scene.add( ambLight );
         this.scene.add( light );
 
-        this.scene2.add(ambLight.clone());
-        this.scene2.add(light.clone());
+        this.scene0.add(ambLight.clone());
+        this.scene0.add(light.clone());
 
         //Initialize hologram shader (link)
         this.setHologramShader();
@@ -487,13 +469,6 @@ CGHLab.MainScene.prototype = {
         //LABELS
         if(this.labelsOn) this.setLabels();
 
-    },
-
-    teste: function(){
-        //this.controls.noZoom = true;
-        //console.log(this.camera.getWorldPosition());
-        //this.controls.rotateLeft(0.01);
-        console.log(this.camera.getWorldPosition());
     },
 
     setLabels: function(){
@@ -688,10 +663,6 @@ CGHLab.MainScene.prototype = {
         this.interferencePatternShader.uniforms.horizCycleLength.value = this.referenceWave.waveLength / Math.sin(this.referenceWaveAngle);
         this.interferencePatternShader.uniforms.waveLength.value = this.referenceWave.waveLength;
 
-        //this.interferencePatternShader = holographicPlateMaterial;
-        //console.log(this.interferencePatternShader.uniforms.lightPoints.value);
-        //console.log(this.interferencePatternShader.uniforms.n_lightPoints.value);
-
         if(this.interferencePatternOn) {
             var plate = this.scene.getObjectByName('plate');
             plate.material = this.interferencePatternShader;
@@ -706,7 +677,7 @@ CGHLab.MainScene.prototype = {
         plate.material = this.interferencePatternShader;
 
         this.interferencePatternOn = true;
-        this.interferencePatternInstant = true;
+        //this.interferencePatternInstant = true;
     },
 
     hideInterferencePattern: function()
@@ -729,12 +700,10 @@ CGHLab.MainScene.prototype = {
             transparent: true
 
         });
-        //console.log(lightMaterial.fragmentShader);
         lightMaterial.uniforms.ambient.value = new THREE.Color(0x0000ff);
         lightMaterial.uniforms.opacity.value = 0.5;
         lightMaterial.uniforms.mirror.value = this.mirrorPoints;
         lightMaterial.uniforms.referenceWaveAngle.value = this.referenceWaveAngle;
-        //console.log(lightMaterial.uniforms.referenceWaveAngle);
 
         var laserReflectionShader = lightMaterial.clone();
         laserReflectionShader.uniforms.limit.value = 2;
@@ -771,12 +740,10 @@ CGHLab.MainScene.prototype = {
             transparent: true
 
         });
-        //console.log(lightMaterial.fragmentShader);
         lightMaterial.uniforms.ambient.value = new THREE.Color(0x0000ff);
         lightMaterial.uniforms.opacity.value = 0.5;
         lightMaterial.uniforms.mirror.value = this.mirrorPoints;
         lightMaterial.uniforms.referenceWaveAngle.value = this.referenceWaveAngle;
-        //console.log(lightMaterial.uniforms.referenceWaveAngle);
 
         var laserReflectionShader = lightMaterial.clone();
         laserReflectionShader.uniforms.limit.value = 2;
@@ -898,10 +865,10 @@ CGHLab.MainScene.prototype = {
         clone.updateMatrixWorld();
         for(var i = 1; i < vertices.length; i++){
             vertices[i].applyMatrix4(clone.matrixWorld);
-            //if(vertices[i].z > (vertices[i].x - this.objectPosition.x) * ((this.laserPosition.z - this.objectPosition.z)/(this.laserPosition.x - this.objectPosition.x)) + this.objectPosition.z){
-            //    points.push(vertices[i]);
-            //}
-            points.push(vertices[i]);
+            if(vertices[i].z > (vertices[i].x - this.objectPosition.x) * ((this.laserPosition.z - this.objectPosition.z)/(this.laserPosition.x - this.objectPosition.x)) + this.objectPosition.z){
+                points.push(vertices[i]);
+            }
+            //points.push(vertices[i]);
         }
 
         if (this.objectPerspectiveChosen) {
@@ -925,10 +892,8 @@ CGHLab.MainScene.prototype = {
             }
         }
 
-        //var testeMaterial = new THREE.MeshLambertMaterial( {color: 0x0000ff, ambient: 0x0000ff, wireframe: false, transparent: true, opacity: 0.5} );
         var laserO_P = new THREE.Mesh(new THREE.ConvexGeometry(points), this.simpleLaserObjectWaveShader);
         var middleO_P = new THREE.Vector3();
-        //middleO_P.subVectors(this.platePosition, this.objectPosition).divideScalar(2);
         laserO_P.position.set(middleO_P.x,middleO_P.y,middleO_P.z);
         laserO_P.name = 'simpleLaserObj';
         this.scene.add(laserO_P);
@@ -964,10 +929,10 @@ CGHLab.MainScene.prototype = {
         clone.updateMatrixWorld();
         for(var i = 1; i < vertices.length; i++){
             vertices[i].applyMatrix4(clone.matrixWorld);
-            //if(vertices[i].z > (vertices[i].x - this.objectPosition.x) * ((this.laserPosition.z - this.objectPosition.z)/(this.laserPosition.x - this.objectPosition.x)) + this.objectPosition.z){
-            //    points.push(vertices[i]);
-            //}
-            points.push(vertices[i]);
+            if(vertices[i].z > (vertices[i].x - this.objectPosition.x) * ((this.laserPosition.z - this.objectPosition.z)/(this.laserPosition.x - this.objectPosition.x)) + this.objectPosition.z){
+                points.push(vertices[i]);
+            }
+            //points.push(vertices[i]);
         }
 
         if (this.objectPerspectiveChosen) {
@@ -991,10 +956,8 @@ CGHLab.MainScene.prototype = {
             }
         }
 
-        //var testeMaterial = new THREE.MeshLambertMaterial( {color: 0x0000ff, ambient: 0x0000ff, wireframe: false, transparent: true, opacity: 0.5} );
         var laserO_P = new THREE.Mesh(new THREE.ConvexGeometry(points), this.simpleLaserObjectWaveShader);
         var middleO_P = new THREE.Vector3();
-        //middleO_P.subVectors(this.platePosition, this.objectPosition).divideScalar(2);
         laserO_P.position.set(middleO_P.x,middleO_P.y,middleO_P.z);
         laserO_P.name = 'simpleLaserObj';
         this.scene.add(laserO_P);
@@ -1088,7 +1051,6 @@ CGHLab.MainScene.prototype = {
         //can pass through all the light points of an object
         var newLaser1Finish = new THREE.Vector3();
         newLaser1Finish.addVectors(this.objectPosition, negDirAmplifier.multiplyScalar(50));
-        //console.log(newLaser1Finish);
         var newLaser3Finish = new THREE.Vector3();
         newLaser3Finish.addVectors(this.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 350));
 
@@ -1120,18 +1082,10 @@ CGHLab.MainScene.prototype = {
             if(this.mainPerspectiveChosen) {
                 if (laserLight1.list[i].position.z < this.objectPosition.z) {
                     if (!laserLight1.object[i]) {
-                        //var newObjWave = objWave.clone();
                         var newObjWave = this.object.object.clone();
-                        /*newObjWave.material = new THREE.MeshLambertMaterial({
-                            color: 0x0000ff,
-                            ambient: 0x0000ff,
-                            transparent: true,
-                            opacity: 0.5
-                        });*/
                         newObjWave.material = this.laserObjectWaveShader;
                         newObjWave.position.set(this.objectPosition.x, this.objectPosition.y, this.objectPosition.z);
                         this.scene.add(newObjWave);
-                        //console.log('ola');
                         this.addToObjWaveLight(newObjWave);
                         laserLight1.object[i] = true;
                     }
@@ -1159,16 +1113,11 @@ CGHLab.MainScene.prototype = {
                         var ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
                         var collisionResults = ray.intersectObjects(this.collidableList);
                         if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
-                            //console.log('antes ' + collisionResults.length);
-                            //CGHLab.Helpers.uniq_fast(collisionResults);
-                            //console.log('depois '+ collisionResults.length);
                             for (var j = 0; j < collisionResults.length; j++) {
                                 if (laserLight1.lightPoints[i].names.indexOf(collisionResults[j].object.name) == -1) {
                                     this.objectPerspective.sendLightPointWaveComplete(collisionResults[j].object);
                                     laserLight1.lightPoints[i].names.push(collisionResults[j].object.name);
-                                    //console.log(collisionResults[j].object.name);
                                 }
-                                //console.log(collisionResults[j].object.name);
                             }
                         }
                     }
@@ -1185,8 +1134,6 @@ CGHLab.MainScene.prototype = {
                         this.removeFromLaserLight1(laserLight1.list[i]);
 
                         if (!laserLight1.object[i]) {
-                         //console.log(laserLight1.list[i].position.z);
-                         //console.log(this.objectPosition.z);
                             this.objectPerspective.sendLightPointWaveSimple(this.object.lightPoints);
                          laserLight1.object[i] = true;
                          }
@@ -1318,21 +1265,18 @@ CGHLab.MainScene.prototype = {
 
         //Change object label
         if(this.labelsOn){
-            var objectLabel = this.scene.getObjectByName('object_label');
-            this.scene.remove(objectLabel);
-            var j = this.labelsList.indexOf('object_label');
-            if (j > -1) this.labelsList.splice(j, 1);
-
-            var spritey6 = CGHLab.Helpers.makeTextSprite( " Object Light Points ", { fontsize: 24, borderColor: {r:255, g:0, b:0, a:1.0}, backgroundColor: {r:255, g:100, b:100, a:0.8} } );
-            spritey6.position.set(this.objectPosition.x, this.objectPosition.y + 10 ,this.objectPosition.z);
-            spritey6.name = "object_light_points_label";
-            this.scene.add( spritey6 );
-            this.labelsList.push(spritey6.name);
+            this.deleteAllLabels();
+            this.setLabels();
+            if(this.laserOnFlag) this.setBeamLabels();
         }
 
         //Change the objcet wave if simple laser is on
         if(this.laserOnFlag && this.laserTypeActive == "Simple"){
             this.updateSimpleLaser();
+        }
+
+        if(this.laserOnStandBy){
+            this.laserOn();
         }
     },
 
@@ -1364,21 +1308,18 @@ CGHLab.MainScene.prototype = {
 
         //Change object label
         if(this.labelsOn){
-            var objectLabel = this.scene.getObjectByName('object_light_points_label');
-            this.scene.remove(objectLabel);
-            var j = this.labelsList.indexOf('object_light_points_label');
-            if (j > -1) this.labelsList.splice(j, 1);
-
-            var spritey6 = CGHLab.Helpers.makeTextSprite( " Object ", { fontsize: 24, borderColor: {r:255, g:0, b:0, a:1.0}, backgroundColor: {r:255, g:100, b:100, a:0.8} } );
-            spritey6.position.set(this.objectPosition.x, this.objectPosition.y + 10 ,this.objectPosition.z);
-            spritey6.name = "object_label";
-            this.scene.add( spritey6 );
-            this.labelsList.push(spritey6.name);
+            this.deleteAllLabels();
+            this.setLabels();
+            if(this.laserOnFlag) this.setBeamLabels();
         }
 
         //Change the objcet wave if simple laser is on
         if(this.laserOnFlag && this.laserTypeActive == "Simple"){
             this.updateSimpleLaser();
+        }
+
+        if(this.laserOnStandBy){
+            this.laserOn();
         }
     },
 
@@ -1398,11 +1339,18 @@ CGHLab.MainScene.prototype = {
         this.scene.add(this.object.object);
         this.collidableList = [];
 
-        //ver isto
-        this.laserOff();
+        if(this.laserOnFlag) {
+            this.laserOff();
+            this.laserOnStandBy = true;
+        }
 
         this.camera.position.set(0,0,250);
         this.controls.enabled = false;
+
+        if(this.labelsOn){
+            this.deleteAllLabels();
+            //this.labelsOn = false;
+        }
     },
 
     getPlatePoints: function()

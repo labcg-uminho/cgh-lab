@@ -49,7 +49,9 @@ CGHLab.MainPerspective.prototype = {
         this.mainScene.collidableList = [];
         this.mainScene.objWaveArrived = false;
         this.mainScene.patternShown = false;
-        if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
+        //if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
+
+        if(this.mainScene.laserOnFlag && this.mainScene.simpleLaserOn) this.mainScene.updateSimpleLaser();
     },
 
     //Handles the update of the reference wave angle. The position of the mirror and amplifier are updated to match the parameters
