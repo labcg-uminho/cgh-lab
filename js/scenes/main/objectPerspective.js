@@ -174,7 +174,7 @@ CGHLab.ObjectPerspective.prototype = {
         this.setLightPoints(this.mainScene.object.lightPoints, this.mainScene.collidableList);
         this.mainScene.objWaveArrived = false;
         this.mainScene.patternShown = false;
-        if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
+        //if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
     },
 
     changeView: function( value ){

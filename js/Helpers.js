@@ -88,15 +88,83 @@ CGHLab.Helpers = {
     },
 
     addMainPerspectiveInfo: function(){
-         var infoBox = document.getElementById('infoBox');
-         var text = document.createTextNode("You are now on the main perspective. " +
-         "Use your mouse to navigate on the scene. " +
-         "Use the panels on your right to interact with the scene." +
-         "You can turn on and off the laser to see what appends on the plate or you can choose to see the interference pattern right way." +
-         "You can activate and deactivate the free camera. Deactivating the free camera give you the option of choosing between several views of the scene." +
-         "You can change the object rotation and see the differences on the interference pattern or change the object." +
-         "You can also change the wavelength of the waves and choose the angle that the reference wave will do with the holographic plate." +
-         "There are several labels describing the components involved, but you can disable them if you want.");
-         infoBox.appendChild(text);
+        var infoBox = document.getElementById('infoBox');
+        var para = document.createElement("P");
+        var text = document.createTextNode("You are now on the MAIN PERSPECTIVE.");
+        para.appendChild(text);
+        infoBox.appendChild(para);
+
+        var para2 = document.createElement("P");
+        var text2 = document.createTextNode("Use your mouse to navigate the scene.");
+        para2.appendChild(text2);
+        infoBox.appendChild(para2);
+
+        var para3 = document.createElement("P");
+        var text3 = document.createTextNode("Use the panel on your right to interact with the scene:");
+        para3.appendChild(text3);
+        infoBox.appendChild(para3);
+
+        var list = document.createElement("UL");
+        var elem = document.createTextNode("There are several different perspectives of the scene that you can choose;");
+        var elem2 = document.createTextNode("You can turn on and off the laser to see what appends. The laser has two types, a simple one and animated one where it is possible to see the wavefronts moving;");
+        var elem3 = document.createTextNode("You can change the object to see different interference patterns being created;");
+        var elem4 = document.createTextNode("It is possible to change the wavelength of the reference wave and the angle that it makes with the holographic plate;");
+        var elem5 = document.createTextNode("The labels are optional, they can be turn off.");
+        var elemsList = [elem, elem2, elem3, elem4, elem5];
+        var i;
+        for(i = 0; i < elemsList.length; i++){
+            var listElem = document.createElement("LI");
+            listElem.appendChild(elemsList[i]);
+            list.appendChild(listElem);
+        }
+        infoBox.appendChild(list);
+
+    },
+
+    addObjectPerspectiveInfo: function(){
+        var infoBox = document.getElementById('infoBox');
+        var para = document.createElement("P");
+        var text = document.createTextNode("You are now on the OBJECT PERSPECTIVE.");
+        para.appendChild(text);
+        infoBox.appendChild(para);
+
+        var para2 = document.createElement("P");
+        var text2 = document.createTextNode("Use your mouse to navigate the scene.");
+        para2.appendChild(text2);
+        infoBox.appendChild(para2);
+
+        var para3 = document.createElement("P");
+        var text3 = document.createTextNode("Use the panel on your right to interact with the scene:");
+        para3.appendChild(text3);
+        infoBox.appendChild(para3);
+
+        var list = document.createElement("UL");
+        var elem = document.createTextNode("There are several different perspectives of the scene that you can choose;");
+        var elem2 = document.createTextNode("You can turn on and off the laser to see what appends. The laser has two types, a simple one and animated one where it is possible to see the wavefronts moving;");
+        var elem3 = document.createTextNode("If you choose to see the animated laser on this perspective another option will appear. " +
+        "The \"LP Wave Sending Type\" option allow you to choose how the light points send their waves." +
+        "The \"All Together\" option send all waves at the same time, while the \"Collision Detection\" option only send the wave when the wavefront passes through the point." +
+        "The \"Collision Detection\" option represents better the reality, however, requires more computing power to represent. If you don't have a powerful computer don't use this option." +
+        "Have in attention that both option produce the same interference pattern;");
+        var elem4 = document.createTextNode("You can change the object to see different interference patterns being created. On this perspective you can also change the level of detail of the object, giving it more or less light points. " +
+        "Have in attention that more light points will need more computing power if the animated laser is on;");
+        var elem5 = document.createTextNode("The labels are optional, they can be turn off.");
+        var elemsList = [elem, elem2, elem3, elem4, elem5];
+        var i;
+        for(i = 0; i < elemsList.length; i++){
+            var listElem = document.createElement("LI");
+            listElem.appendChild(elemsList[i]);
+            list.appendChild(listElem);
+        }
+        infoBox.appendChild(list);
+
+    },
+
+    eraseInfo: function(){
+        var infoBox = document.getElementById('infoBox');
+
+        while(infoBox.hasChildNodes()){
+            infoBox.removeChild(infoBox.childNodes[0]);
+        }
     }
 };

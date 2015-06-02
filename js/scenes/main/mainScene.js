@@ -981,6 +981,8 @@ CGHLab.MainScene.prototype = {
         else if (this.laserTypeActive == "Simple"){
             this.simpleLaser();
             this.seeInterferencePattern();
+            this.refWaveArrived = true;
+            this.objWaveArrived = true;
         }
 
         if (this.labelsOn) this.setBeamLabels();
@@ -1019,6 +1021,7 @@ CGHLab.MainScene.prototype = {
                 this.scene.remove(simpleLaserList[i]);
             }
             this.eraseSimpleLaserList();
+            this.simpleLaserOn = false;
         }
         this.refWaveArrived = false;
         this.objWaveArrived = false;
@@ -1237,6 +1240,7 @@ CGHLab.MainScene.prototype = {
         }
 
         if(!this.patternShown && this.refWaveArrived && this.objWaveArrived) this.seeInterferencePattern();
+        else this.hideInterferencePattern();
     },
 
     changeToObjectPerspective: function()
@@ -1277,7 +1281,11 @@ CGHLab.MainScene.prototype = {
 
         if(this.laserOnStandBy){
             this.laserOn();
+            this.laserOnStandBy = false;
         }
+
+        CGHLab.Helpers.eraseInfo();
+        CGHLab.Helpers.addObjectPerspectiveInfo();
     },
 
     changeToMainPerspective: function()
@@ -1320,7 +1328,11 @@ CGHLab.MainScene.prototype = {
 
         if(this.laserOnStandBy){
             this.laserOn();
+            this.laserOnStandBy = false;
         }
+
+        CGHLab.Helpers.eraseInfo();
+        CGHLab.Helpers.addMainPerspectiveInfo();
     },
 
     changeToPlatePerspective: function()
