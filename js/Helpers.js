@@ -145,11 +145,45 @@ CGHLab.Helpers = {
         "The \"LP Wave Sending Type\" option allow you to choose how the light points send their waves." +
         "The \"All Together\" option send all waves at the same time, while the \"Collision Detection\" option only send the wave when the wavefront passes through the point." +
         "The \"Collision Detection\" option represents better the reality, however, requires more computing power to represent. If you don't have a powerful computer don't use this option." +
-        "Have in attention that both option produce the same interference pattern;");
+        "Have in attention that both options produce the same interference pattern;");
         var elem4 = document.createTextNode("You can change the object to see different interference patterns being created. On this perspective you can also change the level of detail of the object, giving it more or less light points. " +
         "Have in attention that more light points will need more computing power if the animated laser is on;");
         var elem5 = document.createTextNode("The labels are optional, they can be turn off.");
         var elemsList = [elem, elem2, elem3, elem4, elem5];
+        var i;
+        for(i = 0; i < elemsList.length; i++){
+            var listElem = document.createElement("LI");
+            listElem.appendChild(elemsList[i]);
+            list.appendChild(listElem);
+        }
+        infoBox.appendChild(list);
+
+    },
+
+    addPlatePerspectiveInfo: function(){
+        var infoBox = document.getElementById('infoBox');
+        var para = document.createElement("P");
+        var text = document.createTextNode("You are now on the PLATE PERSPECTIVE.");
+        para.appendChild(text);
+        infoBox.appendChild(para);
+
+        var para2 = document.createElement("P");
+        var text2 = document.createTextNode("This perspective focus on the plate so mouse navigation is disable.");
+        para2.appendChild(text2);
+        infoBox.appendChild(para2);
+
+        var para3 = document.createElement("P");
+        var text3 = document.createTextNode("Use the panel on your right to change the parameters that alter the interference pattern:");
+        para3.appendChild(text3);
+        infoBox.appendChild(para3);
+
+        var list = document.createElement("UL");
+        var elem = document.createTextNode("There are several different perspectives of the scene that you can choose;");
+        var elem2 = document.createTextNode("You can change the object to see different interference patterns being created. On this perspective you can also change the level of detail of the object, giving it more or less light points. " +
+        "Have in attention that more light points will need more computing power if the animated laser is on;");
+        var elem3 = document.createTextNode("It is possible to change the wavelength of the reference wave and the angle that it makes with the holographic plate;");
+        var elem4 = document.createTextNode("The labels are optional, they can be turn off.");
+        var elemsList = [elem, elem2, elem3, elem4];
         var i;
         for(i = 0; i < elemsList.length; i++){
             var listElem = document.createElement("LI");

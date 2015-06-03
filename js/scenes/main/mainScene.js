@@ -1363,6 +1363,9 @@ CGHLab.MainScene.prototype = {
             this.deleteAllLabels();
             //this.labelsOn = false;
         }
+
+        CGHLab.Helpers.eraseInfo();
+        CGHLab.Helpers.addPlatePerspectiveInfo();
     },
 
     getPlatePoints: function()
