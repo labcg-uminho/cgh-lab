@@ -871,12 +871,12 @@ CGHLab.MainScene.prototype = {
             //points.push(vertices[i]);
         }
 
-        if (this.objectPerspectiveChosen) {
+        if (this.objectPerspectiveChosen || this.mainPerspectiveChosen) {
             for (i = 0; i < this.platePoints.length; i++) {
                 points.push(this.platePoints[i]);
             }
         }
-        else if (this.mainPerspectiveChosen) {
+        /*else if (this.mainPerspectiveChosen) {
             var clone2 = this.object.object.clone();
             clone2.scale.set(70, 70, 70);
             clone2.position.set(this.platePosition.x, this.platePosition.y, this.platePosition.z);
@@ -890,7 +890,7 @@ CGHLab.MainScene.prototype = {
                 }
                 //points.push(vertices2[i]);
             }
-        }
+        }*/
 
         var laserO_P = new THREE.Mesh(new THREE.ConvexGeometry(points), this.simpleLaserObjectWaveShader);
         var middleO_P = new THREE.Vector3();
@@ -935,12 +935,12 @@ CGHLab.MainScene.prototype = {
             //points.push(vertices[i]);
         }
 
-        if (this.objectPerspectiveChosen) {
+        if (this.objectPerspectiveChosen || this.mainPerspectiveChosen) {
             for (i = 0; i < this.platePoints.length; i++) {
                 points.push(this.platePoints[i]);
             }
         }
-        else if (this.mainPerspectiveChosen) {
+        /*else if (this.mainPerspectiveChosen) {
             var clone2 = this.object.object.clone();
             clone2.scale.set(70, 70, 70);
             clone2.position.set(this.platePosition.x, this.platePosition.y, this.platePosition.z);
@@ -954,7 +954,7 @@ CGHLab.MainScene.prototype = {
                 }
                 //points.push(vertices2[i]);
             }
-        }
+        }*/
 
         var laserO_P = new THREE.Mesh(new THREE.ConvexGeometry(points), this.simpleLaserObjectWaveShader);
         var middleO_P = new THREE.Vector3();
@@ -1211,7 +1211,7 @@ CGHLab.MainScene.prototype = {
         if(this.mainPerspectiveChosen) {
             var distance = this.objectPosition.distanceTo(this.platePosition);
             var initScale = 30.0;
-            var deltaScale = 40;
+            var deltaScale = 120;
             for (i = 0; i < objWaveLight.length; i++) {
                 var actualDistance = objWaveLight[i].position.distanceTo(this.platePosition);
                 var ratio = actualDistance / distance;

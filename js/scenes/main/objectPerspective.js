@@ -143,8 +143,10 @@ CGHLab.ObjectPerspective.prototype = {
         this.mainScene.collidableList = [];
         //Sets the new light points
         this.setLightPoints(this.mainScene.object.lightPoints, this.mainScene.collidableList);
-        this.mainScene.objWaveArrived = false;
-        this.mainScene.patternShown = false;
+        if(this.mainScene.laserTypeActive == "Animated") {
+            this.mainScene.objWaveArrived = false;
+            this.mainScene.patternShown = false;
+        }
         //if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
 
         if(this.mainScene.laserOnFlag && this.mainScene.simpleLaserOn) this.mainScene.updateSimpleLaser();
@@ -172,8 +174,10 @@ CGHLab.ObjectPerspective.prototype = {
         this.mainScene.collidableList = [];
         //Sets the new light points
         this.setLightPoints(this.mainScene.object.lightPoints, this.mainScene.collidableList);
-        this.mainScene.objWaveArrived = false;
-        this.mainScene.patternShown = false;
+        if(this.mainScene.laserTypeActive == "Animated") {
+            this.mainScene.objWaveArrived = false;
+            this.mainScene.patternShown = false;
+        }
         //if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
     },
 
