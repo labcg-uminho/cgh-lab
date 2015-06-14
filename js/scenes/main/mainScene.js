@@ -6,7 +6,6 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
 {
     this.controls = controls;
     this.camera = camera;
-    this.cameraFree = true;
 
     this.scene0 = new THREE.Scene();
     this.scene = new THREE.Scene();
@@ -1257,15 +1256,9 @@ CGHLab.MainScene.prototype = {
         }
         this.eraseObjLight();
 
-        this.controls.enabled = this.cameraFree;
-
-        if(!this.cameraFree){
-            this.camera.position.set(this.objectPerspective.lockViewCoords.x, this.objectPerspective.lockViewCoords.y, this.objectPerspective.lockViewCoords.z);
-            this.controls.rotateLeft(this.objectPerspective.views[this.objectPerspective.currentViewName - 1]);
-        }
-        else{
-            this.camera.position.set(this.objectPerspective.lastCameraPosition.x, this.objectPerspective.lastCameraPosition.y, this.objectPerspective.lastCameraPosition.z);
-        }
+        this.controls.enabled = true;
+        var target = {x: this.objectPerspective.lastCameraPosition.x, y: this.objectPerspective.lastCameraPosition.y, z: this.objectPerspective.lastCameraPosition.z};
+        this.smoothCameraTransition(target, mainScene.objectPosition);
 
         //Change object label
         if(this.labelsOn){
@@ -1304,15 +1297,9 @@ CGHLab.MainScene.prototype = {
         this.scene.add(this.object.object);
         this.collidableList = [];
 
-        this.controls.enabled = this.cameraFree;
-
-        if(!this.cameraFree){
-            this.camera.position.set(this.mainPerspective.lockViewCoords.x, this.mainPerspective.lockViewCoords.y, this.mainPerspective.lockViewCoords.z);
-            this.controls.rotateLeft(this.mainPerspective.views[this.mainPerspective.currentViewName - 1]);
-        }
-        else{
-            this.camera.position.set(this.mainPerspective.lastCameraPosition.x, this.mainPerspective.lastCameraPosition.y, this.mainPerspective.lastCameraPosition.z);
-        }
+        this.controls.enabled = true;
+        var target = {x: this.mainPerspective.lastCameraPosition.x, y: this.mainPerspective.lastCameraPosition.y, z: this.mainPerspective.lastCameraPosition.z};
+        this.smoothCameraTransition(target, mainScene.getCenter());
 
         //Change object label
         if(this.labelsOn){
@@ -1356,7 +1343,9 @@ CGHLab.MainScene.prototype = {
             this.laserOnStandBy = true;
         }
 
-        this.camera.position.set(0,0,250);
+        //this.camera.position.set(0,0,250);
+        var target = {x: 0, y: 0, z: 250};
+        this.smoothCameraTransition(target, mainScene.platePosition);
         this.controls.enabled = false;
 
         if(this.labelsOn){
@@ -1398,20 +1387,24 @@ CGHLab.MainScene.prototype = {
         this.mirrorPoints = points;
     },
 
-    lockCamera: function( value ){
-        this.cameraFree = value;
-        this.controls.enabled = this.cameraFree;
-        if(this.mainPerspectiveChosen) {
-            if (!value) {
-                this.camera.position.set(this.mainPerspective.lockViewCoords.x, this.mainPerspective.lockViewCoords.y, this.mainPerspective.lockViewCoords.z);
-                this.controls.rotateLeft(this.mainPerspective.views[this.mainPerspective.currentViewName - 1]);
-            }
-        }
-        else if(this.objectPerspectiveChosen){
-            if (!value) {
-                this.camera.position.set(this.objectPerspective.lockViewCoords.x, this.objectPerspective.lockViewCoords.y, this.objectPerspective.lockViewCoords.z);
-                this.controls.rotateLeft(this.objectPerspective.views[this.objectPerspective.currentViewName - 1]);
-            }
-        }
+    smoothCameraTransition: function(target, cameraTarget){
+        TWEEN.removeAll();
+
+        controls.target = cameraTarget;
+
+        var current = { x: camera.getWorldPosition().x, y: camera.getWorldPosition().y, z: camera.getWorldPosition().z };
+        //var target = {x: -158.76, y: 230, z: 33.29};
+
+        var update = function() {
+            camera.position.set(current.x, current.y, current.z);
+        };
+
+        var tween = new TWEEN.Tween(current)
+            .to(target,2000)
+            .easing(TWEEN.Easing.Sinusoidal.InOut)
+            .onUpdate(update);
+
+        tween.start();
     }
+
 };

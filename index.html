@@ -26,6 +26,8 @@
     <script src="js/Helpers.js"></script>
     <script src="js/geometry/GeometryShaderLib.js"></script>
     <script src="js/ConvexGeometry.js"></script>
+    <script src="js/controls/tween.min.js"></script>
+
 
     <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
     <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
@@ -47,8 +49,6 @@
         var container, stats;
         var gui = new dat.GUI();
         var currentPerspective;
-        var rotateCameraMain = false;
-        var rotateCameraObj = false;
         var cameraRotationMain = 0;
         var cameraRotationMainMax = Math.PI/2;
         var cameraRotationObj = 0;
@@ -139,7 +139,7 @@
 
             ////CALLBACKS
             window.addEventListener( 'resize', onWindowResize, false );
-            window.addEventListener( 'mousemove', onDocumentMouseMove, false );
+            //window.addEventListener( 'mousemove', onDocumentMouseMove, false );
             //window.addEventListener( 'mousedown', onDocumentMouseDown, false );
         }
 
@@ -183,7 +183,7 @@
                     setGUI('plate');
                 };
                 this.labelsOn = mainScene.labelsOn;
-                this.cameraLocked = mainScene.cameraFree;
+                //this.cameraLocked = mainScene.cameraFree;
                 this.laserTypeChoosen = mainScene.laserTypeActive;
                 //this.laserSimples = function(){if (!simpleLaserOn) mainScene.simpleLaser(); simpleLaserOn = true;};
                 this.laserOn = function(){
@@ -211,6 +211,7 @@
                 else if (perspective == 'object') {
                     this.view = mainScene.objectPerspective.currentViewName;
                 }
+                //this.teste = function(){mainScene.teste()};
             };
 
             var guiPerspectivesConfig = new parametersGUIPerspectives();
@@ -220,6 +221,7 @@
             folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
             folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
             folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
+            //folder3.add(guiPerspectivesConfig, 'teste').name('teste');
             /*var lockCamera = folder3.add(guiPerspectivesConfig, 'cameraLocked').name('Free Camera?');
             lockCamera.onChange(function(value){
                 mainScene.lockCamera(value);
@@ -423,19 +425,21 @@
             }
         }*/
 
-        function onDocumentMouseMove( event )
+        /*function onDocumentMouseMove( event )
         {
             //event.preventDefault(); //Makes dat.GUI not work properly
 
             mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
             mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-        }
+        }*/
 
         function animate()
         {
             requestAnimationFrame( animate );
             render();
             update();
+
+            TWEEN.update();
         }
 
         function render()
@@ -444,55 +448,9 @@
             camera.updateProjectionMatrix();
             map.updateProjectionMatrix();
 
-            if(rotateCameraMain) {
-                if (cameraRotationMainMax > 0) {
-                    if (cameraRotationMain < cameraRotationMainMax) {
-                        mainScene.mainPerspective.changeView(1);
-                        cameraRotationMain += 0.01;
-                    }
-                    else {
-                        rotateCameraMain = false;
-                        cameraRotationMain = 0;
-                    }
-                }
-                else {
-                    if (cameraRotationMain > cameraRotationMainMax) {
-                        mainScene.mainPerspective.changeView(-1);
-                        cameraRotationMain -= 0.01;
-                    }
-                    else {
-                        rotateCameraMain = false;
-                        cameraRotationMain = 0;
-                    }
-                }
-            }
-
-            if(rotateCameraObj) {
-                if (cameraRotationObjMax > 0) {
-                    if (cameraRotationObj < cameraRotationObjMax) {
-                        mainScene.objectPerspective.changeView(1);
-                        cameraRotationObj += 0.01;
-                    }
-                    else {
-                        rotateCameraObj = false;
-                        cameraRotationObj = 0;
-                    }
-                }
-                else {
-                    if (cameraRotationObj > cameraRotationObjMax) {
-                        mainScene.objectPerspective.changeView(-1);
-                        cameraRotationObj -= 0.01;
-                    }
-                    else {
-                        rotateCameraObj = false;
-                        cameraRotationObj = 0;
-                    }
-                }
-            }
-
             if(mainScene.objectPerspectiveChosen){
                 if(currentPerspective != 'object'){
-                    controls.target = mainScene.objectPosition;
+                    //controls.target = mainScene.objectPosition;
                     setGUI('object');
                     currentPerspective = 'object';
                     mainScene.changeToObjectPerspective();
@@ -500,7 +458,7 @@
             }
             else if(mainScene.platePerspectiveChosen){
                 if(currentPerspective != 'plate'){
-                    controls.target = mainScene.platePosition;
+                    //controls.target = mainScene.platePosition;
                     setGUI('plate');
                     currentPerspective = 'plate';
                     mainScene.changeToPlatePerspective();
@@ -508,7 +466,7 @@
             }
             else if(mainScene.mainPerspectiveChosen){
                 if(currentPerspective != 'main'){
-                    controls.target = mainScene.getCenter();
+                    //controls.target = mainScene.getCenter();
                     setGUI('main');
                     currentPerspective = 'main';
                     mainScene.changeToMainPerspective();

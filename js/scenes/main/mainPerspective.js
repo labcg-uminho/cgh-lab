@@ -5,10 +5,6 @@
 CGHLab.MainPerspective = function( mainScene ){
 
     this.mainScene = mainScene;
-    this.views = [ 0, Math.PI/2, Math.PI, (3*Math.PI)/2 ];
-    this.currentView = 0;
-    this.currentViewName = 1;
-    this.lockViewCoords = new THREE.Vector3(0, 500, -350);
     this.lastCameraPosition = new THREE.Vector3();
 
 };
@@ -163,18 +159,6 @@ CGHLab.MainPerspective.prototype = {
             laserAP2_P.geometry = new THREE.CylinderGeometry(110, 10, unitsAP2_P, 32);
             laserAP2_P.position.set(newLaser3Finish.x - middleAP2_P.x, newLaser3Finish.y - middleAP2_P.y, newLaser3Finish.z - middleAP2_P.z);
             laserAP2_P.rotateZ(this.mainScene.amplifierRotation2);
-        }
-    },
-
-    changeView: function( value ){
-        if(value == 1) {
-            this.mainScene.controls.rotateLeft(0.01);
-            this.currentView += 0.01;
-            //this.currentViewCoords = this.camera.getWorldPosition();
-        }
-        else {
-            this.mainScene.controls.rotateLeft(-0.01);
-            this.currentView -= 0.01;
         }
     }
 

@@ -6,10 +6,6 @@ CGHLab.ObjectPerspective = function( mainScene ){
 
     this.mainScene = mainScene;
     this.lightPointWaveShader = THREE.Material;
-    this.views = [ 0, Math.PI/2, Math.PI, (3*Math.PI)/2 ];
-    this.currentView = 0;
-    this.currentViewName = 1;
-    this.lockViewCoords = new THREE.Vector3(-158.76, 230, 33.29);
     this.lastCameraPosition = new THREE.Vector3(-158.76, 230, 33.29);
 };
 
@@ -179,18 +175,6 @@ CGHLab.ObjectPerspective.prototype = {
             this.mainScene.patternShown = false;
         }
         //if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
-    },
-
-    changeView: function( value ){
-        if(value == 1) {
-            this.mainScene.controls.rotateLeft(0.01);
-            this.currentView += 0.01;
-            //this.currentViewCoords = this.camera.getWorldPosition();
-        }
-        else {
-            this.mainScene.controls.rotateLeft(-0.01);
-            this.currentView -= 0.01;
-        }
     }
 
 };
