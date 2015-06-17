@@ -1063,6 +1063,7 @@ CGHLab.MainScene.prototype = {
             //Create next wave starting on the laser
             if((laserLight1.list[i].position.distanceTo(this.laserPosition) > this.referenceWave.waveLength * 100) && !laserLight1.next[i]){
                 var newWave = laserLight1.list[i].clone();
+                newWave.scale.set(1,1,1);
                 newWave.position.set(this.laserPosition.x, this.laserPosition.y, this.laserPosition.z);
                 this.addToLaserLight1(newWave);
                 this.scene.add(newWave);
@@ -1344,7 +1345,7 @@ CGHLab.MainScene.prototype = {
         }
 
         //this.camera.position.set(0,0,250);
-        var target = {x: 0, y: 0, z: 250};
+        var target = {x: 0, y: 80, z: 250};
         this.smoothCameraTransition(target, mainScene.platePosition);
         this.controls.enabled = false;
 
@@ -1399,12 +1400,21 @@ CGHLab.MainScene.prototype = {
             camera.position.set(current.x, current.y, current.z);
         };
 
+        var completed = function(){
+            controls.target = cameraTarget;
+        };
+
         var tween = new TWEEN.Tween(current)
             .to(target,2000)
             .easing(TWEEN.Easing.Sinusoidal.InOut)
             .onUpdate(update);
+            //.onComplete(completed);
 
         tween.start();
+    },
+
+    teste: function(){
+        console.log(camera.getWorldPosition().x, camera.getWorldPosition().y, camera.getWorldPosition().z);
     }
 
 };
