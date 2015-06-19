@@ -19,6 +19,7 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
     this.platePerspective = new CGHLab.PlatePerspective(this);
 
     this.mirror = new THREE.Mirror( renderer, camera, { clipBias: 0.003, textureWidth: window.innerWidth, textureHeight: window.innerHeight, color:0x889999 } );
+    //this.mirror.material.side = THREE.DoubleSide;
 
     this.platePosition = new THREE.Vector3(0,80,0);
     this.plateRotation = 0;//-Math.PI/4;
@@ -157,6 +158,8 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
     };
 
     this.getCenter = function(){
+        var center = new THREE.Vector3();
+        center.addVectors(this.platePosition,this.laserPosition).divideScalar(2);
         return center;
     };
 
@@ -1032,7 +1035,7 @@ CGHLab.MainScene.prototype = {
     },
 
     updateLaser: function(){
-        var timer = 1;
+        var timer = 2;
         var i;
         var laserLight1 = this.getLaserLight1();
         var laserLight2 = this.getLaserLight2();
@@ -1229,7 +1232,7 @@ CGHLab.MainScene.prototype = {
         else if(this.objectPerspectiveChosen){
             for (i = 0; i < lightPointsWaves.list.length; i++) {
                 lightPointsWaves.list[i].scale.set(lightPointsWaves.scales[i], lightPointsWaves.scales[i], lightPointsWaves.scales[i]);
-                lightPointsWaves.scales[i] += 3.0;
+                lightPointsWaves.scales[i] += (timer * 3.0);
 
                 if (lightPointsWaves.scales[i] > 800) {
                     if(!this.objWaveArrived) this.objWaveArrived = true;
@@ -1300,7 +1303,8 @@ CGHLab.MainScene.prototype = {
 
         this.controls.enabled = true;
         var target = {x: this.mainPerspective.lastCameraPosition.x, y: this.mainPerspective.lastCameraPosition.y, z: this.mainPerspective.lastCameraPosition.z};
-        this.smoothCameraTransition(target, mainScene.getCenter());
+        var center = mainScene.getCenter();
+        this.smoothCameraTransition(target, center);
 
         //Change object label
         if(this.labelsOn){
@@ -1345,7 +1349,7 @@ CGHLab.MainScene.prototype = {
         }
 
         //this.camera.position.set(0,0,250);
-        var target = {x: 0, y: 80, z: 250};
+        var target = {x: 0, y: 80, z: 195};
         this.smoothCameraTransition(target, mainScene.platePosition);
         this.controls.enabled = false;
 
@@ -1391,30 +1395,52 @@ CGHLab.MainScene.prototype = {
     smoothCameraTransition: function(target, cameraTarget){
         TWEEN.removeAll();
 
-        controls.target = cameraTarget;
-
         var current = { x: camera.getWorldPosition().x, y: camera.getWorldPosition().y, z: camera.getWorldPosition().z };
-        //var target = {x: -158.76, y: 230, z: 33.29};
 
         var update = function() {
             camera.position.set(current.x, current.y, current.z);
         };
 
-        var completed = function(){
-            controls.target = cameraTarget;
-        };
-
         var tween = new TWEEN.Tween(current)
-            .to(target,2000)
+            .to(target,1000)
             .easing(TWEEN.Easing.Sinusoidal.InOut)
             .onUpdate(update);
-            //.onComplete(completed);
+            //.onStart(this.smoothCameraTargetTransition(cameraTarget));
 
-        tween.start();
+        var currentTarget = { x: controls.target.x, y: controls.target.y, z: controls.target.z };
+
+        var updateTarget = function() {
+            controls.target.set(currentTarget.x, currentTarget.y, currentTarget.z);
+        };
+
+        var tweenTarget = new TWEEN.Tween(currentTarget)
+            .to(cameraTarget,1000)
+            .easing(TWEEN.Easing.Sinusoidal.InOut)
+            .onUpdate(updateTarget);
+
+        tweenTarget.chain(tween);
+
+        tweenTarget.start();
+    },
+
+    reconstruction: function(){
+        var dirLaser = this.getDirLaser().clone().normalize();
+        var obstacleGeometry = new THREE.BoxGeometry(1, 1, 1);
+        var obstacleMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff, transparent: true, opacity: 1 });
+        var obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+        obstacle.scale.set(70,70,10);
+        var position = new THREE.Vector3();
+        position.addVectors(this.objectPosition, dirLaser.multiplyScalar(150));
+        obstacle.position.set(position.x,position.y, position.z);
+        obstacle.rotateY(this.laserRotation);
+
+        this.scene.add(obstacle);
     },
 
     teste: function(){
-        console.log(camera.getWorldPosition().x, camera.getWorldPosition().y, camera.getWorldPosition().z);
+        //console.log(camera.getWorldPosition().x, camera.getWorldPosition().y, camera.getWorldPosition().z);
+        console.log(this.getCenter());
+
     }
 
 };

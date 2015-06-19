@@ -38,9 +38,9 @@
     <div id="infoBox" title="Lab Information">
     </div>
 
-    <div id="info">For more information click the "i" icon on the bottom left conner.<br/>
+    <!--<div id="info">For more information click the "i" icon on the bottom left conner.<br/>
         Made by Tiago Leite
-    </div>
+    </div>-->
 
     <script>
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -222,7 +222,7 @@
             folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
             folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
             folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
-            //folder3.add(guiPerspectivesConfig, 'teste').name('teste');
+            folder3.add(guiPerspectivesConfig, 'teste').name('teste');
             /*var lockCamera = folder3.add(guiPerspectivesConfig, 'cameraLocked').name('Free Camera?');
             lockCamera.onChange(function(value){
                 mainScene.lockCamera(value);
@@ -297,7 +297,7 @@
                     mainScene.referenceWave.waveLength = value;
                     mainScene.updateShaderUniforms();
                 });
-                var wa = folderRefWaveMain.add(guiPerspectivesConfig, 'refWaveAngle').min(0).max(90).name('Wave Angle');
+                var wa = folderRefWaveMain.add(guiPerspectivesConfig, 'refWaveAngle').min(1).max(89).name('Wave Angle');
                 wa.onChange(function (value) {
                     mainScene.mainPerspective.updateMirror(value);
                 });
@@ -399,7 +399,7 @@
                     mainScene.referenceWave.waveLength = value;
                     mainScene.updateShaderUniforms();
                 });
-                var wap = folderRefWavePlate.add(guiPerspectivesConfig, 'refWaveAngle').min(0).max(90).name('Wave Angle');
+                var wap = folderRefWavePlate.add(guiPerspectivesConfig, 'refWaveAngle').min(1).max(89).name('Wave Angle');
                 wap.onChange(function(value){
                     mainScene.mainPerspective.updateMirror(value);
                 });

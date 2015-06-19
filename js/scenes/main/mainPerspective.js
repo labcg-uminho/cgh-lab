@@ -109,8 +109,8 @@ CGHLab.MainPerspective.prototype = {
             var mirror_label = this.mainScene.scene2.getObjectByName('mirror_label');
             var amplifier2_label = this.mainScene.scene2.getObjectByName('amplifier2_label');
 
-            mirror_label.position.set(this.mainScene.mirrorPosition.x, this.mainScene.mirrorPosition.y + 45 ,this.mainScene.mirrorPosition.z);
-            amplifier2_label.position.set(this.mainScene.amplifierPosition2.x, this.mainScene.amplifierPosition2.y ,this.mainScene.amplifierPosition2.z);
+            if(mirror_label) mirror_label.position.set(this.mainScene.mirrorPosition.x, this.mainScene.mirrorPosition.y + 45 ,this.mainScene.mirrorPosition.z);
+            if(amplifier2_label) amplifier2_label.position.set(this.mainScene.amplifierPosition2.x, this.mainScene.amplifierPosition2.y ,this.mainScene.amplifierPosition2.z);
 
             if(mainScene.laserOnFlag){
                 var reference_beam_label = this.mainScene.scene2.getObjectByName('reference_beam_label');
@@ -134,6 +134,11 @@ CGHLab.MainPerspective.prototype = {
         this.mainScene.laserDupliateShader.uniforms.referenceWaveAngle.value = this.mainScene.referenceWaveAngle;
         this.mainScene.laserReflectionShader.uniforms.mirror.value = this.mainScene.mirrorPoints;
         this.mainScene.laserReflectionShader.uniforms.referenceWaveAngle.value = this.mainScene.referenceWaveAngle;
+
+        this.mainScene.simpleLaserDupliateShader.uniforms.mirror.value = this.mainScene.mirrorPoints;
+        this.mainScene.simpleLaserDupliateShader.uniforms.referenceWaveAngle.value = this.mainScene.referenceWaveAngle;
+        this.mainScene.simpleLaserReflectionShader.uniforms.mirror.value = this.mainScene.mirrorPoints;
+        this.mainScene.simpleLaserReflectionShader.uniforms.referenceWaveAngle.value = this.mainScene.referenceWaveAngle;
 
         //if simple laser is on then it needs to be updated
         if(this.mainScene.simpleLaserOn) {
