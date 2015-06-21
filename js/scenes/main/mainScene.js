@@ -37,16 +37,21 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
     //The angle that the reference wave makes with the plate
     this.referenceWaveAngle = Math.PI/4;
 
+    //Constants
+    this.baseDistance1 = 350;
+    this.baseDistance2 = 450;
+    this.baseDistance3 = 300;
+
     //Direction of mirror in relation to plate
     var dirMirror = new THREE.Vector3(Math.sin(this.plateRotation + this.referenceWaveAngle), 0, Math.cos(this.plateRotation + this.referenceWaveAngle)).normalize();
-    var unitsMirror = (1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 250;
+    var unitsMirror = (1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * this.baseDistance1;
     this.mirrorPosition = new THREE.Vector3();
     this.mirrorPosition.addVectors(this.platePosition, dirMirror.multiplyScalar(unitsMirror));
     this.mirrorRotation = -Math.PI/2 + this.plateRotation - ((Math.PI/4 - this.referenceWaveAngle)/2);
 
     //Direction of object in relation to plate
     var dirObject = new THREE.Vector3(Math.sin(this.plateRotation - Math.PI/4), 0, Math.cos(this.plateRotation - Math.PI/4)).normalize();
-    var unitsObject = 350;
+    var unitsObject = this.baseDistance2;
     this.objectPosition = new THREE.Vector3();
     this.objectPosition.addVectors(this.platePosition, dirObject.multiplyScalar(unitsObject));
     this.objectRotation = this.plateRotation + Math.PI/4;
@@ -56,7 +61,7 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
     //Direction of laser in relation to object
     //This direction is the same as the mirror direction but the position is calculated in relation to the object and not the plate
     var dirLaser = new THREE.Vector3(Math.sin(this.plateRotation + Math.PI/4), 0, Math.cos(this.plateRotation + Math.PI/4)).normalize();
-    var unitsLaser = 350;
+    var unitsLaser = this.baseDistance2;
     this.laserPosition = new THREE.Vector3();
     this.laserPosition.addVectors(this.objectPosition, dirLaser.multiplyScalar(unitsLaser));
     this.laserRotation = this.plateRotation + Math.PI/4;
@@ -64,7 +69,7 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
     //Direction of beam splitter in relation to mirror
     //This direction is the same as the object direction but the position is calculated in relation to the mirror and not the plate
     var dirSplitter = new THREE.Vector3(Math.sin(this.plateRotation - Math.PI/4), 0, Math.cos(this.plateRotation - Math.PI/4)).normalize();
-    var unitsSplitter = 350 - (250 * Math.tan(Math.PI/4 - this.referenceWaveAngle));
+    var unitsSplitter = this.baseDistance2 - (this.baseDistance1 * Math.tan(Math.PI/4 - this.referenceWaveAngle));
     this.beamSplitterPosition = new THREE.Vector3();
     this.beamSplitterPosition.addVectors(this.mirrorPosition, dirSplitter.multiplyScalar(unitsSplitter));
     this.beamSplitterRotation = this.plateRotation + Math.PI/4;
@@ -72,13 +77,13 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
     //Direction of light amplifiers in relation to object and plate
     //This direction is the same as the mirror direction but the position is calculated in relation to the object and not the plate
     var dirAmplifier = new THREE.Vector3(Math.sin(this.plateRotation + Math.PI/4), 0, Math.cos(this.plateRotation + Math.PI/4)).normalize();
-    var unitsAmplifier = 200;
+    var unitsAmplifier = this.baseDistance3;
     this.amplifierPosition = new THREE.Vector3();
     this.amplifierPosition.addVectors(this.objectPosition, dirAmplifier.multiplyScalar(unitsAmplifier));
     this.amplifierRotation = this.plateRotation + Math.PI/4;
 
     //This direction is the same as the mirror direction
-    var unitsAmplifier2 = 200;//(1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 200;
+    var unitsAmplifier2 = this.baseDistance3;//(1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 200;
     this.amplifierPosition2 = new THREE.Vector3();
     this.amplifierPosition2.addVectors(this.platePosition, dirMirror.normalize().multiplyScalar(unitsAmplifier2));
     var dot = dirSplitter.dot(dirMirror.clone().negate().normalize());
@@ -167,10 +172,9 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
         return dirMirror;
     };
 
-    this.setMirrorDirAndUnits = function(newDir, newUnits, newAmplifierUnits){
+    this.setMirrorDirAndUnits = function(newDir, newUnits){
         dirMirror = newDir;
         unitsMirror = newUnits;
-        unitsAmplifier2 = newAmplifierUnits;
     };
 
     this.getDirObject = function(){
@@ -801,12 +805,19 @@ CGHLab.MainScene.prototype = {
         this.scene.add(laserAP1_O);
         this.addToSimpleLaser(laserAP1_O);
 
+        //Create a phantom mirror position 50 units behind of the mirror on the direction of the mirror.
+        var dirSplitterNegPhantom = this.getDirSplitter().clone().normalize().negate();
+        var unitsSplitterToMirrorPhantom = (this.baseDistance2 + 50) - (this.baseDistance1 * Math.tan(Math.PI/4 - this.referenceWaveAngle));
+        var beamSplitterMirrorPositionPhantom = new THREE.Vector3();
+        beamSplitterMirrorPositionPhantom.addVectors(this.beamSplitterPosition, dirSplitterNegPhantom.multiplyScalar(unitsSplitterToMirrorPhantom));
+        //Use the phantom position to calculate the middle position
         var middleB_M = new THREE.Vector3();
-        middleB_M.subVectors(this.mirrorPosition, this.beamSplitterPosition).divideScalar(2);
-        var unitsB_M = this.mirrorPosition.distanceTo(this.beamSplitterPosition);
+        middleB_M.subVectors(beamSplitterMirrorPositionPhantom, this.beamSplitterPosition).divideScalar(2);
+        //Use the phantom position to calculate the length of the laser
+        var unitsB_M = beamSplitterMirrorPositionPhantom.distanceTo(this.beamSplitterPosition);
         var laserGeometryB_M = new THREE.CylinderGeometry(10,10,unitsB_M,32, 1, true);
         var laserB_M = new THREE.Mesh(laserGeometryB_M, this.simpleLaserDupliateShader);
-        laserB_M.position.set(this.mirrorPosition.x - middleB_M.x, this.mirrorPosition.y - middleB_M.y, this.mirrorPosition.z - middleB_M.z);
+        laserB_M.position.set(beamSplitterMirrorPositionPhantom.x - middleB_M.x, beamSplitterMirrorPositionPhantom.y - middleB_M.y, beamSplitterMirrorPositionPhantom.z - middleB_M.z);
         laserB_M.rotateY(this.laserRotation + Math.PI/2);
         laserB_M.rotateX(-Math.PI / 2);
         laserB_M.name = 'simpleLaserBeam';
@@ -814,11 +825,17 @@ CGHLab.MainScene.prototype = {
         this.addToSimpleLaser(laserB_M);
 
         var dirSplitter = this.getDirSplitter().clone().normalize();
-        var dirMirror = this.getDirMirror();
+        var dirMirror = this.getDirMirror().clone().normalize();
         var negDirMirror = dirMirror.clone().normalize().negate();
+        //Calculate a phantom position 50 units back of the mirror
+        var unitsMirrorPhantom = (1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * (this.baseDistance1 + 50);
+        var mirrorPositionPhantom = new THREE.Vector3();
+        mirrorPositionPhantom.addVectors(this.platePosition, dirMirror.multiplyScalar(unitsMirrorPhantom));
+        //Use the phantom position to calculate the middle position
         var middleM_AP2 = new THREE.Vector3();
-        middleM_AP2.subVectors(this.amplifierPosition2, this.mirrorPosition).divideScalar(2);
-        var unitsM_AP2 = this.mirrorPosition.distanceTo(this.amplifierPosition2);
+        middleM_AP2.subVectors(this.amplifierPosition2, mirrorPositionPhantom).divideScalar(2);
+        //Use the phantom position to calculate the length of the laser
+        var unitsM_AP2 = mirrorPositionPhantom.distanceTo(this.amplifierPosition2);
         var laserGeometryM_AP2 = new THREE.CylinderGeometry(10,10,unitsM_AP2,32, 1, true);
         var laserM_AP2 = new THREE.Mesh(laserGeometryM_AP2, this.simpleLaserReflectionShader);
         laserM_AP2.position.set(this.amplifierPosition2.x - middleM_AP2.x, this.amplifierPosition2.y - middleM_AP2.y, this.amplifierPosition2.z - middleM_AP2.z);
@@ -831,7 +848,7 @@ CGHLab.MainScene.prototype = {
         this.addToSimpleLaser(laserM_AP2);
 
         var newLaser3Finish = new THREE.Vector3();
-        newLaser3Finish.addVectors(this.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 350));
+        newLaser3Finish.addVectors(this.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * this.baseDistance2));
         var unitsAP2_P = newLaser3Finish.distanceTo(this.amplifierPosition2);
         var laserGeometryAP2_P = new THREE.CylinderGeometry(110,10,unitsAP2_P,32);
         var laserAP2_P = new THREE.Mesh(laserGeometryAP2_P, this.simpleLaserReflectionShader);
@@ -1031,7 +1048,7 @@ CGHLab.MainScene.prototype = {
 
         if(this.labelsOn) this.deleteBeamLabels();
 
-        this.laserOnFlag = false;
+        if(!this.laserOnStandBy) this.laserOnFlag = false;
     },
 
     updateLaser: function(){
@@ -1057,7 +1074,7 @@ CGHLab.MainScene.prototype = {
         var newLaser1Finish = new THREE.Vector3();
         newLaser1Finish.addVectors(this.objectPosition, negDirAmplifier.multiplyScalar(50));
         var newLaser3Finish = new THREE.Vector3();
-        newLaser3Finish.addVectors(this.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 350));
+        newLaser3Finish.addVectors(this.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * this.baseDistance2));
 
         //LASER
         for(i = 0; i < laserLight1.list.length; i++){
@@ -1234,7 +1251,7 @@ CGHLab.MainScene.prototype = {
                 lightPointsWaves.list[i].scale.set(lightPointsWaves.scales[i], lightPointsWaves.scales[i], lightPointsWaves.scales[i]);
                 lightPointsWaves.scales[i] += (timer * 3.0);
 
-                if (lightPointsWaves.scales[i] > 800) {
+                if (lightPointsWaves.scales[i] > 1000) {
                     if(!this.objWaveArrived) this.objWaveArrived = true;
                     this.scene.remove(lightPointsWaves.list[i]);
                     this.removeFromLightPointWaves(lightPointsWaves.list[i]);
@@ -1344,8 +1361,8 @@ CGHLab.MainScene.prototype = {
         this.collidableList = [];
 
         if(this.laserOnFlag) {
-            this.laserOff();
             this.laserOnStandBy = true;
+            this.laserOff();
         }
 
         //this.camera.position.set(0,0,250);

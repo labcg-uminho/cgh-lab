@@ -61,13 +61,13 @@ CGHLab.MainPerspective.prototype = {
         //Updates the mirror direction and units
         this.mainScene.referenceWaveAngle = CGHLab.Helpers.deg2rad(value);
         var newDirMirror = new THREE.Vector3(Math.sin(this.mainScene.plateRotation + this.mainScene.referenceWaveAngle), 0, Math.cos(this.mainScene.plateRotation + this.mainScene.referenceWaveAngle)).normalize();
-        var unitsMirror = (1/Math.cos(Math.PI/4 - this.mainScene.referenceWaveAngle)) * 250;
+        var unitsMirror = (1/Math.cos(Math.PI/4 - this.mainScene.referenceWaveAngle)) * this.mainScene.baseDistance1;
 
         //Update the amplifier units
-        var unitsAmplifier2 = 200;//(1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 200;
+        //var unitsAmplifier2 = 300;//(1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 200;
 
         //Make the changes permanent
-        this.mainScene.setMirrorDirAndUnits(newDirMirror, unitsMirror, unitsAmplifier2);
+        this.mainScene.setMirrorDirAndUnits(newDirMirror, unitsMirror);
 
         //Updates mirror position with the new mirror direction and units
         this.mainScene.mirrorPosition = new THREE.Vector3();
@@ -91,7 +91,7 @@ CGHLab.MainPerspective.prototype = {
 
         //Calculate amplifier position with new mirror direction
         this.mainScene.amplifierPosition2 = new THREE.Vector3();
-        this.mainScene.amplifierPosition2.addVectors(this.mainScene.platePosition, newDirMirror.normalize().multiplyScalar(unitsAmplifier2));
+        this.mainScene.amplifierPosition2.addVectors(this.mainScene.platePosition, newDirMirror.normalize().multiplyScalar(this.mainScene.baseDistance3));
         amplifier2.rotateY(-this.mainScene.amplifierRotation2);
 
         //Calculate amplifier rotation to match rotation of reference wave
@@ -143,21 +143,32 @@ CGHLab.MainPerspective.prototype = {
         //if simple laser is on then it needs to be updated
         if(this.mainScene.simpleLaserOn) {
             var laserB_M = this.mainScene.scene.getObjectByName('simpleLaserBeam');
+            //Create a phantom mirror position 50 units behind of the mirror on the direction of the mirror.
+            var dirSplitterNegPhantom = this.mainScene.getDirSplitter().clone().normalize().negate();
+            var unitsSplitterToMirrorPhantom = (this.mainScene.baseDistance2 + 50) - (this.mainScene.baseDistance1 * Math.tan(Math.PI/4 - this.mainScene.referenceWaveAngle));
+            var beamSplitterMirrorPositionPhantom = new THREE.Vector3();
+            beamSplitterMirrorPositionPhantom.addVectors(this.mainScene.beamSplitterPosition, dirSplitterNegPhantom.multiplyScalar(unitsSplitterToMirrorPhantom));
             var middleB_M = new THREE.Vector3();
-            middleB_M.subVectors(this.mainScene.mirrorPosition, this.mainScene.beamSplitterPosition).divideScalar(2);
-            var unitsB_M = this.mainScene.mirrorPosition.distanceTo(this.mainScene.beamSplitterPosition);
+            middleB_M.subVectors(beamSplitterMirrorPositionPhantom, this.mainScene.beamSplitterPosition).divideScalar(2);
+            var unitsB_M = beamSplitterMirrorPositionPhantom.distanceTo(this.mainScene.beamSplitterPosition);
             laserB_M.geometry = new THREE.CylinderGeometry(10, 10, unitsB_M, 32);
-            laserB_M.position.set(this.mainScene.mirrorPosition.x - middleB_M.x, this.mainScene.mirrorPosition.y - middleB_M.y, this.mainScene.mirrorPosition.z - middleB_M.z);
+            laserB_M.position.set(beamSplitterMirrorPositionPhantom.x - middleB_M.x, beamSplitterMirrorPositionPhantom.y - middleB_M.y, beamSplitterMirrorPositionPhantom.z - middleB_M.z);
 
+            //Calculate a phantom position 50 units back of the mirror
+            var dirMirror = this.mainScene.getDirMirror().clone().normalize();
+            var unitsMirrorPhantom = (1/Math.cos(Math.PI/4 - this.mainScene.referenceWaveAngle)) * (this.mainScene.baseDistance1 + 50);
+            var mirrorPositionPhantom = new THREE.Vector3();
+            mirrorPositionPhantom.addVectors(this.mainScene.platePosition, dirMirror.multiplyScalar(unitsMirrorPhantom));
+            //Use the phantom position
             var middleM_AP2 = new THREE.Vector3();
-            middleM_AP2.subVectors(this.mainScene.amplifierPosition2, this.mainScene.mirrorPosition).divideScalar(2);
-            var unitsM_AP2 = this.mainScene.mirrorPosition.distanceTo(this.mainScene.amplifierPosition2);
+            middleM_AP2.subVectors(this.mainScene.amplifierPosition2, mirrorPositionPhantom).divideScalar(2);
+            var unitsM_AP2 = mirrorPositionPhantom.distanceTo(this.mainScene.amplifierPosition2);
             laserM_AP2.geometry = new THREE.CylinderGeometry(10, 10, unitsM_AP2, 32);
             laserM_AP2.position.set(this.mainScene.amplifierPosition2.x - middleM_AP2.x, this.mainScene.amplifierPosition2.y - middleM_AP2.y, this.mainScene.amplifierPosition2.z - middleM_AP2.z);
             laserM_AP2.rotateZ(this.mainScene.amplifierRotation2);
 
             var newLaser3Finish = new THREE.Vector3();
-            newLaser3Finish.addVectors(this.mainScene.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1 / Math.cos(Math.PI / 4 - this.mainScene.referenceWaveAngle)) * 350));
+            newLaser3Finish.addVectors(this.mainScene.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1 / Math.cos(Math.PI / 4 - this.mainScene.referenceWaveAngle)) * this.mainScene.baseDistance2));
             var unitsAP2_P = newLaser3Finish.distanceTo(this.mainScene.amplifierPosition2);
             var middleAP2_P = new THREE.Vector3();
             middleAP2_P.subVectors(newLaser3Finish, this.mainScene.amplifierPosition2).divideScalar(2);
