@@ -148,8 +148,10 @@ CGHLab.MainPerspective.prototype = {
             var unitsSplitterToMirrorPhantom = (this.mainScene.baseDistance2 + 50) - (this.mainScene.baseDistance1 * Math.tan(Math.PI/4 - this.mainScene.referenceWaveAngle));
             var beamSplitterMirrorPositionPhantom = new THREE.Vector3();
             beamSplitterMirrorPositionPhantom.addVectors(this.mainScene.beamSplitterPosition, dirSplitterNegPhantom.multiplyScalar(unitsSplitterToMirrorPhantom));
+            //Use the phantom position to calculate the middle position
             var middleB_M = new THREE.Vector3();
             middleB_M.subVectors(beamSplitterMirrorPositionPhantom, this.mainScene.beamSplitterPosition).divideScalar(2);
+            //Use the phantom position to calculate the length of the laser
             var unitsB_M = beamSplitterMirrorPositionPhantom.distanceTo(this.mainScene.beamSplitterPosition);
             laserB_M.geometry = new THREE.CylinderGeometry(10, 10, unitsB_M, 32);
             laserB_M.position.set(beamSplitterMirrorPositionPhantom.x - middleB_M.x, beamSplitterMirrorPositionPhantom.y - middleB_M.y, beamSplitterMirrorPositionPhantom.z - middleB_M.z);
@@ -159,9 +161,10 @@ CGHLab.MainPerspective.prototype = {
             var unitsMirrorPhantom = (1/Math.cos(Math.PI/4 - this.mainScene.referenceWaveAngle)) * (this.mainScene.baseDistance1 + 50);
             var mirrorPositionPhantom = new THREE.Vector3();
             mirrorPositionPhantom.addVectors(this.mainScene.platePosition, dirMirror.multiplyScalar(unitsMirrorPhantom));
-            //Use the phantom position
+            //Use the phantom position to calculate the middle position
             var middleM_AP2 = new THREE.Vector3();
             middleM_AP2.subVectors(this.mainScene.amplifierPosition2, mirrorPositionPhantom).divideScalar(2);
+            //Use the phantom position to calculate the length of the laser
             var unitsM_AP2 = mirrorPositionPhantom.distanceTo(this.mainScene.amplifierPosition2);
             laserM_AP2.geometry = new THREE.CylinderGeometry(10, 10, unitsM_AP2, 32);
             laserM_AP2.position.set(this.mainScene.amplifierPosition2.x - middleM_AP2.x, this.mainScene.amplifierPosition2.y - middleM_AP2.y, this.mainScene.amplifierPosition2.z - middleM_AP2.z);
