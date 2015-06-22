@@ -57,6 +57,7 @@ CGHLab.MainPerspective.prototype = {
     {
         var mirror = this.mainScene.scene.getObjectByName('mirror');
         var amplifier2 = this.mainScene.scene.getObjectByName('amplifier2');
+        var expander = this.mainScene.scene.getObjectByName('expander');
 
         //Updates the mirror direction and units
         this.mainScene.referenceWaveAngle = CGHLab.Helpers.deg2rad(value);
@@ -84,9 +85,11 @@ CGHLab.MainPerspective.prototype = {
         //if simple laser is on then it needs to be updated
         if(this.mainScene.simpleLaserOn) {
             var laserM_AP2 = this.mainScene.scene.getObjectByName('simpleMirrorAP2');
-            var laserAP2_P = this.mainScene.scene.getObjectByName('simpleAP2Plate');
+            var laserAP2_E = this.mainScene.scene.getObjectByName('simpleAP2Expander');
+            var laserE_P = this.mainScene.scene.getObjectByName('simpleEPlate');
             laserM_AP2.rotateZ(-this.mainScene.amplifierRotation2);
-            laserAP2_P.rotateZ(-this.mainScene.amplifierRotation2);
+            laserAP2_E.rotateZ(-this.mainScene.amplifierRotation2);
+            laserE_P.rotateZ(-this.mainScene.amplifierRotation2);
         }
 
         //Calculate amplifier position with new mirror direction
@@ -104,13 +107,33 @@ CGHLab.MainPerspective.prototype = {
         amplifier2.position.set(this.mainScene.amplifierPosition2.x, this.mainScene.amplifierPosition2.y, this.mainScene.amplifierPosition2.z);
         amplifier2.rotateY(this.mainScene.amplifierRotation2);
 
+        //Calculate expander position with new mirror direction
+        this.mainScene.expanderPosition = new THREE.Vector3();
+        this.mainScene.expanderPosition.addVectors(this.mainScene.platePosition, newDirMirror.normalize().multiplyScalar(this.mainScene.baseDistance4));
+        //The rotation is on the Z because the cylinder was rotated on the init function
+        expander.rotateZ(this.mainScene.expanderRotation);
+
+        //console.log(this.mainScene.expanderRotation);
+        //Calculate expander rotation to match rotation of reference wave
+        var negDirMirror2 = newDirMirror.clone().negate().normalize();
+        var dirSplitter2 = this.mainScene.getDirSplitter().clone().normalize();
+        var dot2 = dirSplitter2.dot(negDirMirror2);
+        this.mainScene.expanderRotation = Math.PI - Math.acos(dot2) - Math.PI/4;
+        //console.log(this.mainScene.expanderRotation);
+
+        //Update position and rotation
+        expander.position.set(this.mainScene.expanderPosition.x, this.mainScene.expanderPosition.y, this.mainScene.expanderPosition.z);
+        expander.rotateZ(-this.mainScene.expanderRotation);
+
         //Labels
         if(mainScene.labelsOn) {
             var mirror_label = this.mainScene.scene2.getObjectByName('mirror_label');
             var amplifier2_label = this.mainScene.scene2.getObjectByName('amplifier2_label');
+            var lens_label = this.mainScene.scene2.getObjectByName('lens_label');
 
             if(mirror_label) mirror_label.position.set(this.mainScene.mirrorPosition.x, this.mainScene.mirrorPosition.y + 45 ,this.mainScene.mirrorPosition.z);
             if(amplifier2_label) amplifier2_label.position.set(this.mainScene.amplifierPosition2.x, this.mainScene.amplifierPosition2.y ,this.mainScene.amplifierPosition2.z);
+            if(lens_label) lens_label.position.set(this.mainScene.expanderPosition.x, this.mainScene.expanderPosition.y + 80 ,this.mainScene.expanderPosition.z);
 
             if(mainScene.laserOnFlag){
                 var reference_beam_label = this.mainScene.scene2.getObjectByName('reference_beam_label');
@@ -170,14 +193,21 @@ CGHLab.MainPerspective.prototype = {
             laserM_AP2.position.set(this.mainScene.amplifierPosition2.x - middleM_AP2.x, this.mainScene.amplifierPosition2.y - middleM_AP2.y, this.mainScene.amplifierPosition2.z - middleM_AP2.z);
             laserM_AP2.rotateZ(this.mainScene.amplifierRotation2);
 
+            var unitsAP2_E = this.mainScene.amplifierPosition2.distanceTo(this.mainScene.expanderPosition);
+            var middleAP2_E = new THREE.Vector3();
+            middleAP2_E.subVectors(this.mainScene.expanderPosition, this.mainScene.amplifierPosition2).divideScalar(2);
+            laserAP2_E.geometry = new THREE.CylinderGeometry(80,10,unitsAP2_E,32);
+            laserAP2_E.position.set(this.mainScene.expanderPosition.x - middleAP2_E.x, this.mainScene.expanderPosition.y - middleAP2_E.y, this.mainScene.expanderPosition.z - middleAP2_E.z);
+            laserAP2_E.rotateZ(this.mainScene.amplifierRotation2);
+
             var newLaser3Finish = new THREE.Vector3();
             newLaser3Finish.addVectors(this.mainScene.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1 / Math.cos(Math.PI / 4 - this.mainScene.referenceWaveAngle)) * this.mainScene.baseDistance2));
-            var unitsAP2_P = newLaser3Finish.distanceTo(this.mainScene.amplifierPosition2);
-            var middleAP2_P = new THREE.Vector3();
-            middleAP2_P.subVectors(newLaser3Finish, this.mainScene.amplifierPosition2).divideScalar(2);
-            laserAP2_P.geometry = new THREE.CylinderGeometry(110, 10, unitsAP2_P, 32);
-            laserAP2_P.position.set(newLaser3Finish.x - middleAP2_P.x, newLaser3Finish.y - middleAP2_P.y, newLaser3Finish.z - middleAP2_P.z);
-            laserAP2_P.rotateZ(this.mainScene.amplifierRotation2);
+            var unitsE_P = newLaser3Finish.distanceTo(this.mainScene.expanderPosition);
+            var middleE_P = new THREE.Vector3();
+            middleE_P.subVectors(newLaser3Finish, this.mainScene.expanderPosition).divideScalar(2);
+            laserE_P.geometry = new THREE.CylinderGeometry(80, 80, unitsE_P, 32);
+            laserE_P.position.set(newLaser3Finish.x - middleE_P.x, newLaser3Finish.y - middleE_P.y, newLaser3Finish.z - middleE_P.z);
+            laserE_P.rotateZ(this.mainScene.amplifierRotation2);
         }
     }
 

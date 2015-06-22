@@ -41,6 +41,7 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
     this.baseDistance1 = 350;
     this.baseDistance2 = 450;
     this.baseDistance3 = 300;
+    this.baseDistance4 = 200;
 
     //Direction of mirror in relation to plate
     var dirMirror = new THREE.Vector3(Math.sin(this.plateRotation + this.referenceWaveAngle), 0, Math.cos(this.plateRotation + this.referenceWaveAngle)).normalize();
@@ -88,6 +89,12 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
     this.amplifierPosition2.addVectors(this.platePosition, dirMirror.normalize().multiplyScalar(unitsAmplifier2));
     var dot = dirSplitter.dot(dirMirror.clone().negate().normalize());
     this.amplifierRotation2 = Math.PI - Math.acos(dot) - Math.PI/4;
+
+    var unitsExpander = this.baseDistance4;
+    this.expanderPosition = new THREE.Vector3();
+    this.expanderPosition.addVectors(this.platePosition, dirMirror.normalize().multiplyScalar(unitsExpander));
+    var dotExpander = dirSplitter.dot(dirMirror.clone().negate().normalize());
+    this.expanderRotation = Math.PI - Math.acos(dotExpander) - Math.PI/4;
 
     //this.simpleLaserOn = false;
     this.laserOnFlag = false;
@@ -397,6 +404,15 @@ CGHLab.MainScene.prototype = {
         amplifier2.rotateY(this.amplifierRotation2);
         amplifier2.name = 'amplifier2';
 
+        //EXPANDER
+        var expanderGeometry = new THREE.CylinderGeometry( 85, 85, 5, 32);
+        var expanderMaterial = new THREE.MeshPhongMaterial( {color: 0x222222, ambient: 0x222222} );
+        var expander = new THREE.Mesh(expanderGeometry, expanderMaterial);
+        expander.position.set(this.expanderPosition.x, this.expanderPosition.y, this.expanderPosition.z);
+        expander.rotateY(this.expanderRotation);
+        expander.rotateX(Math.PI / 2);
+        expander.name = 'expander';
+
         //BEAM SPLITTER
         var beamSplitterGeometry = new THREE.BoxGeometry(1, 1, 1);
         var beamSplitterMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff, transparent: true, opacity: 1 });
@@ -419,7 +435,7 @@ CGHLab.MainScene.prototype = {
         holographicPlate.name = 'plate';
 
         //FLOOR
-        var floorGeometry = new THREE.PlaneGeometry( 1000, 1000);
+        var floorGeometry = new THREE.PlaneGeometry( 1250, 1250);
         var floorMaterial = new THREE.MeshPhongMaterial( {color: 0x999999, ambient: 0x999999, side: THREE.DoubleSide} );
         var floor = new THREE.Mesh( floorGeometry, floorMaterial );
         floor.position.y = 0;
@@ -444,6 +460,7 @@ CGHLab.MainScene.prototype = {
         this.scene.add(beamSplitter);
         this.scene.add(amplifier);
         this.scene.add(amplifier2);
+        this.scene.add(expander);
 
         //ADD OBJECTS THAT YOU WHAT TO INTERACT INTO THE OBJECTS ARRAY
         //this.objects.push(this.object.object);
@@ -563,6 +580,16 @@ CGHLab.MainScene.prototype = {
         spritey7.name = "plate_label";
         this.scene2.add( spritey7 );
         this.labelsList.push(spritey7.name);
+
+        var spritey8 = CGHLab.Helpers.makeTextSprite( " Lens ", {
+            fontsize: 24,
+            borderColor: {r:255, g:0, b:0, a:1.0},
+            backgroundColor: {r:255, g:100, b:100, a:0.8}
+        });
+        spritey8.position.set(this.expanderPosition.x, this.expanderPosition.y + 80 ,this.expanderPosition.z);
+        spritey8.name = "lens_label";
+        this.scene2.add( spritey8 );
+        this.labelsList.push(spritey8.name);
     },
 
     setBeamLabels: function(){
@@ -744,7 +771,6 @@ CGHLab.MainScene.prototype = {
             lights:true,
             fog: true,
             transparent: true
-
         });
         lightMaterial.uniforms.ambient.value = new THREE.Color(0x0000ff);
         lightMaterial.uniforms.opacity.value = 0.5;
@@ -765,7 +791,8 @@ CGHLab.MainScene.prototype = {
             fragmentShader: shader.fragmentShader,
             lights:true,
             fog: true,
-            transparent: true
+            transparent: true,
+            shading: THREE.FlatShading
         });
         laserObjectWaveShader.uniforms.limit.value = 3;
         this.simpleLaserObjectWaveShader = laserObjectWaveShader;
@@ -847,19 +874,33 @@ CGHLab.MainScene.prototype = {
         this.scene.add(laserM_AP2);
         this.addToSimpleLaser(laserM_AP2);
 
+        //var newLaser3Finish = new THREE.Vector3();
+        //newLaser3Finish.addVectors(this.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * this.baseDistance2));
+        var unitsAP2_E = this.amplifierPosition2.distanceTo(this.expanderPosition);
+        var laserGeometryAP2_E = new THREE.CylinderGeometry(80,10,unitsAP2_E,32);
+        var laserAP2_E = new THREE.Mesh(laserGeometryAP2_E, this.simpleLaserReflectionShader);
+        var middleAP2_E = new THREE.Vector3();
+        middleAP2_E.subVectors(this.expanderPosition, this.amplifierPosition2).divideScalar(2);
+        laserAP2_E.position.set(this.expanderPosition.x - middleAP2_E.x, this.expanderPosition.y - middleAP2_E.y, this.expanderPosition.z - middleAP2_E.z);
+        laserAP2_E.rotateY(rotationAngle);
+        laserAP2_E.rotateX(-Math.PI / 2);
+        laserAP2_E.name = 'simpleAP2Expander';
+        this.scene.add(laserAP2_E);
+        this.addToSimpleLaser(laserAP2_E);
+
         var newLaser3Finish = new THREE.Vector3();
         newLaser3Finish.addVectors(this.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * this.baseDistance2));
-        var unitsAP2_P = newLaser3Finish.distanceTo(this.amplifierPosition2);
-        var laserGeometryAP2_P = new THREE.CylinderGeometry(110,10,unitsAP2_P,32);
-        var laserAP2_P = new THREE.Mesh(laserGeometryAP2_P, this.simpleLaserReflectionShader);
-        var middleAP2_P = new THREE.Vector3();
-        middleAP2_P.subVectors(newLaser3Finish, this.amplifierPosition2).divideScalar(2);
-        laserAP2_P.position.set(newLaser3Finish.x - middleAP2_P.x, newLaser3Finish.y - middleAP2_P.y, newLaser3Finish.z - middleAP2_P.z);
-        laserAP2_P.rotateY(rotationAngle);
-        laserAP2_P.rotateX(-Math.PI / 2);
-        laserAP2_P.name = 'simpleAP2Plate';
-        this.scene.add(laserAP2_P);
-        this.addToSimpleLaser(laserAP2_P);
+        var unitsE_P = newLaser3Finish.distanceTo(this.expanderPosition);
+        var laserGeometryE_P = new THREE.CylinderGeometry(80,80,unitsE_P,32);
+        var laserE_P = new THREE.Mesh(laserGeometryE_P, this.simpleLaserReflectionShader);
+        var middleE_P = new THREE.Vector3();
+        middleE_P.subVectors(newLaser3Finish, this.expanderPosition).divideScalar(2);
+        laserE_P.position.set(newLaser3Finish.x - middleE_P.x, newLaser3Finish.y - middleE_P.y, newLaser3Finish.z - middleE_P.z);
+        laserE_P.rotateY(rotationAngle);
+        laserE_P.rotateX(-Math.PI / 2);
+        laserE_P.name = 'simpleEPlate';
+        this.scene.add(laserE_P);
+        this.addToSimpleLaser(laserE_P);
 
 
         var clone = this.object.object.clone();
@@ -1215,13 +1256,14 @@ CGHLab.MainScene.prototype = {
         }
 
         //AMPLIFIER2
-        var distance_AP = this.amplifierPosition2.distanceTo(newLaser3Finish);
+        var distance_AP = this.amplifierPosition2.distanceTo(this.expanderPosition);
         var initScale_A2 = 1;
-        var deltaScale_A2 = 10;
+        var deltaScale_A2 = 7;
         for(i = 0; i < laserLight3.length; i++){
             //Cross the amplifier
-            if(laserLight3[i].position.z < this.amplifierPosition2.z){
-                var actualDistance_A2 = laserLight3[i].position.distanceTo(newLaser3Finish);
+            //Amplifies between the amplifier and the expander
+            if((laserLight3[i].position.z < this.amplifierPosition2.z) && (laserLight3[i].position.z > this.expanderPosition.z)){
+                var actualDistance_A2 = laserLight3[i].position.distanceTo(this.expanderPosition);
                 var ratio_A2 = actualDistance_A2/distance_AP;
                 laserLight3[i].scale.set(initScale_A2+deltaScale_A2*(1-ratio_A2),initScale_A2+deltaScale_A2*(1-ratio_A2),initScale_A2+deltaScale_A2*(1-ratio_A2));
             }
