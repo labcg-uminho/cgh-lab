@@ -382,27 +382,41 @@ CGHLab.MainScene.prototype = {
 
         //AMPLIFIER
         //ThreeCSG stuff
-        var cube_geometry = new THREE.CubeGeometry( 30, 30, 30 );
+        /*var cube_geometry = new THREE.CubeGeometry( 30, 30, 30 );
         var cube_mesh = new THREE.Mesh( cube_geometry );
         cube_mesh.position.z = 15;
         var cube_bsp = new ThreeBSP( cube_mesh );
         var sphere_geometry = new THREE.SphereGeometry( 1, 32, 32 );
         var sphere_mesh = new THREE.Mesh( sphere_geometry );
         var sphere_bsp = new ThreeBSP( sphere_mesh );
-        var subtract_bsp = sphere_bsp.subtract( cube_bsp );
+        var subtract_bsp = sphere_bsp.subtract( cube_bsp );*/
+
+        var cylinder_geometry = new THREE.CylinderGeometry( 1.1, 1.1, 1, 32 );
+        var cylinder_mesh = new THREE.Mesh( cylinder_geometry );
+        //cube_mesh.rotateX(Math.PI/2);
+        //cube_mesh.position.z = 15;
+        var cylinder_bsp = new ThreeBSP( cylinder_mesh );
+        var sphere_geometry = new THREE.SphereGeometry( 1.1, 32, 32 );
+        var sphere_mesh = new THREE.Mesh( sphere_geometry );
+        sphere_mesh.position.y = 0.6;
+        //cylinder_mesh.rotateZ(Math.PI/2);
+        var sphere_bsp = new ThreeBSP( sphere_mesh );
+        var subtract_bsp = cylinder_bsp.subtract( sphere_bsp );
 
         var amplifierMaterial = new THREE.MeshPhongMaterial( {color: 0x222222, ambient: 0x222222} );
 
         var amplifier = subtract_bsp.toMesh(amplifierMaterial);
-        amplifier.scale.set(10,10,5);
+        amplifier.scale.set(10,5,10);
         amplifier.position.set(this.amplifierPosition.x, this.amplifierPosition.y, this.amplifierPosition.z);
         amplifier.rotateY(this.amplifierRotation);
+        amplifier.rotateX(Math.PI/2);
         amplifier.name = 'amplifier1';
 
         var amplifier2 = subtract_bsp.toMesh(amplifierMaterial);
         amplifier2.position.set(this.amplifierPosition2.x, this.amplifierPosition2.y, this.amplifierPosition2.z);
-        amplifier2.scale.set(10,10,5);
+        amplifier2.scale.set(10,5,10);
         amplifier2.rotateY(this.amplifierRotation2);
+        amplifier2.rotateX(Math.PI/2);
         amplifier2.name = 'amplifier2';
 
         //EXPANDER
@@ -1492,6 +1506,23 @@ CGHLab.MainScene.prototype = {
             //alert('x: '+ vertices[i].x + ' y: '+vertices[i].y + ' z: '+vertices[i].z);
             if(vertices[i].y == 100) points.push(vertices[i]);
         }
+        /*var clone2 = this.scene.getObjectByName('beam1').clone();
+        var geometry2 = clone2.geometry.clone();
+        var vertices2 = geometry2.vertices;
+        var points2 = [];
+        clone2.updateMatrixWorld();
+        for(i = 0; i < vertices2.length; i++){
+            vertices2[i].applyMatrix4(clone2.matrixWorld);
+            //alert('x: '+ vertices2[i].x + ' y: '+vertices2[i].y + ' z: '+vertices2[i].z);
+            if(vertices2[i].y == 100) points2.push(vertices2[i]);
+        }
+
+        var p = points.concat(points2);
+        for(i = 0; i < p.length; i++){
+            for(var j = i+1; j < p.length; j++){
+                if(p[i].equals(p[j])) p.splice(j--,1);
+            }
+        }*/
 
         this.beamPoints = points;
         //console.log(points);
@@ -1545,7 +1576,7 @@ CGHLab.MainScene.prototype = {
     teste: function(){
         //console.log(camera.getWorldPosition().x, camera.getWorldPosition().y, camera.getWorldPosition().z);
         //console.log(this.getCenter());
-        this.getBeamPoints();
+        this.reconstruction();
 
     }
 
