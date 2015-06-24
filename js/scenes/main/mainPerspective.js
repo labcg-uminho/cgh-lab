@@ -167,17 +167,17 @@ CGHLab.MainPerspective.prototype = {
         if(this.mainScene.simpleLaserOn) {
             var laserB_M = this.mainScene.scene.getObjectByName('simpleLaserBeam');
             //Create a phantom mirror position 50 units behind of the mirror on the direction of the mirror.
-            var dirSplitterNegPhantom = this.mainScene.getDirSplitter().clone().normalize().negate();
-            var unitsSplitterToMirrorPhantom = (this.mainScene.baseDistance2 + 50) - (this.mainScene.baseDistance1 * Math.tan(Math.PI/4 - this.mainScene.referenceWaveAngle));
-            var beamSplitterMirrorPositionPhantom = new THREE.Vector3();
-            beamSplitterMirrorPositionPhantom.addVectors(this.mainScene.beamSplitterPosition, dirSplitterNegPhantom.multiplyScalar(unitsSplitterToMirrorPhantom));
+            //var dirSplitterNegPhantom = this.mainScene.getDirSplitter().clone().normalize().negate();
+            //var unitsSplitterToMirrorPhantom = (this.mainScene.baseDistance2 + 50) - (this.mainScene.baseDistance1 * Math.tan(Math.PI/4 - this.mainScene.referenceWaveAngle));
+            //var beamSplitterMirrorPositionPhantom = new THREE.Vector3();
+            //beamSplitterMirrorPositionPhantom.addVectors(this.mainScene.beamSplitterPosition, dirSplitterNegPhantom.multiplyScalar(unitsSplitterToMirrorPhantom));
             //Use the phantom position to calculate the middle position
             var middleB_M = new THREE.Vector3();
-            middleB_M.subVectors(beamSplitterMirrorPositionPhantom, this.mainScene.beamSplitterPosition).divideScalar(2);
+            middleB_M.subVectors(this.mainScene.mirrorPosition, this.mainScene.beamSplitterPosition).divideScalar(2);
             //Use the phantom position to calculate the length of the laser
-            var unitsB_M = beamSplitterMirrorPositionPhantom.distanceTo(this.mainScene.beamSplitterPosition);
-            laserB_M.geometry = new THREE.CylinderGeometry(10, 10, unitsB_M, 32);
-            laserB_M.position.set(beamSplitterMirrorPositionPhantom.x - middleB_M.x, beamSplitterMirrorPositionPhantom.y - middleB_M.y, beamSplitterMirrorPositionPhantom.z - middleB_M.z);
+            var unitsB_M = this.mainScene.mirrorPosition.distanceTo(this.mainScene.beamSplitterPosition);
+            laserB_M.geometry = new THREE.CylinderGeometry(10, 10, unitsB_M+100, 32);
+            laserB_M.position.set(this.mainScene.mirrorPosition.x - middleB_M.x, this.mainScene.mirrorPosition.y - middleB_M.y, this.mainScene.mirrorPosition.z - middleB_M.z);
 
             //Calculate a phantom position 50 units back of the mirror
             var dirMirror = this.mainScene.getDirMirror().clone().normalize();

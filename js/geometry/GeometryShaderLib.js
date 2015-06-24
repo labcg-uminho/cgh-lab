@@ -258,7 +258,8 @@ CGHLab.GeometryShaderLib = {
                 "wrapRGB"  : { type: "v3", value: new THREE.Vector3( 1, 1, 1 ) },
                 "limit": { type: "f", value: 1},
                 "mirror": {type: "v3v", value: [ new THREE.Vector3( 1, 1, 1) ] },
-                "referenceWaveAngle": { type: "f", value: 45 }
+                "referenceWaveAngle": { type: "f", value: 45 },
+                "beam": {type: "v3v", value: [ new THREE.Vector3( 1, 1, 1) ]}
             }
 
         ] ),
@@ -320,6 +321,7 @@ CGHLab.GeometryShaderLib = {
 
             "uniform float limit;",
             "uniform vec3 mirror[2];",
+            "uniform vec3 beam[3];",
             "uniform float referenceWaveAngle;",
             "varying vec4 worldPosition;",
 
@@ -357,9 +359,34 @@ CGHLab.GeometryShaderLib = {
             "   }",
             "}",
 
+            /*"bool checkBeamLaser(vec3 position){",
+            "   if (position.z < (position.x - beam[0].x) * ((beam[1].z - beam[0].z)/(beam[1].x - beam[0].x)) + beam[0].z)",
+            "       return false;",
+            "   else",
+            "       return true;",
+            "}",
+
+            "bool checkBeamLaser2(vec3 position){",
+            "   if (position.z > (position.x - beam[2].x) * ((beam[3].z - beam[2].z)/(beam[3].x - beam[2].x)) + beam[2].z)",
+            "       return false;",
+            "   else",
+            "       return true;",
+            "}",*/
+
+            "bool checkBeamDuplicate(vec3 position){",
+            "   if (position.z < (position.x - beam[0].x) * ((beam[2].z - beam[0].z)/(beam[2].x - beam[0].x)) + beam[0].z)",
+            "       return false;",
+            "   else",
+            "       return true;",
+            "}",
+
             "void main() {",
+            //"   if(limit == 0.0){",
+            //"       if(checkBeamLaser(worldPosition.xyz) && checkBeamLaser2(worldPosition.xyz)) discard;",
+            //"   }",
             "   if(limit == 1.0){",
             "       if(checkMirror(worldPosition.xyz)) discard;",
+            "       if(checkBeamDuplicate(worldPosition.xyz)) discard;",
             "   }",
             "   else if(limit == 2.0){",
             "       if(worldPosition.z < 0.0) discard;",

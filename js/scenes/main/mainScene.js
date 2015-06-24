@@ -136,6 +136,7 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
 
     this.platePoints = [];
     this.mirrorPoints = [];
+    this.beamPoints = [];
 
     this.collidableList = [];
 
@@ -414,12 +415,36 @@ CGHLab.MainScene.prototype = {
         expander.name = 'expander';
 
         //BEAM SPLITTER
-        var beamSplitterGeometry = new THREE.BoxGeometry(1, 1, 1);
-        var beamSplitterMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff, transparent: true, opacity: 1 });
+        var points = [
+            new THREE.Vector3(-0.5,0.5,0.5),
+            new THREE.Vector3(-0.5,-0.5,0.5),
+            new THREE.Vector3(-0.5,0.5,-0.5),
+            new THREE.Vector3(-0.5,-0.5,-0.5),
+            new THREE.Vector3(0.5,0.5,0.5),
+            new THREE.Vector3(0.5,-0.5,0.5)
+        ];
+        var beamSplitterGeometry = new THREE.ConvexGeometry(points);//new THREE.BoxGeometry(1, 1, 1);
+        var beamSplitterMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff, transparent: true, opacity: 0.5 });
         var beamSplitter = new THREE.Mesh(beamSplitterGeometry, beamSplitterMaterial);
         beamSplitter.scale.set(40,40,40);
         beamSplitter.position.set(this.beamSplitterPosition.x,this.beamSplitterPosition.y, this.beamSplitterPosition.z);
         beamSplitter.rotateY(this.beamSplitterRotation);
+        beamSplitter.name = 'beam1';
+        var points2 = [
+            new THREE.Vector3(0.5,0.5,-0.5),
+            new THREE.Vector3(0.5,-0.5,-0.5),
+            new THREE.Vector3(-0.5,0.5,-0.5),
+            new THREE.Vector3(-0.5,-0.5,-0.5),
+            new THREE.Vector3(0.5,0.5,0.5),
+            new THREE.Vector3(0.5,-0.5,0.5)
+        ];
+        var beamSplitterGeometry2 = new THREE.ConvexGeometry(points2);//new THREE.BoxGeometry(1, 1, 1);
+        var beamSplitterMaterial2 = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff, transparent: true, opacity: 0.5 });
+        var beamSplitter2 = new THREE.Mesh(beamSplitterGeometry2, beamSplitterMaterial2);
+        beamSplitter2.scale.set(40,40,40);
+        beamSplitter2.position.set(this.beamSplitterPosition.x,this.beamSplitterPosition.y, this.beamSplitterPosition.z);
+        beamSplitter2.rotateY(this.beamSplitterRotation);
+        beamSplitter2.name = 'beam';
 
         //OBJECT
         this.object.setObject('cube'); //OPTIONS: cube, sphere, octahedron, tetrahedron
@@ -458,6 +483,7 @@ CGHLab.MainScene.prototype = {
         this.scene.add(laserSource);
         laserSource.add(laserSource2);
         this.scene.add(beamSplitter);
+        this.scene.add(beamSplitter2);
         this.scene.add(amplifier);
         this.scene.add(amplifier2);
         this.scene.add(expander);
@@ -484,6 +510,7 @@ CGHLab.MainScene.prototype = {
         //Initialize shader used on the object perspective to paint the light point waves
         this.objectPerspective.setLightPointWaveMaterial();
         this.getMirrorPoints();
+        this.getBeamPoints();
         this.setLaserMaterial();
         this.setSimpleLaserMaterial();
 
@@ -736,6 +763,7 @@ CGHLab.MainScene.prototype = {
         lightMaterial.uniforms.ambient.value = new THREE.Color(0x0000ff);
         lightMaterial.uniforms.opacity.value = 0.5;
         lightMaterial.uniforms.mirror.value = this.mirrorPoints;
+        lightMaterial.uniforms.beam.value = this.beamPoints;
         lightMaterial.uniforms.referenceWaveAngle.value = this.referenceWaveAngle;
 
         var laserReflectionShader = lightMaterial.clone();
@@ -775,6 +803,7 @@ CGHLab.MainScene.prototype = {
         lightMaterial.uniforms.ambient.value = new THREE.Color(0x0000ff);
         lightMaterial.uniforms.opacity.value = 0.5;
         lightMaterial.uniforms.mirror.value = this.mirrorPoints;
+        lightMaterial.uniforms.beam.value = this.beamPoints;
         lightMaterial.uniforms.referenceWaveAngle.value = this.referenceWaveAngle;
 
         var laserReflectionShader = lightMaterial.clone();
@@ -833,18 +862,18 @@ CGHLab.MainScene.prototype = {
         this.addToSimpleLaser(laserAP1_O);
 
         //Create a phantom mirror position 50 units behind of the mirror on the direction of the mirror.
-        var dirSplitterNegPhantom = this.getDirSplitter().clone().normalize().negate();
-        var unitsSplitterToMirrorPhantom = (this.baseDistance2 + 50) - (this.baseDistance1 * Math.tan(Math.PI/4 - this.referenceWaveAngle));
-        var beamSplitterMirrorPositionPhantom = new THREE.Vector3();
-        beamSplitterMirrorPositionPhantom.addVectors(this.beamSplitterPosition, dirSplitterNegPhantom.multiplyScalar(unitsSplitterToMirrorPhantom));
+        //var dirSplitterNegPhantom = this.getDirSplitter().clone().normalize().negate();
+        //var unitsSplitterToMirrorPhantom = (this.baseDistance2 + 50) - (this.baseDistance1 * Math.tan(Math.PI/4 - this.referenceWaveAngle));
+        //var beamSplitterMirrorPositionPhantom = new THREE.Vector3();
+        //beamSplitterMirrorPositionPhantom.addVectors(this.beamSplitterPosition, dirSplitterNegPhantom.multiplyScalar(unitsSplitterToMirrorPhantom));
         //Use the phantom position to calculate the middle position
         var middleB_M = new THREE.Vector3();
-        middleB_M.subVectors(beamSplitterMirrorPositionPhantom, this.beamSplitterPosition).divideScalar(2);
+        middleB_M.subVectors(this.mirrorPosition, this.beamSplitterPosition).divideScalar(2);
         //Use the phantom position to calculate the length of the laser
-        var unitsB_M = beamSplitterMirrorPositionPhantom.distanceTo(this.beamSplitterPosition);
-        var laserGeometryB_M = new THREE.CylinderGeometry(10,10,unitsB_M,32, 1, true);
+        var unitsB_M = this.mirrorPosition.distanceTo(this.beamSplitterPosition);
+        var laserGeometryB_M = new THREE.CylinderGeometry(10,10,unitsB_M+100,32, 1, true);
         var laserB_M = new THREE.Mesh(laserGeometryB_M, this.simpleLaserDupliateShader);
-        laserB_M.position.set(beamSplitterMirrorPositionPhantom.x - middleB_M.x, beamSplitterMirrorPositionPhantom.y - middleB_M.y, beamSplitterMirrorPositionPhantom.z - middleB_M.z);
+        laserB_M.position.set(this.mirrorPosition.x - middleB_M.x, this.mirrorPosition.y - middleB_M.y, this.mirrorPosition.z - middleB_M.z);
         laserB_M.rotateY(this.laserRotation + Math.PI/2);
         laserB_M.rotateX(-Math.PI / 2);
         laserB_M.name = 'simpleLaserBeam';
@@ -1451,6 +1480,23 @@ CGHLab.MainScene.prototype = {
         this.mirrorPoints = points;
     },
 
+    getBeamPoints: function()
+    {
+        var clone = this.scene.getObjectByName('beam').clone();
+        var geometry = clone.geometry.clone();
+        var vertices = geometry.vertices;
+        var points = [];
+        clone.updateMatrixWorld();
+        for(var i = 0; i < vertices.length; i++){
+            vertices[i].applyMatrix4(clone.matrixWorld);
+            //alert('x: '+ vertices[i].x + ' y: '+vertices[i].y + ' z: '+vertices[i].z);
+            if(vertices[i].y == 100) points.push(vertices[i]);
+        }
+
+        this.beamPoints = points;
+        //console.log(points);
+    },
+
     smoothCameraTransition: function(target, cameraTarget){
         TWEEN.removeAll();
 
@@ -1498,7 +1544,8 @@ CGHLab.MainScene.prototype = {
 
     teste: function(){
         //console.log(camera.getWorldPosition().x, camera.getWorldPosition().y, camera.getWorldPosition().z);
-        console.log(this.getCenter());
+        //console.log(this.getCenter());
+        this.getBeamPoints();
 
     }
 
