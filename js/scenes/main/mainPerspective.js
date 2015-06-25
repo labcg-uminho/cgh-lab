@@ -95,7 +95,7 @@ CGHLab.MainPerspective.prototype = {
         //Calculate amplifier position with new mirror direction
         this.mainScene.amplifierPosition2 = new THREE.Vector3();
         this.mainScene.amplifierPosition2.addVectors(this.mainScene.platePosition, newDirMirror.normalize().multiplyScalar(this.mainScene.baseDistance3));
-        amplifier2.rotateY(-this.mainScene.amplifierRotation2);
+        amplifier2.rotateZ(this.mainScene.amplifierRotation2);
 
         //Calculate amplifier rotation to match rotation of reference wave
         var negDirMirror = newDirMirror.clone().negate().normalize();
@@ -105,7 +105,7 @@ CGHLab.MainPerspective.prototype = {
 
         //Update position and rotation
         amplifier2.position.set(this.mainScene.amplifierPosition2.x, this.mainScene.amplifierPosition2.y, this.mainScene.amplifierPosition2.z);
-        amplifier2.rotateY(this.mainScene.amplifierRotation2);
+        amplifier2.rotateZ(-this.mainScene.amplifierRotation2);
 
         //Calculate expander position with new mirror direction
         this.mainScene.expanderPosition = new THREE.Vector3();
