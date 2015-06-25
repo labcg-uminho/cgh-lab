@@ -403,7 +403,7 @@ CGHLab.MainScene.prototype = {
         var sphere_bsp = new ThreeBSP( sphere_mesh );
         var subtract_bsp = cylinder_bsp.subtract( sphere_bsp );
 
-        var amplifierMaterial = new THREE.MeshPhongMaterial( {color: 0x222222, ambient: 0x222222} );
+        var amplifierMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff, transparent: true, opacity: 0.5 });
 
         var amplifier = subtract_bsp.toMesh(amplifierMaterial);
         amplifier.scale.set(10,5,10);
@@ -421,7 +421,7 @@ CGHLab.MainScene.prototype = {
 
         //EXPANDER
         var expanderGeometry = new THREE.CylinderGeometry( 85, 85, 5, 32);
-        var expanderMaterial = new THREE.MeshPhongMaterial( {color: 0x222222, ambient: 0x222222} );
+        var expanderMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff, transparent: true, opacity: 0.5 });
         var expander = new THREE.Mesh(expanderGeometry, expanderMaterial);
         expander.position.set(this.expanderPosition.x, this.expanderPosition.y, this.expanderPosition.z);
         expander.rotateY(this.expanderRotation);
