@@ -60,7 +60,7 @@ CGHLab.Helpers = {
         context.fillText( message, borderThickness, fontsize + borderThickness);
 
         // canvas contents will be used for a texture
-        var texture = new THREE.Texture(canvas)
+        var texture = new THREE.Texture(canvas);
         texture.needsUpdate = true;
 
         var spriteMaterial = new THREE.SpriteMaterial(

@@ -389,7 +389,7 @@ CGHLab.GeometryShaderLib = {
             "       if(checkBeamDuplicate(worldPosition.xyz)) discard;",
             "   }",
             "   else if(limit == 2.0){",
-            "       if(worldPosition.z < 0.0) discard;",
+            //"       if(worldPosition.z < 0.0) discard;",
             "       if(checkMirror(worldPosition.xyz)) discard;",
             "   }",
             "   else if(limit == 3.0){",

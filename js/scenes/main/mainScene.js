@@ -536,7 +536,7 @@ CGHLab.MainScene.prototype = {
     },
 
     setLabels: function(){
-        var spritey = CGHLab.Helpers.makeTextSprite( " Laser ", {
+        var spritey = CGHLab.Helpers.makeTextSprite( " Laser Emitter ", {
             fontsize: 24,
             borderColor: {r:255, g:0, b:0, a:1.0},
             backgroundColor: {r:255, g:100, b:100, a:0.8}
@@ -556,7 +556,7 @@ CGHLab.MainScene.prototype = {
         this.scene2.add( spritey2 );
         this.labelsList.push(spritey2.name);
 
-        var spritey3 = CGHLab.Helpers.makeTextSprite( " Amplifier ", {
+        var spritey3 = CGHLab.Helpers.makeTextSprite( " Objective Lens ", {
             fontsize: 24,
             borderColor: {r:255, g:0, b:0, a:1.0},
             backgroundColor: {r:255, g:100, b:100, a:0.8}
@@ -566,7 +566,7 @@ CGHLab.MainScene.prototype = {
         this.scene2.add( spritey3 );
         this.labelsList.push(spritey3.name);
 
-        var spritey4 = CGHLab.Helpers.makeTextSprite( " Amplifier ", {
+        var spritey4 = CGHLab.Helpers.makeTextSprite( " Objective Lens ", {
             fontsize: 24,
             borderColor: {r:255, g:0, b:0, a:1.0},
             backgroundColor: {r:255, g:100, b:100, a:0.8}
@@ -622,7 +622,7 @@ CGHLab.MainScene.prototype = {
         this.scene2.add( spritey7 );
         this.labelsList.push(spritey7.name);
 
-        var spritey8 = CGHLab.Helpers.makeTextSprite( " Lens ", {
+        var spritey8 = CGHLab.Helpers.makeTextSprite( " Image Lens ", {
             fontsize: 24,
             borderColor: {r:255, g:0, b:0, a:1.0},
             backgroundColor: {r:255, g:100, b:100, a:0.8}
