@@ -1126,13 +1126,15 @@ CGHLab.MainScene.prototype = {
             this.eraseSimpleLaserList();
             this.simpleLaserOn = false;
         }
-        this.refWaveArrived = false;
-        this.objWaveArrived = false;
-        this.patternShown = false;
 
         if(this.labelsOn) this.deleteBeamLabels();
 
-        if(!this.laserOnStandBy) this.laserOnFlag = false;
+        if(!this.laserOnStandBy) {
+            this.laserOnFlag = false;
+            this.refWaveArrived = false;
+            this.objWaveArrived = false;
+            this.patternShown = false;
+        }
     },
 
     updateLaser: function(){
