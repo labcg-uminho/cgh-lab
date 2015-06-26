@@ -36,12 +36,17 @@ CGHLab.Helpers = {
         //var spriteAlignment = THREE.SpriteAlignment.topLeft;
 
         var canvas = document.createElement('canvas');
+        console.log(canvas.width);
+        console.log(canvas.height);
+        //canvas.width = 200;
+        //canvas.height = 100;
         var context = canvas.getContext('2d');
         context.font = "Bold " + fontsize + "px " + fontface;
 
         // get size data (height depends only on font size)
         var metrics = context.measureText( message );
         var textWidth = metrics.width;
+
 
         // background color
         context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + ","
