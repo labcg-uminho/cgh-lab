@@ -374,7 +374,7 @@ CGHLab.GeometryShaderLib = {
             "}",*/
 
             "bool checkBeamDuplicate(vec3 position){",
-            "   if (position.z < (position.x - beam[0].x) * ((beam[2].z - beam[0].z)/(beam[2].x - beam[0].x)) + beam[0].z)",
+            "   if (position.z > (position.x - beam[1].x) * ((beam[2].z - beam[1].z)/(beam[2].x - beam[1].x)) + beam[1].z)",
             "       return false;",
             "   else",
             "       return true;",

@@ -36,8 +36,8 @@ CGHLab.Helpers = {
         //var spriteAlignment = THREE.SpriteAlignment.topLeft;
 
         var canvas = document.createElement('canvas');
-        console.log(canvas.width);
-        console.log(canvas.height);
+        //console.log(canvas.width);
+        //console.log(canvas.height);
         //canvas.width = 200;
         //canvas.height = 100;
         var context = canvas.getContext('2d');

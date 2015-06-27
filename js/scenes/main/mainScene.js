@@ -430,12 +430,18 @@ CGHLab.MainScene.prototype = {
 
         //BEAM SPLITTER
         var points = [
-            new THREE.Vector3(-0.5,0.5,0.5),
+            /*new THREE.Vector3(-0.5,0.5,0.5),
             new THREE.Vector3(-0.5,-0.5,0.5),
             new THREE.Vector3(-0.5,0.5,-0.5),
             new THREE.Vector3(-0.5,-0.5,-0.5),
             new THREE.Vector3(0.5,0.5,0.5),
-            new THREE.Vector3(0.5,-0.5,0.5)
+            new THREE.Vector3(0.5,-0.5,0.5)*/
+            new THREE.Vector3(-0.5,0.5,-0.5),
+            new THREE.Vector3(-0.5,-0.5,-0.5),
+            new THREE.Vector3(-0.5,0.5,0.5),
+            new THREE.Vector3(-0.5,-0.5,0.5),
+            new THREE.Vector3(0.5,0.5,-0.5),
+            new THREE.Vector3(0.5,-0.5,-0.5)
         ];
         var beamSplitterGeometry = new THREE.ConvexGeometry(points);//new THREE.BoxGeometry(1, 1, 1);
         var beamSplitterMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff, transparent: true, opacity: 0.5 });
@@ -445,12 +451,18 @@ CGHLab.MainScene.prototype = {
         beamSplitter.rotateY(this.beamSplitterRotation);
         beamSplitter.name = 'beam1';
         var points2 = [
-            new THREE.Vector3(0.5,0.5,-0.5),
+            /*new THREE.Vector3(0.5,0.5,-0.5),
             new THREE.Vector3(0.5,-0.5,-0.5),
             new THREE.Vector3(-0.5,0.5,-0.5),
             new THREE.Vector3(-0.5,-0.5,-0.5),
             new THREE.Vector3(0.5,0.5,0.5),
-            new THREE.Vector3(0.5,-0.5,0.5)
+            new THREE.Vector3(0.5,-0.5,0.5)*/
+            new THREE.Vector3(0.5,0.5,0.5),
+            new THREE.Vector3(0.5,-0.5,0.5),
+            new THREE.Vector3(-0.5,0.5,0.5),
+            new THREE.Vector3(-0.5,-0.5,0.5),
+            new THREE.Vector3(0.5,0.5,-0.5),
+            new THREE.Vector3(0.5,-0.5,-0.5)
         ];
         var beamSplitterGeometry2 = new THREE.ConvexGeometry(points2);//new THREE.BoxGeometry(1, 1, 1);
         var beamSplitterMaterial2 = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff, transparent: true, opacity: 0.5 });
@@ -1566,7 +1578,7 @@ CGHLab.MainScene.prototype = {
         var obstacleGeometry = new THREE.BoxGeometry(1, 1, 1);
         var obstacleMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff, transparent: true, opacity: 1 });
         var obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
-        obstacle.scale.set(70,70,10);
+        obstacle.scale.set(170,170,10);
         var position = new THREE.Vector3();
         position.addVectors(this.objectPosition, dirLaser.multiplyScalar(150));
         obstacle.position.set(position.x,position.y, position.z);
