@@ -146,6 +146,8 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
 
     var simpleLaserList = [];
 
+    this.generationMode = true;
+
     //Variables to store reference wave and object wave geometry
     var laserLight1 = {
         list: [],
@@ -884,6 +886,7 @@ CGHLab.MainScene.prototype = {
         laserAP1_O.position.set(newLaser1Finish.x - middleAP1_O.x, newLaser1Finish.y - middleAP1_O.y, newLaser1Finish.z - middleAP1_O.z);
         laserAP1_O.rotateY(this.laserRotation);
         laserAP1_O.rotateX(-Math.PI / 2);
+        laserAP1_O.name = 'simpleAP1Object';
         this.scene.add(laserAP1_O);
         this.addToSimpleLaser(laserAP1_O);
 
@@ -1077,6 +1080,12 @@ CGHLab.MainScene.prototype = {
         laserO_P.name = 'simpleLaserObj';
         this.scene.add(laserO_P);
         this.addToSimpleLaser(laserO_P);
+
+        if(!this.generationMode){
+            var laserAP1_O = this.scene.getObjectByName('simpleAP1Object');
+            this.scene.remove(laserAP1_O);
+            this.removeFromSimpleLaser(laserAP1_O);
+        }
     },
 
     laserOn: function()
@@ -1574,17 +1583,22 @@ CGHLab.MainScene.prototype = {
     },
 
     reconstruction: function(){
-        var dirLaser = this.getDirLaser().clone().normalize();
+        var amp = this.scene.getObjectByName("amplifier");
+
+        this.scene.remove(amp);
+
         var obstacleGeometry = new THREE.BoxGeometry(1, 1, 1);
         var obstacleMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff, transparent: true, opacity: 1 });
         var obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
-        obstacle.scale.set(170,170,10);
-        var position = new THREE.Vector3();
-        position.addVectors(this.objectPosition, dirLaser.multiplyScalar(150));
-        obstacle.position.set(position.x,position.y, position.z);
+        obstacle.scale.set(100,100,10);
+        obstacle.position.set(this.amplifierPosition.x, this.amplifierPosition.y, this.amplifierPosition.z);
         obstacle.rotateY(this.laserRotation);
 
         this.scene.add(obstacle);
+
+        this.generationMode = false;
+        this.updateSimpleLaser();
+
     },
 
     teste: function(){
