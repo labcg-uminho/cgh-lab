@@ -872,23 +872,25 @@ CGHLab.MainScene.prototype = {
         this.scene.add(laserL_AP1);
         this.addToSimpleLaser(laserL_AP1);
 
-        var dirAmplifier = this.getDirAmplifier();
-        var negDirAmplifier = dirAmplifier.clone().normalize().negate();
-        //extend the maximum path from 'laser to object' to 'laser to object + 50 units' on the object perspective, so the wavefronts
-        //can pass through all the light points of an object
-        var newLaser1Finish = new THREE.Vector3();
-        newLaser1Finish.addVectors(this.objectPosition, negDirAmplifier.multiplyScalar(50));
-        var unitsAP1_O = newLaser1Finish.distanceTo(this.amplifierPosition);
-        var laserGeometryAP1_O = new THREE.CylinderGeometry(110,10,unitsAP1_O,32);
-        var laserAP1_O = new THREE.Mesh(laserGeometryAP1_O, this.simpleLaserShader);
-        var middleAP1_O = new THREE.Vector3();
-        middleAP1_O.subVectors(newLaser1Finish, this.amplifierPosition).divideScalar(2);
-        laserAP1_O.position.set(newLaser1Finish.x - middleAP1_O.x, newLaser1Finish.y - middleAP1_O.y, newLaser1Finish.z - middleAP1_O.z);
-        laserAP1_O.rotateY(this.laserRotation);
-        laserAP1_O.rotateX(-Math.PI / 2);
-        laserAP1_O.name = 'simpleAP1Object';
-        this.scene.add(laserAP1_O);
-        this.addToSimpleLaser(laserAP1_O);
+        if(this.generationMode) {
+            var dirAmplifier = this.getDirAmplifier();
+            var negDirAmplifier = dirAmplifier.clone().normalize().negate();
+            //extend the maximum path from 'laser to object' to 'laser to object + 50 units' on the object perspective, so the wavefronts
+            //can pass through all the light points of an object
+            var newLaser1Finish = new THREE.Vector3();
+            newLaser1Finish.addVectors(this.objectPosition, negDirAmplifier.multiplyScalar(50));
+            var unitsAP1_O = newLaser1Finish.distanceTo(this.amplifierPosition);
+            var laserGeometryAP1_O = new THREE.CylinderGeometry(110, 10, unitsAP1_O, 32);
+            var laserAP1_O = new THREE.Mesh(laserGeometryAP1_O, this.simpleLaserShader);
+            var middleAP1_O = new THREE.Vector3();
+            middleAP1_O.subVectors(newLaser1Finish, this.amplifierPosition).divideScalar(2);
+            laserAP1_O.position.set(newLaser1Finish.x - middleAP1_O.x, newLaser1Finish.y - middleAP1_O.y, newLaser1Finish.z - middleAP1_O.z);
+            laserAP1_O.rotateY(this.laserRotation);
+            laserAP1_O.rotateX(-Math.PI / 2);
+            laserAP1_O.name = 'simpleAP1Object';
+            this.scene.add(laserAP1_O);
+            this.addToSimpleLaser(laserAP1_O);
+        }
 
         //Create a phantom mirror position 50 units behind of the mirror on the direction of the mirror.
         //var dirSplitterNegPhantom = this.getDirSplitter().clone().normalize().negate();
@@ -1083,8 +1085,10 @@ CGHLab.MainScene.prototype = {
 
         if(!this.generationMode){
             var laserAP1_O = this.scene.getObjectByName('simpleAP1Object');
-            this.scene.remove(laserAP1_O);
-            this.removeFromSimpleLaser(laserAP1_O);
+            if(laserAP1_O) {
+                this.scene.remove(laserAP1_O);
+                this.removeFromSimpleLaser(laserAP1_O);
+            }
         }
     },
 
@@ -1583,6 +1587,7 @@ CGHLab.MainScene.prototype = {
     },
 
     reconstruction: function(){
+        //this.changeToMainPerspective();
         var amp = this.scene.getObjectByName("amplifier");
 
         this.scene.remove(amp);
@@ -1597,7 +1602,9 @@ CGHLab.MainScene.prototype = {
         this.scene.add(obstacle);
 
         this.generationMode = false;
-        this.updateSimpleLaser();
+        if(this.laserOnFlag) {
+            this.updateSimpleLaser();
+        }
 
     },
 
