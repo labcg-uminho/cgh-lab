@@ -134,6 +134,8 @@ CGHLab.MainScene = function( renderer, camera, map, controls )
     this.objWaveArrived = false;
     this.patternShown = false;
 
+    this.objWaveReconstructionArrive = false;
+
     this.platePoints = [];
     this.mirrorPoints = [];
     this.beamPoints = [];
@@ -583,15 +585,29 @@ CGHLab.MainScene.prototype = {
         this.scene2.add( spritey2 );
         this.labelsList.push(spritey2.name);
 
-        var spritey3 = CGHLab.Helpers.makeTextSprite( " Objective Lens ", {
-            fontsize: 24,
-            borderColor: {r:255, g:0, b:0, a:1.0},
-            backgroundColor: {r:255, g:100, b:100, a:0.8}
-        });
-        spritey3.position.set(this.amplifierPosition.x, this.amplifierPosition.y ,this.amplifierPosition.z);
-        spritey3.name = "amplifier1_label";
-        this.scene2.add( spritey3 );
-        this.labelsList.push(spritey3.name);
+        var spritey3;
+        if(this.generationMode) {
+            spritey3 = CGHLab.Helpers.makeTextSprite(" Objective Lens ", {
+                fontsize: 24,
+                borderColor: {r: 255, g: 0, b: 0, a: 1.0},
+                backgroundColor: {r: 255, g: 100, b: 100, a: 0.8}
+            });
+            spritey3.position.set(this.amplifierPosition.x, this.amplifierPosition.y, this.amplifierPosition.z);
+            spritey3.name = "amplifier1_label";
+            this.scene2.add(spritey3);
+            this.labelsList.push(spritey3.name);
+        }
+        else{
+            spritey3 = CGHLab.Helpers.makeTextSprite(" Obstacle ", {
+                fontsize: 24,
+                borderColor: {r: 255, g: 0, b: 0, a: 1.0},
+                backgroundColor: {r: 255, g: 100, b: 100, a: 0.8}
+            });
+            spritey3.position.set(this.amplifierPosition.x, this.amplifierPosition.y, this.amplifierPosition.z);
+            spritey3.name = "amplifier1_label";
+            this.scene2.add(spritey3);
+            this.labelsList.push(spritey3.name);
+        }
 
         var spritey4 = CGHLab.Helpers.makeTextSprite( " Objective Lens ", {
             fontsize: 24,
@@ -615,28 +631,33 @@ CGHLab.MainScene.prototype = {
 
         var spritey6;
 
-        if(this.mainPerspectiveChosen) {
-            spritey6 = CGHLab.Helpers.makeTextSprite(" Object ", {
-                fontsize: 24,
-                borderColor: {r: 255, g: 0, b: 0, a: 1.0},
-                backgroundColor: {r: 255, g: 100, b: 100, a: 0.8}
-            });
-            spritey6.position.set(this.objectPosition.x, this.objectPosition.y + 10, this.objectPosition.z);
-            spritey6.name = "object_label";
-            this.scene2.add(spritey6);
-            this.labelsList.push(spritey6.name);
-        }
+        if(this.generationMode) {
+            if (this.mainPerspectiveChosen) {
+                spritey6 = CGHLab.Helpers.makeTextSprite(" Object ", {
+                    fontsize: 24,
+                    borderColor: {r: 255, g: 0, b: 0, a: 1.0},
+                    backgroundColor: {r: 255, g: 100, b: 100, a: 0.8}
+                });
+                spritey6.position.set(this.objectPosition.x, this.objectPosition.y + 10, this.objectPosition.z);
+                spritey6.name = "object_label";
+                this.scene2.add(spritey6);
+                this.labelsList.push(spritey6.name);
+            }
 
-        else if(this.objectPerspectiveChosen) {
-            spritey6 = CGHLab.Helpers.makeTextSprite(" Object Light Points ", {
-                fontsize: 24,
-                borderColor: {r: 255, g: 0, b: 0, a: 1.0},
-                backgroundColor: {r: 255, g: 100, b: 100, a: 0.8}
-            });
-            spritey6.position.set(this.objectPosition.x, this.objectPosition.y + 10, this.objectPosition.z);
-            spritey6.name = "object_light_points_label";
-            this.scene2.add(spritey6);
-            this.labelsList.push(spritey6.name);
+            else if (this.objectPerspectiveChosen) {
+                spritey6 = CGHLab.Helpers.makeTextSprite(" Object Light Points ", {
+                    fontsize: 24,
+                    borderColor: {r: 255, g: 0, b: 0, a: 1.0},
+                    backgroundColor: {r: 255, g: 100, b: 100, a: 0.8}
+                });
+                spritey6.position.set(this.objectPosition.x, this.objectPosition.y + 10, this.objectPosition.z);
+                spritey6.name = "object_light_points_label";
+                this.scene2.add(spritey6);
+                this.labelsList.push(spritey6.name);
+            }
+        }
+        else{
+            if (this.laserOnFlag && this.laserTypeActive == "Simple") this.setVirtualObjectLabel();
         }
 
         var spritey7 = CGHLab.Helpers.makeTextSprite( " Holographic Plate ", {
@@ -661,18 +682,20 @@ CGHLab.MainScene.prototype = {
     },
 
     setBeamLabels: function(){
-        var spritey = CGHLab.Helpers.makeTextSprite( " Illumination Beam ", {
-            fontsize: 24,
-            borderColor: {r:0, g:0, b:255, a:1.0},
-            backgroundColor: {r:100, g:100, b:255, a:0.8}
-        });
-        var laserDir = this.getDirLaser().clone().normalize();
-        var spriteyPosition = new THREE.Vector3();
-        spriteyPosition.addVectors(this.objectPosition, laserDir.multiplyScalar(100));
-        spritey.position.set(spriteyPosition.x, spriteyPosition.y + 50 , spriteyPosition.z);
-        spritey.name = "illumination_beam_label";
-        this.scene2.add( spritey );
-        this.beamLabelsList.push(spritey.name);
+        if(this.generationMode) {
+            var spritey = CGHLab.Helpers.makeTextSprite(" Illumination Beam ", {
+                fontsize: 24,
+                borderColor: {r: 0, g: 0, b: 255, a: 1.0},
+                backgroundColor: {r: 100, g: 100, b: 255, a: 0.8}
+            });
+            var laserDir = this.getDirLaser().clone().normalize();
+            var spriteyPosition = new THREE.Vector3();
+            spriteyPosition.addVectors(this.objectPosition, laserDir.multiplyScalar(100));
+            spritey.position.set(spriteyPosition.x, spriteyPosition.y + 50, spriteyPosition.z);
+            spritey.name = "illumination_beam_label";
+            this.scene2.add(spritey);
+            this.beamLabelsList.push(spritey.name);
+        }
 
         var spritey2 = CGHLab.Helpers.makeTextSprite( " Object Beam ", {
             fontsize: 24,
@@ -699,6 +722,30 @@ CGHLab.MainScene.prototype = {
         spritey3.name = "reference_beam_label";
         this.scene2.add( spritey3 );
         this.beamLabelsList.push(spritey3.name);
+    },
+
+    setVirtualObjectLabel: function(){
+        var spritey6 = CGHLab.Helpers.makeTextSprite(" Virtual Object ", {
+            fontsize: 24,
+            borderColor: {r: 255, g: 0, b: 0, a: 1.0},
+            backgroundColor: {r: 255, g: 100, b: 100, a: 0.8}
+        });
+        spritey6.position.set(this.objectPosition.x, this.objectPosition.y + 10, this.objectPosition.z);
+        spritey6.name = "virtual_object_label";
+        this.scene2.add(spritey6);
+        this.labelsList.push(spritey6.name);
+    },
+
+    deleteVirtualObjectLabel: function(){
+        var i;
+        var label;
+        for (i = 0; i < this.labelsList.length; i++){
+            if(this.labelsList[i] = "virtual_object_label") {
+                label = this.scene2.getObjectByName(this.labelsList[i]);
+                this.scene2.remove(label);
+                this.labelsList.splice(i,1);
+            }
+        }
     },
 
     deleteLabels: function(){
@@ -1033,6 +1080,12 @@ CGHLab.MainScene.prototype = {
         this.addToSimpleLaser(laserO_P);
 
         this.simpleLaserOn = true;
+
+        //In reconstruction mode the object desapears so we need to add it again when using the simple laser
+        if(!this.generationMode) {
+            this.scene.add(this.object.object);
+            this.setVirtualObjectLabel();
+        }
     },
 
     updateSimpleLaser: function(){
@@ -1095,14 +1148,6 @@ CGHLab.MainScene.prototype = {
         laserO_P.name = 'simpleLaserObj';
         this.scene.add(laserO_P);
         this.addToSimpleLaser(laserO_P);
-
-        if(!this.generationMode){
-            var laserAP1_O = this.scene.getObjectByName('simpleAP1Object');
-            if(laserAP1_O) {
-                this.scene.remove(laserAP1_O);
-                this.removeFromSimpleLaser(laserAP1_O);
-            }
-        }
     },
 
     laserOn: function()
@@ -1173,9 +1218,15 @@ CGHLab.MainScene.prototype = {
             this.objWaveArrived = false;
             this.patternShown = false;
         }
+
+        if(!this.generationMode){
+            this.scene.remove(this.object.object);
+            this.deleteVirtualObjectLabel();
+        }
     },
 
     restartAnimatedLaser: function(){
+        var i;
         var laserLight1 = this.getLaserLight1();
         var laserLight2 = this.getLaserLight2();
         var laserLight3 = this.getLaserLight3();
@@ -1208,6 +1259,19 @@ CGHLab.MainScene.prototype = {
         copy.rotateY(this.laserRotation);
         this.scene.add(copy);
         this.addToLaserLight1(copy);
+    },
+
+    restartSimpleLaser: function(){
+        var simpleLaserList = this.getSimpleLaser();
+        for (var i = 0; i < simpleLaserList.length; i++) {
+            this.scene.remove(simpleLaserList[i]);
+        }
+        this.eraseSimpleLaserList();
+
+        this.simpleLaser();
+        this.seeInterferencePattern();
+        this.refWaveArrived = true;
+        this.objWaveArrived = true;
     },
 
     updateLaser: function(){
@@ -1561,6 +1625,11 @@ CGHLab.MainScene.prototype = {
             if (objWaveLight.list[i].position.z > this.objectPosition.z) {
                 this.scene.remove(objWaveLight.list[i]);
                 this.removeFromObjWaveLight(objWaveLight.list[i]);
+                if(!this.objWaveReconstructionArrive) {
+                    this.scene.add(this.object.object);
+                    this.objWaveReconstructionArrive = true;
+                    this.setVirtualObjectLabel();
+                }
             }
         }
     },
@@ -1777,28 +1846,67 @@ CGHLab.MainScene.prototype = {
     },
 
     reconstruction: function(){
-        //this.changeToMainPerspective();
-        var amp = this.scene.getObjectByName("amplifier");
+        if(this.generationMode) {
+            //this.changeToMainPerspective();
+            var amp = this.scene.getObjectByName("amplifier");
 
-        this.scene.remove(amp);
+            this.scene.remove(amp);
 
-        var obstacleGeometry = new THREE.BoxGeometry(1, 1, 1);
-        var obstacleMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, ambient: 0xffffff, transparent: true, opacity: 1 });
-        var obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
-        obstacle.scale.set(100,100,10);
-        obstacle.position.set(this.amplifierPosition.x, this.amplifierPosition.y, this.amplifierPosition.z);
-        obstacle.rotateY(this.laserRotation);
+            this.scene.remove(this.object.object);
 
-        this.scene.add(obstacle);
+            var obstacleGeometry = new THREE.BoxGeometry(1, 1, 1);
+            var obstacleMaterial = new THREE.MeshLambertMaterial({
+                color: 0xffffff,
+                ambient: 0xffffff,
+                transparent: true,
+                opacity: 1
+            });
+            var obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+            obstacle.scale.set(100, 100, 10);
+            obstacle.position.set(this.amplifierPosition.x, this.amplifierPosition.y, this.amplifierPosition.z);
+            obstacle.rotateY(this.laserRotation);
+            obstacle.name = 'obstacle';
 
-        this.generationMode = false;
-        if(this.laserOnFlag) {
-            //this.laserOff();
-            //this.laserOn();
-            this.restartAnimatedLaser();
-            //this.updateSimpleLaser();
+            this.scene.add(obstacle);
+
+            this.generationMode = false;
+            if (this.laserOnFlag) {
+                if (this.laserTypeActive == "Animated") this.restartAnimatedLaser();
+                else this.restartSimpleLaser();
+            }
+
+            if(this.labelsOn) {
+                this.deleteLabels();
+                this.setLabels();
+            }
+            if (this.laserOnFlag && this.laserTypeActive == "Simple") this.setVirtualObjectLabel();
         }
 
+    },
+
+    construction: function(){
+        if(!this.generationMode) {
+            var ob = this.scene.getObjectByName("obstacle");
+
+            this.scene.remove(ob);
+
+            this.scene.add(this.object.object);
+
+            var amplifier = this.scene.getObjectByName("amplifier2").clone();
+            amplifier.position.set(this.amplifierPosition.x, this.amplifierPosition.y, this.amplifierPosition.z);
+            amplifier.name = 'amplifier1';
+
+            this.generationMode = true;
+            if (this.laserOnFlag) {
+                if (this.laserTypeActive == "Animated") this.restartAnimatedLaser();
+                else this.restartSimpleLaser();
+            }
+
+            if(this.labelsOn) {
+                this.deleteLabels();
+                this.setLabels();
+            }
+        }
     },
 
     teste: function(){

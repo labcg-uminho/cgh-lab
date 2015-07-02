@@ -213,16 +213,23 @@
                     this.view = mainScene.objectPerspective.currentViewName;
                 }*/
                 this.teste = function(){mainScene.teste()};
+                this.generation = function(){ mainScene.construction(); };
+                this.recon = function(){ mainScene.reconstruction(); };
             };
 
             var guiPerspectivesConfig = new parametersGUIPerspectives();
+
+            var folder2 = gui.addFolder('Change Mode');
+            folder2.open();
+            folder2.add(guiPerspectivesConfig, 'generation').name('Generation');
+            folder2.add(guiPerspectivesConfig, 'recon').name('Reconstruction');
 
             var folder3 = gui.addFolder('Change Perspective');
             folder3.open();
             folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
             folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
             folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
-            folder3.add(guiPerspectivesConfig, 'teste').name('teste');
+            //folder3.add(guiPerspectivesConfig, 'teste').name('teste');
             /*var lockCamera = folder3.add(guiPerspectivesConfig, 'cameraLocked').name('Free Camera?');
             lockCamera.onChange(function(value){
                 mainScene.lockCamera(value);
