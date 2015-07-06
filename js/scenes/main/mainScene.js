@@ -142,7 +142,7 @@ CGHLab.MainScene = function( renderer, camera, controls )
 
     var simpleLaserList = [];
 
-    this.generationMode = true;
+    this.generationMode = "Generation";
 
     //Variables to store reference wave and object wave geometry
     var laserLight1 = {
@@ -542,7 +542,7 @@ CGHLab.MainScene.prototype = {
         this.labelsList.push(spritey2.name);
 
         var spritey3;
-        if(this.generationMode) {
+        if(this.generationMode == "Generation") {
             spritey3 = CGHLab.Helpers.makeTextSprite(" Objective Lens ", {
                 fontsize: 24,
                 borderColor: {r: 255, g: 0, b: 0, a: 1.0},
@@ -587,7 +587,7 @@ CGHLab.MainScene.prototype = {
 
         var spritey6;
 
-        if(this.generationMode) {
+        if(this.generationMode == "Generation") {
             if (this.mainPerspectiveChosen) {
                 spritey6 = CGHLab.Helpers.makeTextSprite(" Object ", {
                     fontsize: 24,
@@ -640,7 +640,7 @@ CGHLab.MainScene.prototype = {
     },
 
     setBeamLabels: function(){
-        if(this.generationMode) {
+        if(this.generationMode == "Generation") {
             var spritey = CGHLab.Helpers.makeTextSprite(" Illumination Beam ", {
                 fontsize: 24,
                 borderColor: {r: 0, g: 0, b: 255, a: 1.0},
@@ -890,7 +890,7 @@ CGHLab.MainScene.prototype = {
         this.scene.add(laserL_AP1);
         this.addToSimpleLaser(laserL_AP1);
 
-        if(this.generationMode) {
+        if(this.generationMode == "Generation") {
             var dirAmplifier = this.getDirAmplifier();
             var negDirAmplifier = dirAmplifier.clone().normalize().negate();
             //extend the maximum path from 'laser to object' to 'laser to object + 50 units' on the object perspective, so the wavefronts
@@ -1016,7 +1016,7 @@ CGHLab.MainScene.prototype = {
         this.simpleLaserOn = true;
 
         //In reconstruction mode the object disappears so we need to add it again when using the simple laser
-        if(!this.generationMode) {
+        if(this.generationMode == "Reconstruction") {
             this.scene.add(this.object.object);
             if(this.labelsOn) this.setVirtualObjectLabel();
         }
@@ -1138,7 +1138,7 @@ CGHLab.MainScene.prototype = {
             this.patternShown = false;
         }
 
-        if(!this.generationMode){
+        if(this.generationMode == "Reconstruction"){
             this.scene.remove(this.object.object);
             this.deleteVirtualObjectLabel();
         }
@@ -1198,7 +1198,7 @@ CGHLab.MainScene.prototype = {
     },
 
     updateLaser: function(){
-        if(this.generationMode) this.updateLaserConstruction();
+        if(this.generationMode == "Generation") this.updateLaserConstruction();
         else this.updateLaserReconstruction();
     },
 
@@ -1716,7 +1716,7 @@ CGHLab.MainScene.prototype = {
     },
 
     reconstruction: function(){
-        if(this.generationMode) {
+        if(this.generationMode == "Generation") {
             if(!this.interferencePatternOn) alert("There is no interference pattern to reconstruct!");
             else {
                 //console.log(this.mainPerspectiveChosen);
@@ -1742,7 +1742,7 @@ CGHLab.MainScene.prototype = {
 
                 this.scene.add(obstacle);
 
-                this.generationMode = false;
+                this.generationMode = "Reconstruction";
                 if (this.laserOnFlag) {
                     if (this.laserTypeActive == "Animated") this.restartAnimatedLaser();
                     else this.restartSimpleLaser();
@@ -1760,7 +1760,7 @@ CGHLab.MainScene.prototype = {
     },
 
     construction: function(){
-        if(!this.generationMode) {
+        if(this.generationMode == "Reconstruction") {
             var ob = this.scene.getObjectByName("obstacle");
 
             this.scene.remove(ob);
@@ -1771,7 +1771,7 @@ CGHLab.MainScene.prototype = {
             amplifier.position.set(this.amplifierPosition.x, this.amplifierPosition.y, this.amplifierPosition.z);
             amplifier.name = 'amplifier1';
 
-            this.generationMode = true;
+            this.generationMode = "Generation";
             if (this.laserOnFlag) {
                 if (this.laserTypeActive == "Animated") this.restartAnimatedLaser();
                 else this.restartSimpleLaser();

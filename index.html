@@ -158,16 +158,28 @@
                 this.geometry = mainScene.object.figure;
                 this.detail = mainScene.object.detail;
                 //this.teste = function(){mainScene.teste()};
-                this.generation = function(){ mainScene.construction(); setGUI('main')};
-                this.recon = function(){ mainScene.reconstruction(); setGUI('main')};
+                this.generation = mainScene.generationMode;//function(){ mainScene.construction(); setGUI('main')};
+                //this.recon = function(){ mainScene.reconstruction(); setGUI('main')};
             };
 
             var guiPerspectivesConfig = new parametersGUIPerspectives();
 
             var folder2 = gui.addFolder('Change Mode');
             folder2.open();
-            folder2.add(guiPerspectivesConfig, 'generation').name('Generation');
-            folder2.add(guiPerspectivesConfig, 'recon').name('Reconstruction');
+            var modes = ["Generation", "Reconstruction"];
+            var choose_mode = folder2.add(guiPerspectivesConfig, 'generation', modes).name('Choose Mode');
+            choose_mode.onChange(function (value) {
+                if(value == "Generation") {
+                    mainScene.construction();
+                    setGUI('main');
+                }
+                else {
+                    mainScene.reconstruction();
+                    setGUI('main');
+                }
+            });
+            //folder2.add(guiPerspectivesConfig, 'generation').name('Generation');
+            //folder2.add(guiPerspectivesConfig, 'recon').name('Reconstruction');
 
             if(mainScene.generationMode) {
                 var folder3 = gui.addFolder('Change Perspective');
