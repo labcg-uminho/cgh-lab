@@ -14,7 +14,7 @@ CGHLab.MainPerspective.prototype = {
     constructor: CGHLab.MainPerspective,
 
     //Transforms a degrees in radians and rotate the object. This function calculates the difference between the actual rotation and the new value
-    //of rotation and rotate that value. For example, if the object has a 90º rotation and you want rotate it to 100º, the rotation will be of 10º
+    //of rotation and rotate that value. For example, if the object has a 90ï¿½ rotation and you want rotate it to 100ï¿½, the rotation will be of 10ï¿½
     rotateObject: function( value )
     {
         var rad = CGHLab.Helpers.deg2rad(value);
@@ -47,7 +47,6 @@ CGHLab.MainPerspective.prototype = {
             this.mainScene.objWaveArrived = false;
             this.mainScene.patternShown = false;
         }
-        //if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
 
         if(this.mainScene.laserOnFlag && this.mainScene.simpleLaserOn) this.mainScene.updateSimpleLaser();
     },
@@ -113,7 +112,6 @@ CGHLab.MainPerspective.prototype = {
         //The rotation is on the Z because the cylinder was rotated on the init function
         expander.rotateZ(this.mainScene.expanderRotation);
 
-        //console.log(this.mainScene.expanderRotation);
         //Calculate expander rotation to match rotation of reference wave
         var negDirMirror2 = newDirMirror.clone().negate().normalize();
         var dirSplitter2 = this.mainScene.getDirSplitter().clone().normalize();
@@ -166,12 +164,6 @@ CGHLab.MainPerspective.prototype = {
         //if simple laser is on then it needs to be updated
         if(this.mainScene.simpleLaserOn) {
             var laserB_M = this.mainScene.scene.getObjectByName('simpleLaserBeam');
-            //Create a phantom mirror position 50 units behind of the mirror on the direction of the mirror.
-            //var dirSplitterNegPhantom = this.mainScene.getDirSplitter().clone().normalize().negate();
-            //var unitsSplitterToMirrorPhantom = (this.mainScene.baseDistance2 + 50) - (this.mainScene.baseDistance1 * Math.tan(Math.PI/4 - this.mainScene.referenceWaveAngle));
-            //var beamSplitterMirrorPositionPhantom = new THREE.Vector3();
-            //beamSplitterMirrorPositionPhantom.addVectors(this.mainScene.beamSplitterPosition, dirSplitterNegPhantom.multiplyScalar(unitsSplitterToMirrorPhantom));
-            //Use the phantom position to calculate the middle position
             var middleB_M = new THREE.Vector3();
             middleB_M.subVectors(this.mainScene.mirrorPosition, this.mainScene.beamSplitterPosition).divideScalar(2);
             //Use the phantom position to calculate the length of the laser

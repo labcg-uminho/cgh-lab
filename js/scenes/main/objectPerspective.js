@@ -45,14 +45,7 @@ CGHLab.ObjectPerspective.prototype = {
     sendLightPointWaveSimple: function( lightPoints ){
         var i;
         var lightPointGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-        /*var shader = CGHLab.GeometryShaderLib.sphereShader;
-        var lightPointMaterial = new THREE.ShaderMaterial({
-            uniforms: shader.uniforms,
-            vertexShader: shader.vertexShader,
-            fragmentShader: shader.fragmentShader,
-            side: THREE.DoubleSide,
-            transparent: true
-        });*/
+
         var lightPointMesh = new THREE.Mesh(lightPointGeometry, this.lightPointWaveShader);
 
         var platePoints = mainScene.platePoints;
@@ -67,30 +60,6 @@ CGHLab.ObjectPerspective.prototype = {
             this.mainScene.scene.add(clone);
             this.mainScene.addToLightPointWaves(clone);
         }
-    },
-
-    sendLightPointWaveComplete: function( lightPoint ){
-        var lightPointGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-        /*var shader = CGHLab.GeometryShaderLib.sphereShader;
-         var lightPointMaterial = new THREE.ShaderMaterial({
-         uniforms: shader.uniforms,
-         vertexShader: shader.vertexShader,
-         fragmentShader: shader.fragmentShader,
-         side: THREE.DoubleSide,
-         transparent: true
-         });*/
-        var lightPointMesh = new THREE.Mesh(lightPointGeometry, this.lightPointWaveShader);
-
-        var platePoints = mainScene.platePoints;
-
-        var clone = lightPointMesh.clone();
-        var materialClone  = this.lightPointWaveShader.clone();
-        clone.position.set(lightPoint.position.x, lightPoint.position.y, lightPoint.position.z);
-        materialClone.uniforms.origin.value = new THREE.Vector3(lightPoint.position.x, lightPoint.position.y, lightPoint.position.z);
-        materialClone.uniforms.plate.value = platePoints;
-        clone.material = materialClone;
-        this.mainScene.scene.add(clone);
-        this.mainScene.addToLightPointWaves(clone);
     },
 
     rotateObject: function( value )
@@ -143,7 +112,6 @@ CGHLab.ObjectPerspective.prototype = {
             this.mainScene.objWaveArrived = false;
             this.mainScene.patternShown = false;
         }
-        //if(!this.mainScene.interferencePatternInstant) this.mainScene.hideInterferencePattern();
 
         if(this.mainScene.laserOnFlag && this.mainScene.simpleLaserOn) this.mainScene.updateSimpleLaser();
     },

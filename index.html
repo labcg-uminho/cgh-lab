@@ -4,6 +4,7 @@
     <title>Computer Generated Holography Virtual Lab</title>
     <link rel="stylesheet" href="css/base.css" />
 </head>
+<body>
     <div id="container"></div>
 
     <script src="js/three.min.js"></script>
@@ -49,18 +50,9 @@
         var container, stats;
         var gui = new dat.GUI();
         var currentPerspective;
-        var cameraRotationMain = 0;
-        var cameraRotationMainMax = Math.PI/2;
-        var cameraRotationObj = 0;
-        var cameraRotationObjMax = Math.PI/2;
-        var map, mapWidth = 240, mapHeight = 160;
-        var cameraOrtho;
 
         var rayCaster;
         var mouse = new THREE.Vector2(), INTERSECTED, SELECTED;
-
-        //var object, objectPosition, objectRotation, center;
-        //var referenceWave;
 
         init();
 
@@ -68,13 +60,6 @@
 
         function init() {
             container = document.getElementById('container');
-
-            /*var test = document.getElementById('infoBox');
-            var text = document.createTextNode("Bla bla bla");
-            test.appendChild(text);
-            while (test.hasChildNodes()) {
-                test.removeChild(test.childNodes[0]);
-            }*/
 
             ////RENDERER
             renderer = new THREE.WebGLRenderer({antialias: true});
@@ -91,23 +76,6 @@
             camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 10000);
             camera.position.set(0, 500, -350);
 
-            //cameraOrtho = new THREE.OrthographicCamera( - window.innerWidth / 2, window.innerWidth / 2, window.innerHeight / 2, - window.innerHeight / 2, 1, 10 );
-            //cameraOrtho.position.z = 10;
-
-            map = new THREE.OrthographicCamera(
-                    window.innerWidth / -2,		// Left
-                    window.innerWidth / 2,		// Right
-                    window.innerHeight / 2,		// Top
-                    window.innerHeight / -2,	// Bottom
-                    -5000,            			// Near
-                    10000 );           			// Far
-            map.up = new THREE.Vector3(0,0,-1);
-            map.lookAt( new THREE.Vector3(0,-1,0) );
-
-            ////SCENES
-            //spherescene = new THREE.Scene();
-            //mainScene = new CGHLab.MainScene(renderer, camera);
-
             ////CONTROLS
             controls = new THREE.OrbitControls( camera, renderer.domElement );
             controls.target = new THREE.Vector3(0,0,0);
@@ -116,7 +84,7 @@
 
             /*------------------------------------------------------------------------------*/
             ////GEOMETRY
-            mainScene = new CGHLab.MainScene(renderer, camera, map, controls);
+            mainScene = new CGHLab.MainScene(renderer, camera, controls);
             mainScene.init();
             CGHLab.Helpers.addMainPerspectiveInfo();
             controls.target = mainScene.getCenter();
@@ -139,13 +107,10 @@
 
             ////CALLBACKS
             window.addEventListener( 'resize', onWindowResize, false );
-            //window.addEventListener( 'mousemove', onDocumentMouseMove, false );
-            //window.addEventListener( 'mousedown', onDocumentMouseDown, false );
         }
 
         function setGUI( perspective )
         {
-            //gui.destroy();
             gui.destroy();
             gui = new dat.GUI();
             gui.open();
@@ -183,36 +148,16 @@
                     setGUI('plate');
                 };
                 this.labelsOn = mainScene.labelsOn;
-                //this.cameraLocked = mainScene.cameraFree;
                 this.laserTypeChoosen = mainScene.laserTypeActive;
-                //this.laserSimples = function(){if (!simpleLaserOn) mainScene.simpleLaser(); simpleLaserOn = true;};
-                /*this.laserOn = function(){
-                    if (!mainScene.laserOnFlag){
-                        mainScene.laserOn();
-                        mainScene.laserOnFlag = true;
-                    }
-                    else {
-                        mainScene.laserOff();
-                        mainScene.laserOnFlag = false;
-                    }
-                };*/
                 this.laserOn = mainScene.laserOnFlag;
-                //this.laserOff = function(){if (mainScene.laserOnFlag) mainScene.laserOff(); mainScene.laserOnFlag = false;};
-                this.objectRotationSlider = CGHLab.Helpers.rad2deg(mainScene.objectRotationScene);
+                //this.objectRotationSlider = CGHLab.Helpers.rad2deg(mainScene.objectRotationScene);
                 this.geometry = mainScene.object.figure;
                 this.interferencePattern = function(){ mainScene.seeInterferencePattern(); };
                 this.refWaveLength = mainScene.referenceWave.waveLength;
                 this.refWaveAngle = CGHLab.Helpers.rad2deg(mainScene.referenceWaveAngle);
                 this.geometry = mainScene.object.figure;
                 this.detail = mainScene.object.detail;
-                this.simpleSending = mainScene.objWaveSendingTypeChoosen;
-                /*if (perspective == 'main') {
-                    this.view = mainScene.mainPerspective.currentViewName;
-                }
-                else if (perspective == 'object') {
-                    this.view = mainScene.objectPerspective.currentViewName;
-                }*/
-                this.teste = function(){mainScene.teste()};
+                //this.teste = function(){mainScene.teste()};
                 this.generation = function(){ mainScene.construction(); };
                 this.recon = function(){ mainScene.reconstruction(); };
             };
@@ -230,32 +175,6 @@
             folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
             folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
             //folder3.add(guiPerspectivesConfig, 'teste').name('teste');
-            /*var lockCamera = folder3.add(guiPerspectivesConfig, 'cameraLocked').name('Free Camera?');
-            lockCamera.onChange(function(value){
-                mainScene.lockCamera(value);
-                setGUI(perspective);
-            });
-
-            if (!mainScene.cameraFree) {
-                if(perspective == 'main') {
-                    var viewsList = [1, 2, 3, 4];
-                    var viewChosen = folder3.add(guiPerspectivesConfig, 'view', viewsList).name('View');
-                    viewChosen.onChange(function (value) {
-                        mainScene.mainPerspective.currentViewName = value;
-                        cameraRotationMainMax = mainScene.mainPerspective.views[value - 1] - mainScene.mainPerspective.currentView;
-                        rotateCameraMain = true;
-                    });
-                }
-                else if (perspective == 'object'){
-                    var viewsListObj = [1, 2, 3, 4];
-                    var viewChosenObj = folder3.add(guiPerspectivesConfig, 'view', viewsListObj).name('View');
-                    viewChosenObj.onChange(function (value) {
-                        mainScene.objectPerspective.currentViewName = value;
-                        cameraRotationObjMax = mainScene.objectPerspective.views[value - 1] - mainScene.objectPerspective.currentView;
-                        rotateCameraObj = true;
-                    });
-                }
-            }*/
 
             var figureList = ["cube", "sphere", "cylinder", "torus_knot"];
 
@@ -273,7 +192,6 @@
                     else mainScene.laserTypeActive = value;
                 });
 
-                //folderGeneralMain.add(guiPerspectivesConfig, 'laserOn').name('Laser On/Off');
                 var laserOnOpt = folderGeneralMain.add(guiPerspectivesConfig, 'laserOn').name('Laser On/Off');
                 laserOnOpt.onChange(function(value){
                     if(value) {
@@ -325,22 +243,6 @@
                     setGUI(perspective);
                 });
 
-                if(mainScene.laserTypeActive == "Animated") {
-                    var simpleSendingCheck = folderGeneralObject.add(guiPerspectivesConfig, 'simpleSending', mainScene.objWaveSendingTypes).name('LP Wave Sending Type');
-                    simpleSendingCheck.onChange(function (value) {
-                        switch (value) {
-                            case "All Together":
-                                mainScene.simpleWaveSending = true;
-                                break;
-                            case "Collision Detection":
-                                mainScene.simpleWaveSending = false;
-                                break;
-                        }
-                        mainScene.objWaveSendingTypeChoosen = value;
-                    });
-                }
-
-                //folderGeneralObject.add(guiPerspectivesConfig, 'laserOn').name('Laser On/Off');
                 var laserOnOpt2 = folderGeneralObject.add(guiPerspectivesConfig, 'laserOn').name('Laser On/Off');
                 laserOnOpt2.onChange(function(value){
                     if(value) {
@@ -419,6 +321,7 @@
                 if(value) {
                     if (mainScene.laserOnFlag) mainScene.setBeamLabels();
                     mainScene.setLabels();
+                    if (mainScene.objWaveReconstructionArrive) mainScene.setVirtualObjectLabel();
                     mainScene.labelsOn = true;
                 }
                 else {
@@ -437,33 +340,6 @@
             renderer.setSize( window.innerWidth, window.innerHeight );
         }
 
-        /*function onDocumentMouseDown( event )
-        {
-            //event.preventDefault(); //Makes dat.GUI not work properly
-
-            camera.updateMatrixWorld();
-
-            rayCaster.setFromCamera( mouse, camera );
-
-            var intersects = rayCaster.intersectObjects( mainScene.objects );
-
-            if ( intersects.length > 0 ) {
-
-                SELECTED = intersects[ 0 ].object;
-
-                controls.target = SELECTED.position;
-
-            }
-        }*/
-
-        /*function onDocumentMouseMove( event )
-        {
-            //event.preventDefault(); //Makes dat.GUI not work properly
-
-            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-            mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-        }*/
-
         function animate()
         {
             requestAnimationFrame( animate );
@@ -475,13 +351,10 @@
 
         function render()
         {
-            //camera.updateMatrixWorld();
             camera.updateProjectionMatrix();
-            map.updateProjectionMatrix();
 
             if(mainScene.objectPerspectiveChosen){
                 if(currentPerspective != 'object'){
-                    //controls.target = mainScene.objectPosition;
                     setGUI('object');
                     currentPerspective = 'object';
                     mainScene.changeToObjectPerspective();
@@ -489,7 +362,6 @@
             }
             else if(mainScene.platePerspectiveChosen){
                 if(currentPerspective != 'plate'){
-                    //controls.target = mainScene.platePosition;
                     setGUI('plate');
                     currentPerspective = 'plate';
                     mainScene.changeToPlatePerspective();
@@ -497,7 +369,6 @@
             }
             else if(mainScene.mainPerspectiveChosen){
                 if(currentPerspective != 'main'){
-                    //controls.target = mainScene.getCenter();
                     setGUI('main');
                     currentPerspective = 'main';
                     mainScene.changeToMainPerspective();
@@ -508,22 +379,10 @@
             renderer.setViewport( 0, 0, w, h );
             renderer.clear();
 
-            //renderer.setViewport( 10, h - mapHeight - 10, mapWidth, mapHeight );
-            //renderer.render( mainScene.scene, map );
-
             mainScene.mirror.render();
-            //renderer.render(mainScene.scene0, camera);
-            //renderer.clearDepth();
             renderer.render(mainScene.scene, camera);
             renderer.clearDepth();
             renderer.render(mainScene.scene2, camera);
-
-            //renderer.setViewport( 1, 1,   0.5 * w - 2, h - 2 );
-            //renderer.render( mainScene.scene, camera );
-
-            // right side
-            //renderer.setViewport( 0.5 * w + 1, 1,   0.5 * w - 2, h - 2 );
-            //renderer.render( mainScene.scene, map );
         }
 
         function update()
