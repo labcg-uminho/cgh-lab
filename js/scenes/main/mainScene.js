@@ -1717,40 +1717,44 @@ CGHLab.MainScene.prototype = {
 
     reconstruction: function(){
         if(this.generationMode) {
-            //this.changeToMainPerspective();
-            var amp = this.scene.getObjectByName("amplifier");
+            if(!this.interferencePatternOn) alert("There is no interference pattern to reconstruct!");
+            else {
+                //console.log(this.mainPerspectiveChosen);
+                if (!this.mainPerspectiveChosen) this.changeToMainPerspective();
+                var amp = this.scene.getObjectByName("amplifier");
 
-            this.scene.remove(amp);
+                this.scene.remove(amp);
 
-            this.scene.remove(this.object.object);
+                this.scene.remove(this.object.object);
 
-            var obstacleGeometry = new THREE.BoxGeometry(1, 1, 1);
-            var obstacleMaterial = new THREE.MeshLambertMaterial({
-                color: 0xffffff,
-                ambient: 0xffffff,
-                transparent: true,
-                opacity: 1
-            });
-            var obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
-            obstacle.scale.set(100, 100, 10);
-            obstacle.position.set(this.amplifierPosition.x, this.amplifierPosition.y, this.amplifierPosition.z);
-            obstacle.rotateY(this.laserRotation);
-            obstacle.name = 'obstacle';
+                var obstacleGeometry = new THREE.BoxGeometry(1, 1, 1);
+                var obstacleMaterial = new THREE.MeshLambertMaterial({
+                    color: 0xffffff,
+                    ambient: 0xffffff,
+                    transparent: true,
+                    opacity: 1
+                });
+                var obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+                obstacle.scale.set(100, 100, 10);
+                obstacle.position.set(this.amplifierPosition.x, this.amplifierPosition.y, this.amplifierPosition.z);
+                obstacle.rotateY(this.laserRotation);
+                obstacle.name = 'obstacle';
 
-            this.scene.add(obstacle);
+                this.scene.add(obstacle);
 
-            this.generationMode = false;
-            if (this.laserOnFlag) {
-                if (this.laserTypeActive == "Animated") this.restartAnimatedLaser();
-                else this.restartSimpleLaser();
+                this.generationMode = false;
+                if (this.laserOnFlag) {
+                    if (this.laserTypeActive == "Animated") this.restartAnimatedLaser();
+                    else this.restartSimpleLaser();
+                }
+
+                if (this.labelsOn) {
+                    this.deleteAllLabels();
+                    this.setLabels();
+                    if(this.laserOnFlag) this.setBeamLabels();
+                }
+                if (this.laserOnFlag && this.laserTypeActive == "Simple" && this.labelsOn) this.setVirtualObjectLabel();
             }
-
-            if(this.labelsOn) {
-                this.deleteAllLabels();
-                this.setLabels();
-                this.setBeamLabels();
-            }
-            if (this.laserOnFlag && this.laserTypeActive == "Simple" && this.labelsOn) this.setVirtualObjectLabel();
         }
 
     },
@@ -1776,7 +1780,7 @@ CGHLab.MainScene.prototype = {
             if(this.labelsOn) {
                 this.deleteAllLabels();
                 this.setLabels();
-                this.setBeamLabels();
+                if(this.laserOnFlag) this.setBeamLabels();
             }
         }
     },

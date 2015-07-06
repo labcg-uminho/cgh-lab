@@ -158,8 +158,8 @@
                 this.geometry = mainScene.object.figure;
                 this.detail = mainScene.object.detail;
                 //this.teste = function(){mainScene.teste()};
-                this.generation = function(){ mainScene.construction(); };
-                this.recon = function(){ mainScene.reconstruction(); };
+                this.generation = function(){ mainScene.construction(); setGUI('main')};
+                this.recon = function(){ mainScene.reconstruction(); setGUI('main')};
             };
 
             var guiPerspectivesConfig = new parametersGUIPerspectives();
@@ -169,12 +169,14 @@
             folder2.add(guiPerspectivesConfig, 'generation').name('Generation');
             folder2.add(guiPerspectivesConfig, 'recon').name('Reconstruction');
 
-            var folder3 = gui.addFolder('Change Perspective');
-            folder3.open();
-            folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
-            folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
-            folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
-            //folder3.add(guiPerspectivesConfig, 'teste').name('teste');
+            if(mainScene.generationMode) {
+                var folder3 = gui.addFolder('Change Perspective');
+                folder3.open();
+                folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
+                folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
+                folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
+                //folder3.add(guiPerspectivesConfig, 'teste').name('teste');
+            }
 
             var figureList = ["cube", "sphere", "cylinder", "torus_knot"];
 
@@ -204,28 +206,30 @@
                     }
                 });
 
-                var folderObjectMain = gui.addFolder('Object Options');
-                folderObjectMain.open();
-                /*var r = folderObjectMain.add(guiPerspectivesConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
-                r.onChange(function (value) {
-                    mainScene.mainPerspective.rotateObject(value);
-                });*/
-                var geometry = folderObjectMain.add(guiPerspectivesConfig, 'geometry', figureList).name('Geometry');
-                geometry.onChange(function (value) {
-                    mainScene.mainPerspective.changeObject(value);
-                });
+                if(mainScene.generationMode){
+                    var folderObjectMain = gui.addFolder('Object Options');
+                    folderObjectMain.open();
+                    /*var r = folderObjectMain.add(guiPerspectivesConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
+                    r.onChange(function (value) {
+                        mainScene.mainPerspective.rotateObject(value);
+                    });*/
+                    var geometry = folderObjectMain.add(guiPerspectivesConfig, 'geometry', figureList).name('Geometry');
+                    geometry.onChange(function (value) {
+                        mainScene.mainPerspective.changeObject(value);
+                    });
 
-                var folderRefWaveMain = gui.addFolder('Reference Wave Options');
-                folderRefWaveMain.open();
-                var wl = folderRefWaveMain.add(guiPerspectivesConfig, 'refWaveLength').min(0.1).max(3.5).name('WaveLength');
-                wl.onChange(function (value) {
-                    mainScene.referenceWave.waveLength = value;
-                    mainScene.updateShaderUniforms();
-                });
-                var wa = folderRefWaveMain.add(guiPerspectivesConfig, 'refWaveAngle').min(1).max(89).name('Wave Angle');
-                wa.onChange(function (value) {
-                    mainScene.mainPerspective.updateMirror(value);
-                });
+                    var folderRefWaveMain = gui.addFolder('Reference Wave Options');
+                    folderRefWaveMain.open();
+                    var wl = folderRefWaveMain.add(guiPerspectivesConfig, 'refWaveLength').min(0.1).max(3.5).name('WaveLength');
+                    wl.onChange(function (value) {
+                        mainScene.referenceWave.waveLength = value;
+                        mainScene.updateShaderUniforms();
+                    });
+                    var wa = folderRefWaveMain.add(guiPerspectivesConfig, 'refWaveAngle').min(1).max(89).name('Wave Angle');
+                    wa.onChange(function (value) {
+                        mainScene.mainPerspective.updateMirror(value);
+                    });
+                }
             }
             else if(perspective == 'object')
             {
@@ -329,7 +333,7 @@
                     mainScene.labelsOn = false;
                 }
             });
-            folder4.add(guiPerspectivesConfig, 'interferencePattern').name('See Interference Pattern');
+            if(mainScene.generationMode) folder4.add(guiPerspectivesConfig, 'interferencePattern').name('See Interference Pattern');
         }
 
         function onWindowResize()
