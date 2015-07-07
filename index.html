@@ -181,7 +181,7 @@
             //folder2.add(guiPerspectivesConfig, 'generation').name('Generation');
             //folder2.add(guiPerspectivesConfig, 'recon').name('Reconstruction');
 
-            if(mainScene.generationMode) {
+            if(mainScene.generationMode == "Generation") {
                 var folder3 = gui.addFolder('Change Perspective');
                 folder3.open();
                 folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
@@ -218,7 +218,7 @@
                     }
                 });
 
-                if(mainScene.generationMode){
+                if(mainScene.generationMode == "Generation"){
                     var folderObjectMain = gui.addFolder('Object Options');
                     folderObjectMain.open();
                     /*var r = folderObjectMain.add(guiPerspectivesConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
@@ -345,7 +345,7 @@
                     mainScene.labelsOn = false;
                 }
             });
-            if(mainScene.generationMode) folder4.add(guiPerspectivesConfig, 'interferencePattern').name('See Interference Pattern');
+            if(mainScene.generationMode == "Generation") folder4.add(guiPerspectivesConfig, 'interferencePattern').name('See Interference Pattern');
         }
 
         function onWindowResize()
