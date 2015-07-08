@@ -1574,7 +1574,7 @@ CGHLab.MainScene.prototype = {
             this.scene.remove(lightPointsWave.list[i]);
         }
         this.eraseLightPointWaves();
-        this.scene.add(this.object.object);
+        if(this.generationMode == "Generation") this.scene.add(this.object.object);
         this.collidableList = [];
 
         this.controls.enabled = true;
@@ -1720,11 +1720,16 @@ CGHLab.MainScene.prototype = {
             if(!this.interferencePatternOn) alert("There is no interference pattern to reconstruct!");
             else {
                 //console.log(this.mainPerspectiveChosen);
-                if (!this.mainPerspectiveChosen) this.changeToMainPerspective();
+                if (!this.mainPerspectiveChosen) {
+                    this.mainPerspectiveChosen = true;
+                    this.objectPerspectiveChosen = false;
+                    this.platePerspectiveChosen = false;
+                }//this.changeToMainPerspective();
                 var amp = this.scene.getObjectByName("amplifier");
 
                 this.scene.remove(amp);
 
+                this.object.swapMaterial("Virtual");
                 this.scene.remove(this.object.object);
 
                 var obstacleGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -1765,6 +1770,7 @@ CGHLab.MainScene.prototype = {
 
             this.scene.remove(ob);
 
+            this.object.swapMaterial("Real");
             this.scene.add(this.object.object);
 
             var amplifier = this.scene.getObjectByName("amplifier2").clone();

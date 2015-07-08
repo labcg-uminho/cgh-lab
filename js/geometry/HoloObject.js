@@ -48,6 +48,19 @@ CGHLab.HoloObject.prototype = {
         this.convertToLightPoints();
     },
 
+    swapMaterial: function(flag) {
+        if (flag == "Virtual") this.object.material = new THREE.MeshPhongMaterial({
+            color: 0x00ff00,
+            ambient: 0x00ff00
+            //transparent: true,
+            //opacity: 0.75
+        });
+        else if (flag == "Real") this.object.material = new THREE.MeshPhongMaterial({
+            color: 0x00ff00,
+            ambient: 0x00ff00
+        });
+    },
+
     //Convert all the vertices to objects of the class LightPoint.
     convertToLightPoints: function()
     {

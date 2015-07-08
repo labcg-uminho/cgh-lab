@@ -148,7 +148,8 @@
                     setGUI('plate');
                 };
                 this.labelsOn = mainScene.labelsOn;
-                this.laserTypeChoosen = mainScene.laserTypeActive;
+                if(mainScene.laserTypeActive == "Simple") this.laserTypeChoosen = false;
+                if(mainScene.laserTypeActive == "Animated") this.laserTypeChoosen = true;
                 this.laserOn = mainScene.laserOnFlag;
                 //this.objectRotationSlider = CGHLab.Helpers.rad2deg(mainScene.objectRotationScene);
                 this.geometry = mainScene.object.figure;
@@ -158,13 +159,21 @@
                 this.geometry = mainScene.object.figure;
                 this.detail = mainScene.object.detail;
                 //this.teste = function(){mainScene.teste()};
-                this.generation = mainScene.generationMode;//function(){ mainScene.construction(); setGUI('main')};
-                //this.recon = function(){ mainScene.reconstruction(); setGUI('main')};
+                this.generation = function(){ mainScene.construction(); setGUI('main')};
+                this.recon = function(){ mainScene.reconstruction(); setGUI('main')};
             };
 
             var guiPerspectivesConfig = new parametersGUIPerspectives();
 
             var folder2 = gui.addFolder('Change Mode');
+            folder2.open();
+            if(mainScene.generationMode == "Generation"){
+                folder2.add(guiPerspectivesConfig, 'recon').name('Go to reconstruction');
+            }
+            else{
+                folder2.add(guiPerspectivesConfig, 'generation').name('Back to generation');
+            }
+            /*var folder2 = gui.addFolder('Change Mode');
             folder2.open();
             var modes = ["Generation", "Reconstruction"];
             var choose_mode = folder2.add(guiPerspectivesConfig, 'generation', modes).name('Choose Mode');
@@ -177,16 +186,26 @@
                     mainScene.reconstruction();
                     setGUI('main');
                 }
-            });
-            //folder2.add(guiPerspectivesConfig, 'generation').name('Generation');
-            //folder2.add(guiPerspectivesConfig, 'recon').name('Reconstruction');
+            });*/
 
             if(mainScene.generationMode == "Generation") {
                 var folder3 = gui.addFolder('Change Perspective');
                 folder3.open();
-                folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
+                if(mainScene.mainPerspectiveChosen){
+                    folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
+                    folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
+                }
+                else if(mainScene.objectPerspectiveChosen){
+                    folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
+                    folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
+                }
+                else if(mainScene.platePerspectiveChosen){
+                    folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
+                    folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
+                }
+                /*folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
                 folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
-                folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
+                folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');*/
                 //folder3.add(guiPerspectivesConfig, 'teste').name('teste');
             }
 
@@ -194,17 +213,9 @@
 
             if(perspective == 'main')
             {
+
                 var folderGeneralMain = gui.addFolder('Laser Options');
                 folderGeneralMain.open();
-                var type = folderGeneralMain.add(guiPerspectivesConfig, 'laserTypeChoosen', mainScene.laserTypes).name('Laser Type');
-                type.onChange(function (value){
-                    if(mainScene.laserOnFlag){
-                        mainScene.laserOff();
-                        mainScene.laserTypeActive = value;
-                        mainScene.laserOn();
-                    }
-                    else mainScene.laserTypeActive = value;
-                });
 
                 var laserOnOpt = folderGeneralMain.add(guiPerspectivesConfig, 'laserOn').name('Laser On/Off');
                 laserOnOpt.onChange(function(value){
@@ -215,6 +226,20 @@
                     else {
                         mainScene.laserOff();
                         mainScene.laserOnFlag = false;
+                    }
+                });
+
+                var type = folderGeneralMain.add(guiPerspectivesConfig, 'laserTypeChoosen').name('Animated Laser?');
+                type.onChange(function (value){
+                    if(mainScene.laserOnFlag){
+                        mainScene.laserOff();
+                        if(value) mainScene.laserTypeActive = "Animated";
+                        else mainScene.laserTypeActive = "Simple";
+                        mainScene.laserOn();
+                    }
+                    else {
+                        if(value) mainScene.laserTypeActive = "Animated";
+                        else mainScene.laserTypeActive = "Simple";
                     }
                 });
 
@@ -248,17 +273,6 @@
                 var folderGeneralObject = gui.addFolder('Laser Options');
                 folderGeneralObject.open();
 
-                var type2 = folderGeneralObject.add(guiPerspectivesConfig, 'laserTypeChoosen', mainScene.laserTypes).name('Laser Type');
-                type2.onChange(function (value){
-                    if(mainScene.laserOnFlag){
-                        mainScene.laserOff();
-                        mainScene.laserTypeActive = value;
-                        mainScene.laserOn();
-                    }
-                    else mainScene.laserTypeActive = value;
-                    setGUI(perspective);
-                });
-
                 var laserOnOpt2 = folderGeneralObject.add(guiPerspectivesConfig, 'laserOn').name('Laser On/Off');
                 laserOnOpt2.onChange(function(value){
                     if(value) {
@@ -271,6 +285,20 @@
                     }
                 });
 
+                var type2 = folderGeneralObject.add(guiPerspectivesConfig, 'laserTypeChoosen').name('Animated Laser?');
+                type2.onChange(function (value){
+                    if(mainScene.laserOnFlag){
+                        mainScene.laserOff();
+                        if(value) mainScene.laserTypeActive = "Animated";
+                        else mainScene.laserTypeActive = "Simple";
+                        mainScene.laserOn();
+                    }
+                    else {
+                        if(value) mainScene.laserTypeActive = "Animated";
+                        else mainScene.laserTypeActive = "Simple";
+                    }
+                    setGUI(perspective);
+                });
 
                 var folderObjectObject = gui.addFolder('Object Options');
                 folderObjectObject.open();
