@@ -38,15 +38,15 @@ CGHLab.Helpers = {
         var canvas = document.createElement('canvas');
         //console.log(canvas.width);
         //console.log(canvas.height);
-        //canvas.width = 200;
-        //canvas.height = 100;
+        //canvas.width = 100;
+        //canvas.height = 150;
         var context = canvas.getContext('2d');
         context.font = "Bold " + fontsize + "px " + fontface;
 
         // get size data (height depends only on font size)
         var metrics = context.measureText( message );
         var textWidth = metrics.width;
-
+        //canvas.width = textWidth;
 
         // background color
         context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + ","
@@ -56,6 +56,8 @@ CGHLab.Helpers = {
         + borderColor.b + "," + borderColor.a + ")";
 
         context.lineWidth = borderThickness;
+        //context.textAlign = "center";
+        //context.textBaseline = "middle";
         CGHLab.Helpers.roundRect(context, borderThickness/2, borderThickness/2, textWidth + borderThickness, fontsize * 1.4 + borderThickness, 6);
         // 1.4 is extra height factor for text below baseline: g,j,p,q.
 
