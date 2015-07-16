@@ -394,11 +394,11 @@
             var folder2 = gui.addFolder('Change Mode');
             folder2.open();
             if(mainScene.generationMode == "Generation"){
-                var reconstruction = folder2.add(guiPerspectivesConfig, 'recon').name('Go to reconstruction');
+                var reconstruction = folder2.add(guiPerspectivesConfig, 'recon').name('Go to Reconstruction');
                 reconstruction.domElement.parentNode.parentNode.title = "If there is an interference pattern generated it is possible to see a simulation of its reconstruction";
             }
             else{
-                var construction = folder2.add(guiPerspectivesConfig, 'generation').name('Back to generation');
+                var construction = folder2.add(guiPerspectivesConfig, 'generation').name('Back to Generation');
                 construction.domElement.parentNode.parentNode.title = "Go back to the generation mode to generate a new interference pattern";
             }
         }
