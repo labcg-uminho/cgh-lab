@@ -39,9 +39,9 @@
     <div id="infoBox" title="Lab Information">
     </div>
 
-    <!--<div id="info">For more information click the "i" icon on the bottom left conner.<br/>
-        Made by Tiago Leite
-    </div>-->
+    <div id="info">For more information click the "i" icon on the top left conner.<br/>
+        Made by Tiago Leite - <a href="https://github.com/TiagoLeite07/cgh-lab" target="_blank">On GitHub</a>
+    </div>
 
     <script>
         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -165,14 +165,6 @@
 
             var guiPerspectivesConfig = new parametersGUIPerspectives();
 
-            var folder2 = gui.addFolder('Change Mode');
-            folder2.open();
-            if(mainScene.generationMode == "Generation"){
-                folder2.add(guiPerspectivesConfig, 'recon').name('Go to reconstruction');
-            }
-            else{
-                folder2.add(guiPerspectivesConfig, 'generation').name('Back to generation');
-            }
             /*var folder2 = gui.addFolder('Change Mode');
             folder2.open();
             var modes = ["Generation", "Reconstruction"];
@@ -188,28 +180,8 @@
                 }
             });*/
 
-            if(mainScene.generationMode == "Generation") {
-                var folder3 = gui.addFolder('Change Perspective');
-                folder3.open();
-                if(mainScene.mainPerspectiveChosen){
-                    folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
-                    folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
-                }
-                else if(mainScene.objectPerspectiveChosen){
-                    folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
-                    folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
-                }
-                else if(mainScene.platePerspectiveChosen){
-                    folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
-                    folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
-                }
-                /*folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
-                folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
-                folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');*/
-                //folder3.add(guiPerspectivesConfig, 'teste').name('teste');
-            }
-
-            var figureList = ["cube", "sphere", "cylinder", "torus_knot"];
+            var figureList = ["Cube", "Sphere", "Cylinder", "Torus Knot"];
+            var detailList = ["Low", "Medium", "High"];
 
             if(perspective == 'main')
             {
@@ -218,6 +190,7 @@
                 folderGeneralMain.open();
 
                 var laserOnOpt = folderGeneralMain.add(guiPerspectivesConfig, 'laserOn').name('Laser On/Off');
+                laserOnOpt.domElement.parentNode.parentNode.title = "Turn the laser on and off";
                 laserOnOpt.onChange(function(value){
                     if(value) {
                         mainScene.laserOn();
@@ -230,6 +203,7 @@
                 });
 
                 var type = folderGeneralMain.add(guiPerspectivesConfig, 'laserTypeChoosen').name('Animated Laser?');
+                type.domElement.parentNode.parentNode.title = "Change the type of laser. By default, it is using a non animated laser, but it is possible to change this parameter so the laser becomes animated";
                 type.onChange(function (value){
                     if(mainScene.laserOnFlag){
                         mainScene.laserOff();
@@ -244,27 +218,30 @@
                 });
 
                 if(mainScene.generationMode == "Generation"){
-                    var folderObjectMain = gui.addFolder('Object Options');
-                    folderObjectMain.open();
-                    /*var r = folderObjectMain.add(guiPerspectivesConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
-                    r.onChange(function (value) {
-                        mainScene.mainPerspective.rotateObject(value);
-                    });*/
-                    var geometry = folderObjectMain.add(guiPerspectivesConfig, 'geometry', figureList).name('Geometry');
-                    geometry.onChange(function (value) {
-                        mainScene.mainPerspective.changeObject(value);
-                    });
-
                     var folderRefWaveMain = gui.addFolder('Reference Wave Options');
                     folderRefWaveMain.open();
                     var wl = folderRefWaveMain.add(guiPerspectivesConfig, 'refWaveLength').min(0.1).max(3.5).name('WaveLength');
+                    wl.domElement.parentNode.parentNode.title = "Change the wavelength of the reference wave. This will change the interference pattern and the animated laser in case it is on";
                     wl.onChange(function (value) {
                         mainScene.referenceWave.waveLength = value;
                         mainScene.updateShaderUniforms();
                     });
                     var wa = folderRefWaveMain.add(guiPerspectivesConfig, 'refWaveAngle').min(1).max(89).name('Wave Angle');
+                    wa.domElement.parentNode.parentNode.title = "Change the angle that the reference wave makes with the holographic plate. This will change the interference pattern and the position of the mirror and lens";
                     wa.onChange(function (value) {
                         mainScene.mainPerspective.updateMirror(value);
+                    });
+
+                    var folderObjectMain = gui.addFolder('Object Options');
+                    folderObjectMain.open();
+                    /*var r = folderObjectMain.add(guiPerspectivesConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
+                     r.onChange(function (value) {
+                     mainScene.mainPerspective.rotateObject(value);
+                     });*/
+                    var geometry = folderObjectMain.add(guiPerspectivesConfig, 'geometry', figureList).name('Geometry');
+                    geometry.domElement.parentNode.parentNode.title = "Choose the geometric figure that will be used to generate the pattern of interference";
+                    geometry.onChange(function (value) {
+                        mainScene.mainPerspective.changeObject(value);
                     });
                 }
             }
@@ -274,6 +251,7 @@
                 folderGeneralObject.open();
 
                 var laserOnOpt2 = folderGeneralObject.add(guiPerspectivesConfig, 'laserOn').name('Laser On/Off');
+                laserOnOpt2.domElement.parentNode.parentNode.title = "Turn the laser on and off";
                 laserOnOpt2.onChange(function(value){
                     if(value) {
                         mainScene.laserOn();
@@ -286,6 +264,7 @@
                 });
 
                 var type2 = folderGeneralObject.add(guiPerspectivesConfig, 'laserTypeChoosen').name('Animated Laser?');
+                type2.domElement.parentNode.parentNode.title = "Change the type of laser. By default, it is using a non animated laser, but it is possible to change this parameter so the laser becomes animated";
                 type2.onChange(function (value){
                     if(mainScene.laserOnFlag){
                         mainScene.laserOff();
@@ -307,15 +286,17 @@
                     mainScene.objectPerspective.rotateObject(value);
                 });*/
                 var geometryObj = folderObjectObject.add( guiPerspectivesConfig, 'geometry', figureList ).name('Geometry');
+                geometryObj.domElement.parentNode.parentNode.title = "Choose the geometric figure that will be used to generate the pattern of interference";
                 geometryObj.onChange(function(value)
                 {
                     mainScene.objectPerspective.changeObject(value);
                     setGUI('object');
                 });
-                var detailList = [];
-                if (mainScene.object.figure == 'sphere') detailList = [ "low", "high" ];
-                else detailList = [ "low", "medium", "high" ];
-                var detailObj = folderObjectObject.add( guiPerspectivesConfig, 'detail', detailList ).name('Detail');
+                var detailListObj = [];
+                if (mainScene.object.figure == 'sphere') detailListObj = [ detailList[0], detailList[2] ];
+                else detailListObj = detailList;
+                var detailObj = folderObjectObject.add( guiPerspectivesConfig, 'detail', detailListObj ).name('Detail');
+                detailObj.domElement.parentNode.parentNode.title = "Change the detail of the geometric figure chosen. This will increase or decrease the number os light points used to create the interference pattern, giving it more or less accuracy";
                 detailObj.onChange(function(value)
                 {
                     mainScene.objectPerspective.changeDetail(mainScene.object.figure, value);
@@ -323,13 +304,28 @@
             }
             else if(perspective == 'plate')
             {
+                var folderRefWavePlate = gui.addFolder('Reference Wave Options');
+                folderRefWavePlate.open();
+                var wlp = folderRefWavePlate.add(guiPerspectivesConfig, 'refWaveLength').min(0.1).max(3.5).name('WaveLength');
+                wlp.domElement.parentNode.parentNode.title = "Change the wavelength of the reference wave. This will change the interference pattern and the animated laser in case it is on";
+                wlp.onChange(function(value){
+                    mainScene.referenceWave.waveLength = value;
+                    mainScene.updateShaderUniforms();
+                });
+                var wap = folderRefWavePlate.add(guiPerspectivesConfig, 'refWaveAngle').min(1).max(89).name('Wave Angle');
+                wap.domElement.parentNode.parentNode.title = "Change the angle that the reference wave makes with the holographic plate. This will change the interference pattern and the position of the mirror and lens";
+                wap.onChange(function(value){
+                    mainScene.mainPerspective.updateMirror(value);
+                });
+
                 var folderObjectPlate = gui.addFolder('Object Options');
                 folderObjectPlate.open();
                 /*var rp = folderObjectPlate.add( guiPerspectivesConfig, 'objectRotationSlider').min(0).max(360).name('Rotation');
-                rp.onChange(function(value){
-                    mainScene.mainPerspective.rotateObject(value);
-                });*/
+                 rp.onChange(function(value){
+                 mainScene.mainPerspective.rotateObject(value);
+                 });*/
                 var geometryPlate = folderObjectPlate.add( guiPerspectivesConfig, 'geometry', figureList ).name('Geometry');
+                geometryPlate.domElement.parentNode.parentNode.title = "Choose the geometric figure that will be used to generate the pattern of interference";
                 geometryPlate.onChange(function(value)
                 {
                     mainScene.platePerspective.changeObject(value);
@@ -337,30 +333,20 @@
                 });
 
                 var detailListPlate = [];
-                if (mainScene.object.figure == 'sphere') detailListPlate = [ "low", "high" ];
-                else detailListPlate = [ "low", "medium", "high" ];
+                if (mainScene.object.figure == 'sphere') detailListPlate = [ detailList[0], detailList[2] ];
+                else detailListPlate = detailList;
                 var detailObjPlate = folderObjectPlate.add( guiPerspectivesConfig, 'detail', detailListPlate ).name('Detail');
+                detailObjPlate.domElement.parentNode.parentNode.title = "Change the detail of the geometric figure chosen. This will increase or decrease the number os light points used to create the interference pattern, giving it more or less accuracy";
                 detailObjPlate.onChange(function(value)
                 {
                     mainScene.platePerspective.changeDetail(mainScene.object.figure, value);
-                });
-
-                var folderRefWavePlate = gui.addFolder('Reference Wave Options');
-                folderRefWavePlate.open();
-                var wlp = folderRefWavePlate.add(guiPerspectivesConfig, 'refWaveLength').min(0.1).max(3.5).name('WaveLength');
-                wlp.onChange(function(value){
-                    mainScene.referenceWave.waveLength = value;
-                    mainScene.updateShaderUniforms();
-                });
-                var wap = folderRefWavePlate.add(guiPerspectivesConfig, 'refWaveAngle').min(1).max(89).name('Wave Angle');
-                wap.onChange(function(value){
-                    mainScene.mainPerspective.updateMirror(value);
                 });
             }
 
             var folder4 = gui.addFolder('Other Options');
             folder4.open();
             var labelsOnOpt = folder4.add(guiPerspectivesConfig, 'labelsOn').name('Labels On?');
+            labelsOnOpt.domElement.parentNode.parentNode.title = "Turn the labels on of off. By default, they are on";
             labelsOnOpt.onChange(function(value){
                 if(value) {
                     if (mainScene.laserOnFlag) mainScene.setBeamLabels();
@@ -373,7 +359,48 @@
                     mainScene.labelsOn = false;
                 }
             });
-            if(mainScene.generationMode == "Generation") folder4.add(guiPerspectivesConfig, 'interferencePattern').name('See Interference Pattern');
+            if(mainScene.generationMode == "Generation") {
+                var seeInterf = folder4.add(guiPerspectivesConfig, 'interferencePattern').name('See Interference Pattern');
+                seeInterf.domElement.parentNode.parentNode.title = "This will show the interference pattern without the need to turn the laser on. A quick shortcut for people that don't want to wait or don't want to see extra stuff on the screen";
+            }
+
+            if(mainScene.generationMode == "Generation") {
+                var folder3 = gui.addFolder('Change Perspective');
+                folder3.open();
+                if(mainScene.mainPerspectiveChosen){
+                    var obj = folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
+                    obj.domElement.parentNode.parentNode.title = "Change to the object perspective";
+                    var plate = folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
+                    plate.domElement.parentNode.parentNode.title = "Change to the plate perspective";
+                }
+                else if(mainScene.objectPerspectiveChosen){
+                    var main = folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
+                    main.domElement.parentNode.parentNode.title = "Change to the main perspective";
+                    var plate2 = folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');
+                    plate2.domElement.parentNode.parentNode.title = "Change to the plate perspective";
+                }
+                else if(mainScene.platePerspectiveChosen){
+                    var main2 = folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
+                    main2.domElement.parentNode.parentNode.title = "Change to the main perspective";
+                    var obj2 = folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
+                    obj2.domElement.parentNode.parentNode.title = "Change to the object perspective";
+                }
+                /*folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
+                 folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
+                 folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');*/
+                //folder3.add(guiPerspectivesConfig, 'teste').name('teste');
+            }
+
+            var folder2 = gui.addFolder('Change Mode');
+            folder2.open();
+            if(mainScene.generationMode == "Generation"){
+                var reconstruction = folder2.add(guiPerspectivesConfig, 'recon').name('Go to reconstruction');
+                reconstruction.domElement.parentNode.parentNode.title = "If there is an interference pattern generated it is possible to see a simulation of its reconstruction";
+            }
+            else{
+                var construction = folder2.add(guiPerspectivesConfig, 'generation').name('Back to generation');
+                construction.domElement.parentNode.parentNode.title = "Go back to the generation mode to generate a new interference pattern";
+            }
         }
 
         function onWindowResize()

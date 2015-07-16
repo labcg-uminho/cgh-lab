@@ -112,12 +112,13 @@ CGHLab.Helpers = {
         infoBox.appendChild(para3);
 
         var list = document.createElement("UL");
-        var elem = document.createTextNode("There are several different perspectives of the scene that you can choose;");
-        var elem2 = document.createTextNode("You can turn on and off the laser to see what appends. The laser has two types, a simple one and animated one where it is possible to see the wavefronts moving;");
+        var elem = document.createTextNode("From here you can change to other perspectives: the object perspective and the plate perspective;");
+        var elem2 = document.createTextNode("You can turn on and off the laser to see what appends. There are two laser types: a simple one, and animated one where it is possible to see the wavefronts moving;");
         var elem3 = document.createTextNode("You can change the object to see different interference patterns being created;");
         var elem4 = document.createTextNode("It is possible to change the wavelength of the reference wave and the angle that it makes with the holographic plate;");
-        var elem5 = document.createTextNode("The labels are optional, they can be turn off.");
-        var elemsList = [elem, elem2, elem3, elem4, elem5];
+        var elem5 = document.createTextNode("The labels are optional, they can be turn off;");
+        var elem6 = document.createTextNode("If there is an interference pattern generated it is possible to change to the reconstruction mode, where the hologram reconstruction is simulated.");
+        var elemsList = [elem2, elem3, elem4, elem5, elem, elem6];
         var i;
         for(i = 0; i < elemsList.length; i++){
             var listElem = document.createElement("LI");
@@ -146,17 +147,13 @@ CGHLab.Helpers = {
         infoBox.appendChild(para3);
 
         var list = document.createElement("UL");
-        var elem = document.createTextNode("There are several different perspectives of the scene that you can choose;");
-        var elem2 = document.createTextNode("You can turn on and off the laser to see what appends. The laser has two types, a simple one and animated one where it is possible to see the wavefronts moving;");
-        var elem3 = document.createTextNode("If you choose to see the animated laser on this perspective another option will appear. " +
-        "The \"LP Wave Sending Type\" option allow you to choose how the light points send their waves." +
-        "The \"All Together\" option send all waves at the same time, while the \"Collision Detection\" option only send the wave when the wavefront passes through the point." +
-        "The \"Collision Detection\" option represents better the reality, however, requires more computing power to represent. If you don't have a powerful computer don't use this option." +
-        "Have in attention that both options produce the same interference pattern;");
+        var elem = document.createTextNode("From here you can change to other perspectives: the main perspective and the plate perspective;");
+        var elem2 = document.createTextNode("You can turn on and off the laser to see what appends. There are two laser types: a simple one, and animated one where it is possible to see the wavefronts moving;");
         var elem4 = document.createTextNode("You can change the object to see different interference patterns being created. On this perspective you can also change the level of detail of the object, giving it more or less light points. " +
         "Have in attention that more light points will need more computing power if the animated laser is on;");
-        var elem5 = document.createTextNode("The labels are optional, they can be turn off.");
-        var elemsList = [elem, elem2, elem3, elem4, elem5];
+        var elem5 = document.createTextNode("The labels are optional, they can be turn off;");
+        var elem6 = document.createTextNode("If there is an interference pattern generated it is possible to change to the reconstruction mode, where the hologram reconstruction is simulated.");
+        var elemsList = [elem2, elem4, elem5, elem, elem6];
         var i;
         for(i = 0; i < elemsList.length; i++){
             var listElem = document.createElement("LI");
@@ -185,12 +182,50 @@ CGHLab.Helpers = {
         infoBox.appendChild(para3);
 
         var list = document.createElement("UL");
-        var elem = document.createTextNode("There are several different perspectives of the scene that you can choose;");
+        var elem = document.createTextNode("From here you can change to other perspectives: the main perspective and the object perspective;");
         var elem2 = document.createTextNode("You can change the object to see different interference patterns being created. On this perspective you can also change the level of detail of the object, giving it more or less light points. " +
         "Have in attention that more light points will need more computing power if the animated laser is on;");
         var elem3 = document.createTextNode("It is possible to change the wavelength of the reference wave and the angle that it makes with the holographic plate;");
-        var elem4 = document.createTextNode("The labels are optional, they can be turn off.");
-        var elemsList = [elem, elem2, elem3, elem4];
+        var elem4 = document.createTextNode("The labels are optional, they can be turn off;");
+        var elem5 = document.createTextNode("If there is an interference pattern generated it is possible to change to the reconstruction mode, where the hologram reconstruction is simulated.");
+        var elemsList = [elem2, elem3, elem4, elem, elem5];
+        var i;
+        for(i = 0; i < elemsList.length; i++){
+            var listElem = document.createElement("LI");
+            listElem.appendChild(elemsList[i]);
+            list.appendChild(listElem);
+        }
+        infoBox.appendChild(list);
+
+    },
+
+    addReconstructionModeInfo: function(){
+        var infoBox = document.getElementById('infoBox');
+        var para = document.createElement("P");
+        var text = document.createTextNode("You are now on the RECONSTRUCTION MODE.");
+        para.appendChild(text);
+        infoBox.appendChild(para);
+
+        var para2 = document.createElement("P");
+        var text2 = document.createTextNode("This mode focus on the reconstruction of an interference pattern in order to create a virtual object (hologram).");
+        para2.appendChild(text2);
+        infoBox.appendChild(para2);
+
+        var para4 = document.createElement("P");
+        var text4 = document.createTextNode("On this mode it's not possible to change the interference pattern.");
+        para4.appendChild(text4);
+        infoBox.appendChild(para4);
+
+        var para3 = document.createElement("P");
+        var text3 = document.createTextNode("Use the panel on your right to turn on and off some basic options:");
+        para3.appendChild(text3);
+        infoBox.appendChild(para3);
+
+        var list = document.createElement("UL");
+        var elem2 = document.createTextNode("You can turn on and off the laser to see what appends. There are two laser types: a simple one, and animated one where it is possible to see the wavefronts moving;");
+        var elem4 = document.createTextNode("The labels are optional, they can be turn off;");
+        var elem5 = document.createTextNode("It is always possible to go back and generate other interference pattern by clicking on the button \"Back to generation\".");
+        var elemsList = [elem2, elem4, elem5];
         var i;
         for(i = 0; i < elemsList.length; i++){
             var listElem = document.createElement("LI");

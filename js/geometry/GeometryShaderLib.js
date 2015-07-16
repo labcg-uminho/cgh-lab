@@ -204,7 +204,7 @@ CGHLab.GeometryShaderLib = {
             "   if(check1(worldPosition.xyz) || check2(worldPosition.xyz)) discard;",
             "   if(check3(worldPosition.xyz) || check4(worldPosition.xyz)) discard;",
 
-            "	gl_FragColor = vec4( vec3( 0.5, 0.5, 1.0 ), opacity );",
+            "	gl_FragColor = vec4( vec3( 1.0, 0.5, 0.5 ), opacity );",
 
             THREE.ShaderChunk[ "logdepthbuf_fragment" ],
             THREE.ShaderChunk[ "map_fragment" ],
@@ -396,7 +396,7 @@ CGHLab.GeometryShaderLib = {
             "       if(worldPosition.z < 0.0) discard;",
             "   }",
 
-            "	gl_FragColor = vec4( vec3( 0.5, 0.5, 1.0 ), opacity );",
+            "	gl_FragColor = vec4( vec3( 1.0, 0.5, 0.5 ), opacity );",
 
             THREE.ShaderChunk[ "logdepthbuf_fragment" ],
             THREE.ShaderChunk[ "map_fragment" ],

@@ -455,7 +455,7 @@ CGHLab.MainScene.prototype = {
         beamSplitter2.name = 'beam';
 
         //OBJECT
-        this.object.setObject('cube'); //OPTIONS: cube, sphere, octahedron, tetrahedron
+        this.object.setObject('Cube'); //OPTIONS: cube, sphere, octahedron, tetrahedron
 
         //HOLOGRAPHIC PLATE
         var holographicPlateGeometry = new THREE.PlaneGeometry( 160, 160 );
@@ -523,8 +523,8 @@ CGHLab.MainScene.prototype = {
     setLabels: function(){
         var spritey = CGHLab.Helpers.makeTextSprite( " Laser Emitter ", {
             fontsize: 24,
-            borderColor: {r:255, g:0, b:0, a:1.0},
-            backgroundColor: {r:255, g:100, b:100, a:0.8}
+            borderColor: {r:255, g:255, b:0, a:1.0},
+            backgroundColor: {r:255, g:255, b:77, a:0.8}
         });
         spritey.position.set(this.laserPosition.x, this.laserPosition.y + 5 ,this.laserPosition.z);
         spritey.name = "laser_label";
@@ -533,8 +533,8 @@ CGHLab.MainScene.prototype = {
 
         var spritey2 = CGHLab.Helpers.makeTextSprite( " Beam Splitter ", {
             fontsize: 24,
-            borderColor: {r:255, g:0, b:0, a:1.0},
-            backgroundColor: {r:255, g:100, b:100, a:0.8}
+            borderColor: {r:255, g:255, b:0, a:1.0},
+            backgroundColor: {r:255, g:255, b:77, a:0.8}
         });
         spritey2.position.set(this.beamSplitterPosition.x, this.beamSplitterPosition.y + 15 ,this.beamSplitterPosition.z);
         spritey2.name = "splitter_label";
@@ -545,8 +545,8 @@ CGHLab.MainScene.prototype = {
         if(this.generationMode == "Generation") {
             spritey3 = CGHLab.Helpers.makeTextSprite(" Objective Lens ", {
                 fontsize: 24,
-                borderColor: {r: 255, g: 0, b: 0, a: 1.0},
-                backgroundColor: {r: 255, g: 100, b: 100, a: 0.8}
+                borderColor: {r:255, g:255, b:0, a:1.0},
+                backgroundColor: {r:255, g:255, b:77, a:0.8}
             });
             spritey3.position.set(this.amplifierPosition.x, this.amplifierPosition.y, this.amplifierPosition.z);
             spritey3.name = "amplifier1_label";
@@ -556,8 +556,8 @@ CGHLab.MainScene.prototype = {
         else{
             spritey3 = CGHLab.Helpers.makeTextSprite(" Obstacle ", {
                 fontsize: 24,
-                borderColor: {r: 255, g: 0, b: 0, a: 1.0},
-                backgroundColor: {r: 255, g: 100, b: 100, a: 0.8}
+                borderColor: {r:255, g:255, b:0, a:1.0},
+                backgroundColor: {r:255, g:255, b:77, a:0.8}
             });
             spritey3.position.set(this.amplifierPosition.x, this.amplifierPosition.y, this.amplifierPosition.z);
             spritey3.name = "amplifier1_label";
@@ -567,8 +567,8 @@ CGHLab.MainScene.prototype = {
 
         var spritey4 = CGHLab.Helpers.makeTextSprite( " Objective Lens ", {
             fontsize: 24,
-            borderColor: {r:255, g:0, b:0, a:1.0},
-            backgroundColor: {r:255, g:100, b:100, a:0.8}
+            borderColor: {r:255, g:255, b:0, a:1.0},
+            backgroundColor: {r:255, g:255, b:77, a:0.8}
         });
         spritey4.position.set(this.amplifierPosition2.x, this.amplifierPosition2.y ,this.amplifierPosition2.z);
         spritey4.name = "amplifier2_label";
@@ -577,8 +577,8 @@ CGHLab.MainScene.prototype = {
 
         var spritey5 = CGHLab.Helpers.makeTextSprite( " Mirror ", {
             fontsize: 24,
-            borderColor: {r:255, g:0, b:0, a:1.0},
-            backgroundColor: {r:255, g:100, b:100, a:0.8}
+            borderColor: {r:255, g:255, b:0, a:1.0},
+            backgroundColor: {r:255, g:255, b:77, a:0.8}
         });
         spritey5.position.set(this.mirrorPosition.x, this.mirrorPosition.y + 45 ,this.mirrorPosition.z);
         spritey5.name = "mirror_label";
@@ -591,8 +591,8 @@ CGHLab.MainScene.prototype = {
             if (this.mainPerspectiveChosen) {
                 spritey6 = CGHLab.Helpers.makeTextSprite(" Object ", {
                     fontsize: 24,
-                    borderColor: {r: 255, g: 0, b: 0, a: 1.0},
-                    backgroundColor: {r: 255, g: 100, b: 100, a: 0.8}
+                    borderColor: {r:255, g:255, b:0, a:1.0},
+                    backgroundColor: {r:255, g:255, b:77, a:0.8}
                 });
                 spritey6.position.set(this.objectPosition.x, this.objectPosition.y + 10, this.objectPosition.z);
                 spritey6.name = "object_label";
@@ -603,8 +603,8 @@ CGHLab.MainScene.prototype = {
             else if (this.objectPerspectiveChosen) {
                 spritey6 = CGHLab.Helpers.makeTextSprite(" Object Light Points ", {
                     fontsize: 24,
-                    borderColor: {r: 255, g: 0, b: 0, a: 1.0},
-                    backgroundColor: {r: 255, g: 100, b: 100, a: 0.8}
+                    borderColor: {r:255, g:255, b:0, a:1.0},
+                    backgroundColor: {r:255, g:255, b:77, a:0.8}
                 });
                 spritey6.position.set(this.objectPosition.x, this.objectPosition.y + 10, this.objectPosition.z);
                 spritey6.name = "object_light_points_label";
@@ -618,8 +618,8 @@ CGHLab.MainScene.prototype = {
 
         var spritey7 = CGHLab.Helpers.makeTextSprite( " Holographic Plate ", {
             fontsize: 24,
-            borderColor: {r:255, g:0, b:0, a:1.0},
-            backgroundColor: {r:255, g:100, b:100, a:0.8}
+            borderColor: {r:255, g:255, b:0, a:1.0},
+            backgroundColor: {r:255, g:255, b:77, a:0.8}
         });
         spritey7.position.set(this.platePosition.x, this.platePosition.y + 80 ,this.platePosition.z);
         spritey7.name = "plate_label";
@@ -628,8 +628,8 @@ CGHLab.MainScene.prototype = {
 
         var spritey8 = CGHLab.Helpers.makeTextSprite( " Image Lens ", {
             fontsize: 24,
-            borderColor: {r:255, g:0, b:0, a:1.0},
-            backgroundColor: {r:255, g:100, b:100, a:0.8}
+            borderColor: {r:255, g:255, b:0, a:1.0},
+            backgroundColor: {r:255, g:255, b:77, a:0.8}
         });
         spritey8.position.set(this.expanderPosition.x, this.expanderPosition.y + 80 ,this.expanderPosition.z);
         spritey8.name = "lens_label";
@@ -806,7 +806,7 @@ CGHLab.MainScene.prototype = {
             transparent: true
 
         });
-        lightMaterial.uniforms.ambient.value = new THREE.Color(0x0000ff);
+        lightMaterial.uniforms.ambient.value = new THREE.Color(0xff0000);
         lightMaterial.uniforms.opacity.value = 0.5;
         lightMaterial.uniforms.mirror.value = this.mirrorPoints;
         lightMaterial.uniforms.beam.value = this.beamPoints;
@@ -846,7 +846,7 @@ CGHLab.MainScene.prototype = {
             fog: true,
             transparent: true
         });
-        lightMaterial.uniforms.ambient.value = new THREE.Color(0x0000ff);
+        lightMaterial.uniforms.ambient.value = new THREE.Color(0xff0000);
         lightMaterial.uniforms.opacity.value = 0.5;
         lightMaterial.uniforms.mirror.value = this.mirrorPoints;
         lightMaterial.uniforms.beam.value = this.beamPoints;
@@ -1760,6 +1760,8 @@ CGHLab.MainScene.prototype = {
                 }
                 if (this.laserOnFlag && this.laserTypeActive == "Simple" && this.labelsOn) this.setVirtualObjectLabel();
             }
+            CGHLab.Helpers.eraseInfo();
+            CGHLab.Helpers.addReconstructionModeInfo();
         }
 
     },
@@ -1788,6 +1790,9 @@ CGHLab.MainScene.prototype = {
                 this.setLabels();
                 if(this.laserOnFlag) this.setBeamLabels();
             }
+
+            CGHLab.Helpers.eraseInfo();
+            CGHLab.Helpers.addMainPerspectiveInfo();
         }
     },
 
