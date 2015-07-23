@@ -8,7 +8,6 @@ CGHLab.HoloObject = function ( position, rotation )
     this.rotation = rotation;
 
     this.object = new THREE.Mesh;
-    this.figureList = ["Cube", "Sphere", "Cylinder", "Torus Knot"];
     this.figure = "";
     this.detail = "";
 
@@ -34,8 +33,6 @@ CGHLab.HoloObject.prototype = {
         if (geometry == 'Cube') objectGeometry = new THREE.BoxGeometry(1, 1, 1);
         else if (geometry == 'Sphere') objectGeometry = new THREE.IcosahedronGeometry(0.5, 1);
         else if (geometry == 'Cylinder') objectGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16, 1);
-        //else if (geometry == 'pyramid') objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 1);
-        //else if (geometry == 'torus') objectGeometry = new THREE.TorusGeometry(0.5, 0.2, 8, 6);
         else if (geometry == 'Torus Knot') objectGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 12, 4, 1, 2);
         var objectMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 , ambient: 0x00ff00});
         this.object = new THREE.Mesh(objectGeometry, objectMaterial);
@@ -77,8 +74,6 @@ CGHLab.HoloObject.prototype = {
         }
         this.lightPoints = [];
         this.lightPoints = lightPoints;
-        //console.log(this.lightPoints.length);
-        //alert(lightPoints.length);
     },
 
     changeObject: function( geometry )
@@ -88,8 +83,6 @@ CGHLab.HoloObject.prototype = {
         if (geometry == 'Cube') objectGeometry = new THREE.BoxGeometry(1, 1, 1);
         else if (geometry == 'Sphere') objectGeometry = new THREE.IcosahedronGeometry(0.5, 1);
         else if (geometry == 'Cylinder') objectGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16, 1, false, 0, 2*Math.PI);
-        //else if (geometry == 'pyramid') objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 1);
-        //else if (geometry == 'torus') objectGeometry = new THREE.TorusGeometry(0.5, 0.2, 8, 6);
         else if (geometry == 'Torus Knot') objectGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 12, 4, 1, 2);
         o.geometry = objectGeometry;
         this.figure = geometry;
@@ -111,9 +104,6 @@ CGHLab.HoloObject.prototype = {
                 case 'High':
                     objectGeometry = new THREE.BoxGeometry(1, 1, 1, 4, 4, 4);
                     break;
-                /*case 'ultra':
-                    objectGeometry = new THREE.BoxGeometry(1, 1, 1, 5, 5, 5);
-                    break;*/
             }
         }
         else if (geometry == 'Sphere') {
@@ -137,37 +127,8 @@ CGHLab.HoloObject.prototype = {
                 case 'High':
                     objectGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16, 4);
                     break;
-                /*case 'ultra':
-                    objectGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 16, 4);
-                    break;*/
             }
         }
-        /*else if (geometry == 'pyramid'){
-            switch (detail) {
-                case 'low':
-                    objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 1);
-                    break;
-                case 'medium':
-                    objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 4);
-                    break;
-                case 'high':
-                    objectGeometry = new THREE.CylinderGeometry(0, 0.5, 1, 4, 8);
-                    break;
-            }
-        }*/
-        /*else if (geometry == 'torus') {
-            switch (detail) {
-                case 'low':
-                    objectGeometry = new THREE.TorusGeometry(0.5, 0.2, 8, 8);
-                    break;
-                case 'medium':
-                    objectGeometry = new THREE.TorusGeometry(0.5, 0.2, 8, 12);
-                    break;
-                case 'high':
-                    objectGeometry = new THREE.TorusGeometry(0.5, 0.2, 8, 16);
-                    break;
-            }
-        }*/
         else if (geometry == 'Torus Knot') {
             switch (detail) {
                 case 'Low':
@@ -179,9 +140,6 @@ CGHLab.HoloObject.prototype = {
                 case 'High':
                     objectGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 32, 4, 1, 2);
                     break;
-                /*case 'ultra':
-                    objectGeometry = new THREE.TorusKnotGeometry(0.5, 0.1, 32, 4, 1, 2);
-                    break;*/
             }
         }
         o.geometry = objectGeometry;

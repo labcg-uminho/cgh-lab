@@ -477,13 +477,12 @@ CGHLab.MainScene.prototype = {
         floor.rotation.x = Math.PI / 2;
 
         //AXES HELPER
-        var axes = new THREE.AxisHelper(100);
-        this.scene.add( axes );
+        //var axes = new THREE.AxisHelper(100);
+        //this.scene.add( axes );
 
         //ADD STUFF TO SCENE
         this.scene.add(mirror);
         mirror.add(mirrorBox);
-        //mirror.add(stand);
         this.scene.add(floor);
         this.scene.add(this.object.object);
         this.scene.add(holographicPlate);
@@ -1719,12 +1718,11 @@ CGHLab.MainScene.prototype = {
         if(this.generationMode == "Generation") {
             if(!this.interferencePatternOn) alert("There is no interference pattern to reconstruct!");
             else {
-                //console.log(this.mainPerspectiveChosen);
                 if (!this.mainPerspectiveChosen) {
                     this.mainPerspectiveChosen = true;
                     this.objectPerspectiveChosen = false;
                     this.platePerspectiveChosen = false;
-                }//this.changeToMainPerspective();
+                }
                 var amp = this.scene.getObjectByName("amplifier");
 
                 this.scene.remove(amp);
@@ -1794,13 +1792,5 @@ CGHLab.MainScene.prototype = {
             CGHLab.Helpers.eraseInfo();
             CGHLab.Helpers.addMainPerspectiveInfo();
         }
-    },
-
-    teste: function(){
-        //console.log(camera.getWorldPosition().x, camera.getWorldPosition().y, camera.getWorldPosition().z);
-        //console.log(this.getCenter());
-        this.reconstruction();
-
     }
-
 };

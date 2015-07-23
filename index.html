@@ -165,21 +165,6 @@
 
             var guiPerspectivesConfig = new parametersGUIPerspectives();
 
-            /*var folder2 = gui.addFolder('Change Mode');
-            folder2.open();
-            var modes = ["Generation", "Reconstruction"];
-            var choose_mode = folder2.add(guiPerspectivesConfig, 'generation', modes).name('Choose Mode');
-            choose_mode.onChange(function (value) {
-                if(value == "Generation") {
-                    mainScene.construction();
-                    setGUI('main');
-                }
-                else {
-                    mainScene.reconstruction();
-                    setGUI('main');
-                }
-            });*/
-
             var figureList = ["Cube", "Sphere", "Cylinder", "Torus Knot"];
             var detailList = ["Low", "Medium", "High"];
 
@@ -385,10 +370,6 @@
                     var obj2 = folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
                     obj2.domElement.parentNode.parentNode.title = "Change to the object perspective";
                 }
-                /*folder3.add(guiPerspectivesConfig, 'mainPerspectiveChange').name('To Main');
-                 folder3.add(guiPerspectivesConfig, 'objectPerspectiveChange').name('To Object');
-                 folder3.add(guiPerspectivesConfig, 'platePerspectiveChange').name('To Plate');*/
-                //folder3.add(guiPerspectivesConfig, 'teste').name('teste');
             }
 
             var folder2 = gui.addFolder('Change Mode');
