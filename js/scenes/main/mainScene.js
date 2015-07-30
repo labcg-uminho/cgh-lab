@@ -793,6 +793,13 @@ CGHLab.MainScene.prototype = {
         this.interferencePatternOn = false;
     },
 
+    //Set up the material of the different lasers parts. In order to cut the laser correctly the shader has a flag 'limit'
+    //so the laser can disappear when it should. For example, the laser that travel from the beam splitter to the mirror needs to disappear
+    //in the mirror (be reflected).
+    //0 - LASER -> OBJECT
+    //1 - BEAM SPLITTER -> MIRROR
+    //2 - MIRROR -> PLATE
+    //3 - OBJECT -> PLATE
     setLaserMaterial: function () {
         var shader = CGHLab.GeometryShaderLib.myLambertLaser;
         var lightMaterial = new THREE.ShaderMaterial({
@@ -835,6 +842,13 @@ CGHLab.MainScene.prototype = {
         this.laserShader = laserShader;
     },
 
+    //Set up the material of the different simple lasers parts. In order to cut the laser correctly the shader has a flag 'limit'
+    //so the laser can disappear when it should. For example, the laser that travel from the beam splitter to the mirror needs to disappear
+    //in the mirror (be reflected).
+    //0 - LASER -> OBJECT
+    //1 - BEAM SPLITTER -> MIRROR
+    //2 - MIRROR -> PLATE
+    //3 - OBJECT -> PLATE
     setSimpleLaserMaterial: function () {
         var shader = CGHLab.GeometryShaderLib.myLambertLaser;
         var lightMaterial = new THREE.ShaderMaterial({
