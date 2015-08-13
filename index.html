@@ -160,7 +160,7 @@
                 this.detail = mainScene.object.detail;
                 //this.teste = function(){mainScene.teste()};
                 this.generation = function(){ mainScene.construction(); setGUI('main')};
-                this.recon = function(){ mainScene.reconstruction(); setGUI('main')};
+                this.recon = function(){ mainScene.reconstruction(); if(mainScene.generationMode == "Reconstruction") setGUI('main')};
             };
 
             var guiPerspectivesConfig = new parametersGUIPerspectives();
@@ -376,11 +376,11 @@
             folder2.open();
             if(mainScene.generationMode == "Generation"){
                 var reconstruction = folder2.add(guiPerspectivesConfig, 'recon').name('Go to Reconstruction');
-                reconstruction.domElement.parentNode.parentNode.title = "If there is an interference pattern generated it is possible to see a simulation of its reconstruction";
+                reconstruction.domElement.parentNode.parentNode.title = "If there is an interference pattern recorded it is possible to see a simulation of its reconstruction";
             }
             else{
-                var construction = folder2.add(guiPerspectivesConfig, 'generation').name('Back to Generation');
-                construction.domElement.parentNode.parentNode.title = "Go back to the generation mode to generate a new interference pattern";
+                var construction = folder2.add(guiPerspectivesConfig, 'generation').name('Back to Recording');
+                construction.domElement.parentNode.parentNode.title = "Go back to the recording mode to generate a new interference pattern";
             }
         }
 
