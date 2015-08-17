@@ -278,7 +278,7 @@
                     setGUI('object');
                 });
                 var detailListObj = [];
-                if (mainScene.object.figure == 'sphere') detailListObj = [ detailList[0], detailList[2] ];
+                if (mainScene.object.figure == 'Sphere') detailListObj = [ detailList[0], detailList[2] ];
                 else detailListObj = detailList;
                 var detailObj = folderObjectObject.add( guiPerspectivesConfig, 'detail', detailListObj ).name('Detail');
                 detailObj.domElement.parentNode.parentNode.title = "Change the detail of the geometric figure chosen. This will increase or decrease the number os light points used to create the interference pattern, giving it more or less accuracy";
