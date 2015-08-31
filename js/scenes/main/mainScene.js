@@ -149,9 +149,9 @@ CGHLab.MainScene = function( renderer, camera, controls )
         list: [],
         next: [],
         beam: [],
-        object: [],
-        lightPoints: [],
-        updated: [] //updates geometry for better collision detection
+        object: []
+        //lightPoints: [],
+        //updated: [] //updates geometry for better collision detection
     };
     var laserLight2 = {
         list: [],
@@ -164,8 +164,8 @@ CGHLab.MainScene = function( renderer, camera, controls )
 
     //List of object waves from main perspective
     var objWaveLight = {
-        list: [],
-        object: []
+        list: []
+        //object: []
     };
 
     //List of light point waves from object perspective
@@ -241,11 +241,11 @@ CGHLab.MainScene = function( renderer, camera, controls )
         laserLight1.next.push(false);
         laserLight1.beam.push(false);
         laserLight1.object.push(false);
-        var l = {
-            names: []
-        };
-        laserLight1.lightPoints.push(l);
-        laserLight1.updated.push(false);
+        //var l = {
+        //    names: []
+        //};
+        //laserLight1.lightPoints.push(l);
+        //laserLight1.updated.push(false);
         //console.log('l: '+l.length);
         //console.log('lL1: '+laserLight1.list.length);
     };
@@ -257,8 +257,8 @@ CGHLab.MainScene = function( renderer, camera, controls )
             laserLight1.next.splice(i, 1);
             laserLight1.beam.splice(i, 1);
             laserLight1.object.splice(i, 1);
-            laserLight1.lightPoints.splice(i, 1);
-            laserLight1.updated.splice(i,1);
+            //laserLight1.lightPoints.splice(i, 1);
+            //laserLight1.updated.splice(i,1);
         }
     };
 
@@ -294,14 +294,14 @@ CGHLab.MainScene = function( renderer, camera, controls )
 
     this.addToObjWaveLight = function( obj ){
         objWaveLight.list.push(obj);
-        objWaveLight.object.push(false);
+        //objWaveLight.object.push(false);
     };
 
     this.removeFromObjWaveLight = function(obj){
         var i = objWaveLight.list.indexOf(obj);
         if (i > -1) {
             objWaveLight.list.splice(i, 1);
-            objWaveLight.object.splice(i, 1);
+            //objWaveLight.object.splice(i, 1);
         }
     };
 
@@ -1404,16 +1404,9 @@ CGHLab.MainScene.prototype = {
         var dirSplitter = this.getDirSplitter();
         var dirMirror = this.getDirMirror();
         var dirObject = this.getDirObject();
-        var dirAmplifier = this.getDirAmplifier();
 
         var negDirMirror = dirMirror.clone().negate();
 
-        var negDirAmplifier = dirAmplifier.clone().normalize().negate();
-
-        //extend the maximum path from 'laser to object' to 'laser to object + 50 units' on the object perspective, so the wavefronts
-        //can pass through all the light points of an object
-        var newLaser1Finish = new THREE.Vector3();
-        newLaser1Finish.addVectors(this.objectPosition, negDirAmplifier.multiplyScalar(50));
         var newLaser3Finish = new THREE.Vector3();
         newLaser3Finish.addVectors(this.mirrorPosition, negDirMirror.clone().normalize().multiplyScalar((1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * this.baseDistance2));
 
