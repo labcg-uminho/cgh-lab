@@ -783,6 +783,8 @@ CGHLab.MainScene.prototype = {
         plate.material = this.interferencePatternShader;
 
         this.interferencePatternOn = true;
+
+        console.log("on")
     },
 
     hideInterferencePattern: function()
@@ -791,6 +793,8 @@ CGHLab.MainScene.prototype = {
         plate.material = new THREE.MeshLambertMaterial({ color: 0x444444, ambient: 0x444444, side: THREE.DoubleSide });
 
         this.interferencePatternOn = false;
+
+        console.log("off")
     },
 
     //Set up the material of the different lasers parts. In order to cut the laser correctly the shader has a flag 'limit'
@@ -1389,8 +1393,10 @@ CGHLab.MainScene.prototype = {
             }
         }
 
-        if(!this.patternShown && this.refWaveArrived && this.objWaveArrived) this.seeInterferencePattern();
-        else this.hideInterferencePattern();
+        if(this.mainPerspectiveChosen) {
+            if (!this.patternShown && this.refWaveArrived && this.objWaveArrived) this.seeInterferencePattern();
+            else this.hideInterferencePattern();
+        }
     },
 
     updateLaserReconstruction: function(){

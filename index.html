@@ -208,8 +208,7 @@
                     var wl = folderRefWaveMain.add(guiPerspectivesConfig, 'refWaveLength').min(0.1).max(3.5).name('WaveLength');
                     wl.domElement.parentNode.parentNode.title = "Change the wavelength of the reference wave. This will change the interference pattern and the animated laser in case it is on";
                     wl.onChange(function (value) {
-                        mainScene.referenceWave.waveLength = value;
-                        mainScene.updateShaderUniforms();
+                        mainScene.mainPerspective.changeWavelength(value);
                     });
                     var wa = folderRefWaveMain.add(guiPerspectivesConfig, 'refWaveAngle').min(1).max(89).name('Wave Angle');
                     wa.domElement.parentNode.parentNode.title = "Change the angle that the reference wave makes with the holographic plate. This will change the interference pattern and the position of the mirror and lens";
@@ -294,8 +293,7 @@
                 var wlp = folderRefWavePlate.add(guiPerspectivesConfig, 'refWaveLength').min(0.1).max(3.5).name('WaveLength');
                 wlp.domElement.parentNode.parentNode.title = "Change the wavelength of the reference wave. This will change the interference pattern and the animated laser in case it is on";
                 wlp.onChange(function(value){
-                    mainScene.referenceWave.waveLength = value;
-                    mainScene.updateShaderUniforms();
+                    mainScene.mainPerspective.changeWavelength(value);
                 });
                 var wap = folderRefWavePlate.add(guiPerspectivesConfig, 'refWaveAngle').min(1).max(89).name('Wave Angle');
                 wap.domElement.parentNode.parentNode.title = "Change the angle that the reference wave makes with the holographic plate. This will change the interference pattern and the position of the mirror and lens";

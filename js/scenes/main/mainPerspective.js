@@ -38,8 +38,8 @@ CGHLab.MainPerspective.prototype = {
         //Deletes the previous object waves
         var objWaveLight = this.mainScene.getObjWaveLight();
         var i;
-        for(i = 0; i < objWaveLight.length; i++){
-            this.mainScene.scene.remove(objWaveLight[i]);
+        for(i = 0; i < objWaveLight.list.length; i++){
+            this.mainScene.scene.remove(objWaveLight.list[i]);
         }
         this.mainScene.eraseObjLight();
         this.mainScene.collidableList = [];
@@ -201,6 +201,11 @@ CGHLab.MainPerspective.prototype = {
             laserE_P.position.set(newLaser3Finish.x - middleE_P.x, newLaser3Finish.y - middleE_P.y, newLaser3Finish.z - middleE_P.z);
             laserE_P.rotateZ(this.mainScene.amplifierRotation2);
         }
+    },
+
+    changeWavelength: function(value){
+        this.mainScene.referenceWave.waveLength = value;
+        this.mainScene.updateShaderUniforms();
     }
 
 };
