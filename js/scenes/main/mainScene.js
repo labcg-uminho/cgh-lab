@@ -684,8 +684,8 @@ CGHLab.MainScene.prototype = {
     setVirtualObjectLabel: function(){
         var spritey6 = CGHLab.Helpers.makeTextSprite(" Virtual Object ", {
             fontsize: 24,
-            borderColor: {r: 255, g: 0, b: 0, a: 1.0},
-            backgroundColor: {r: 255, g: 100, b: 100, a: 0.8}
+            borderColor: {r:255, g:255, b:0, a:1.0},
+            backgroundColor: {r:255, g:255, b:77, a:0.8}
         });
         spritey6.position.set(this.objectPosition.x, this.objectPosition.y + 10, this.objectPosition.z);
         spritey6.name = "virtual_object_label";
