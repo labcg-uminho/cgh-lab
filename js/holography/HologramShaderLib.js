@@ -30,14 +30,14 @@ CGHLab.HologramShaderLib = {
             "void main(){",
             "   const float tau = 6.283185307179586476925286766559;",
             "   float refArrivalPhase = 0.0;",
-            "   float perWaveAmplitude[162];",
-            "   float totalAmplitude = 0.0;",
+            //"   float perWaveAmplitude[162];",
+            //"   float totalAmplitude = 0.0;",
             "   float totalIntensity = 0.0;",
             "   float normalizedIntensity = 0.0;",
             "   float n = float(n_lightPoints);",
 
             "   refArrivalPhase = tau * ( worldPosition.x / horizCycleLength );",
-            "   float refAmplitude = cos(refArrivalPhase);",
+            //"   float refAmplitude = cos(refArrivalPhase);",
             "   float k = tau / waveLength;",
 
             "   for(int i = 0; i < 162; i++){",
