@@ -1393,7 +1393,7 @@ CGHLab.MainScene.prototype = {
             }
         }
 
-        if(this.mainPerspectiveChosen) {
+        if(this.mainPerspectiveChosen || this.objectPerspectiveChosen) {
             if (!this.patternShown && this.refWaveArrived && this.objWaveArrived) this.seeInterferencePattern();
             else this.hideInterferencePattern();
         }
