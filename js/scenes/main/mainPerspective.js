@@ -145,8 +145,8 @@ CGHLab.MainPerspective.prototype = {
         //Reset reflected geometry
         var laserLight3 = this.mainScene.getLaserLight3();
         var i;
-        for(i = 0; i < laserLight3.length; i++){
-            this.mainScene.scene.remove(laserLight3[i]);
+        for(i = 0; i < laserLight3.list.length; i++){
+            this.mainScene.scene.remove(laserLight3.list[i]);
         }
         this.mainScene.eraseLight3Array();
 
