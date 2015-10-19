@@ -542,7 +542,7 @@ CGHLab.MainScene.prototype = {
 
         var spritey3;
         if(this.generationMode == "Generation") {
-            spritey3 = CGHLab.Helpers.makeTextSprite(" Objective Lens ", {
+            spritey3 = CGHLab.Helpers.makeTextSprite(" Concave Lens ", {
                 fontsize: 24,
                 borderColor: {r:255, g:255, b:0, a:1.0},
                 backgroundColor: {r:255, g:255, b:77, a:0.8}
@@ -564,7 +564,7 @@ CGHLab.MainScene.prototype = {
             this.labelsList.push(spritey3.name);
         }
 
-        var spritey4 = CGHLab.Helpers.makeTextSprite( " Objective Lens ", {
+        var spritey4 = CGHLab.Helpers.makeTextSprite( " Concave Lens ", {
             fontsize: 24,
             borderColor: {r:255, g:255, b:0, a:1.0},
             backgroundColor: {r:255, g:255, b:77, a:0.8}
@@ -625,7 +625,7 @@ CGHLab.MainScene.prototype = {
         this.scene2.add( spritey7 );
         this.labelsList.push(spritey7.name);
 
-        var spritey8 = CGHLab.Helpers.makeTextSprite( " Image Lens ", {
+        var spritey8 = CGHLab.Helpers.makeTextSprite( " Convex Lens ", {
             fontsize: 24,
             borderColor: {r:255, g:255, b:0, a:1.0},
             backgroundColor: {r:255, g:255, b:77, a:0.8}
