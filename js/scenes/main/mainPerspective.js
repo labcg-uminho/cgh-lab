@@ -64,7 +64,8 @@ CGHLab.MainPerspective.prototype = {
         var unitsMirror = (1/Math.cos(Math.PI/4 - this.mainScene.referenceWaveAngle)) * this.mainScene.baseDistance1;
 
         // Update the amplifier units
-        //var unitsAmplifier2 = 300;//(1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 200;
+        //var unitsAmplifier2 = 300;
+        //var unitsAmplifier2 = 1/Math.cos(Math.PI/4 - this.referenceWaveAngle)) * 200;
 
         // Make the changes permanent
         this.mainScene.setMirrorDirAndUnits(newDirMirror, unitsMirror);
