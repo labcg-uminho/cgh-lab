@@ -136,7 +136,7 @@ CGHLab.MainScene = function( renderer, camera, controls )
 
     this.collidableList = [];
 
-    this.labelsOn = true;
+    this.showLabels = true;
     this.labelsList = [];
     this.beamLabelsList = [];
 
@@ -515,7 +515,7 @@ CGHLab.MainScene.prototype = {
         this.getPlatePoints();
 
         //LABELS
-        if(this.labelsOn) this.setLabels();
+        if(this.showLabels) this.setLabels();
 
     },
 
@@ -1035,7 +1035,7 @@ CGHLab.MainScene.prototype = {
         //In reconstruction mode the object disappears so we need to add it again when using the simple laser
         if(this.generationMode == "Reconstruction") {
             this.scene.add(this.object.object);
-            if(this.labelsOn) this.setVirtualObjectLabel();
+            if(this.showLabels) this.setVirtualObjectLabel();
         }
     },
 
@@ -1107,7 +1107,7 @@ CGHLab.MainScene.prototype = {
             this.objWaveArrived = true;
         }
 
-        if (this.labelsOn) this.setBeamLabels();
+        if (this.showLabels) this.setBeamLabels();
         this.laserOnFlag = true;
     },
 
@@ -1146,7 +1146,7 @@ CGHLab.MainScene.prototype = {
             this.simpleLaserOn = false;
         }
 
-        if(this.labelsOn) this.deleteBeamLabels();
+        if(this.showLabels) this.deleteBeamLabels();
 
         if(!this.laserOnStandBy) {
             this.laserOnFlag = false;
@@ -1553,7 +1553,7 @@ CGHLab.MainScene.prototype = {
         this.smoothCameraTransition(target, mainScene.objectPosition);
 
         //Change object label
-        if(this.labelsOn){
+        if(this.showLabels){
             this.deleteAllLabels();
             this.setLabels();
             if(this.laserOnFlag) this.setBeamLabels();
@@ -1595,7 +1595,7 @@ CGHLab.MainScene.prototype = {
         this.smoothCameraTransition(target, center);
 
         //Change object label
-        if(this.labelsOn){
+        if(this.showLabels){
             this.deleteAllLabels();
             this.setLabels();
             if(this.laserOnFlag) this.setBeamLabels();
@@ -1641,9 +1641,9 @@ CGHLab.MainScene.prototype = {
         this.smoothCameraTransition(target, mainScene.platePosition);
         this.controls.enabled = false;
 
-        if(this.labelsOn){
+        if(this.showLabels){
             this.deleteAllLabels();
-            //this.labelsOn = false;
+            //this.showLabels = false;
         }
 
         CGHLab.Helpers.eraseInfo();
@@ -1764,12 +1764,12 @@ CGHLab.MainScene.prototype = {
                     else this.restartSimpleLaser();
                 }
 
-                if (this.labelsOn) {
+                if (this.showLabels) {
                     this.deleteAllLabels();
                     this.setLabels();
                     if(this.laserOnFlag) this.setBeamLabels();
                 }
-                if (this.laserOnFlag && this.laserTypeActive == "Simple" && this.labelsOn) this.setVirtualObjectLabel();
+                if (this.laserOnFlag && this.laserTypeActive == "Simple" && this.showLabels) this.setVirtualObjectLabel();
             }
             CGHLab.Helpers.eraseInfo();
             CGHLab.Helpers.addReconstructionModeInfo();
@@ -1796,7 +1796,7 @@ CGHLab.MainScene.prototype = {
                 else this.restartSimpleLaser();
             }
 
-            if(this.labelsOn) {
+            if(this.showLabels) {
                 this.deleteAllLabels();
                 this.setLabels();
                 if(this.laserOnFlag) this.setBeamLabels();

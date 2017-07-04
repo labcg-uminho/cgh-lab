@@ -147,7 +147,7 @@
                     mainScene.platePerspectiveChosen = true;
                     setGUI('plate');
                 };
-                this.labelsOn = mainScene.labelsOn;
+                this.showLabels = mainScene.showLabels;
                 if(mainScene.laserTypeActive == "Simple") this.laserTypeChoosen = false;
                 if(mainScene.laserTypeActive == "Animated") this.laserTypeChoosen = true;
                 this.laserOn = mainScene.laserOnFlag;
@@ -329,18 +329,18 @@
             var folder4 = gui.addFolder('Other Options');
             folder4.open();
             if(perspective != 'plate') {
-                var labelsOnOpt = folder4.add(guiPerspectivesConfig, 'labelsOn').name('Labels On?');
-                labelsOnOpt.domElement.parentNode.parentNode.title = "Turn the labels on of off. By default, they are on";
-                labelsOnOpt.onChange(function (value) {
+                var showLabelsOpt = folder4.add(guiPerspectivesConfig, 'showLabels').name('Show labels');
+                showLabelsOpt.domElement.parentNode.parentNode.title = "Turn the labels on of off. By default, they are on";
+                showLabelsOpt.onChange(function (value) {
                     if (value) {
                         if (mainScene.laserOnFlag) mainScene.setBeamLabels();
                         mainScene.setLabels();
                         if (mainScene.objWaveReconstructionArrive) mainScene.setVirtualObjectLabel();
-                        mainScene.labelsOn = true;
+                        mainScene.showLabels = true;
                     }
                     else {
                         mainScene.deleteAllLabels();
-                        mainScene.labelsOn = false;
+                        mainScene.showLabels = false;
                     }
                 });
             }

@@ -123,8 +123,8 @@ CGHLab.MainPerspective.prototype = {
         expander.position.set(this.mainScene.expanderPosition.x, this.mainScene.expanderPosition.y, this.mainScene.expanderPosition.z);
         expander.rotateZ(-this.mainScene.expanderRotation);
 
-        //Labels
-        if(mainScene.labelsOn) {
+        // Labels
+        if(mainScene.showLabels) {
             var mirror_label = this.mainScene.scene2.getObjectByName('mirror_label');
             var amplifier2_label = this.mainScene.scene2.getObjectByName('amplifier2_label');
             var lens_label = this.mainScene.scene2.getObjectByName('lens_label');
